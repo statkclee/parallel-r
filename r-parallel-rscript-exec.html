@@ -40,6 +40,7 @@
 </ul>
 </div>
 </section>
+<h3 id="유닉스-철학과-rscript">1. 유닉스 철학과 RScript</h3>
 <p><img src="fig/parallel-r-pipeline.png" alt="R 파이프라인" width="70%"></p>
 <p>통계 예측모형, 기계학습, 딥러닝 시스템을 개발할 경우 유닉스/리눅스 운영체제로 환경을 통일하고 텍스트 파일을 모든 프로그램과 시스템이 의사소통하는 기본 인터페이스로 잡고, 이를 파이프로 연결한다.</p>
 <ol style="list-style-type: decimal">
@@ -63,11 +64,54 @@
 </ul>
 </div>
 </aside>
+<h3 id="r-스크립트-실행환경-r-scripts">2. R 스크립트 실행환경 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h3>
+<p>유닉스/리눅스 운영체제가 준비되었다면 R스크립트 실행환경을 준비한다.</p>
+<h4 id="r설치">2.1. R설치</h4>
+<p>R을 스크립트 형태(<code>.R</code>) 파일로 실행할 경우 가장 먼저 <code>r-base-core</code>를 설치한다. 그래픽 사용자 인터페이스가 없는 형태의 R이 설치되며 R 스크립트 실행에 필요한 연관된 프로그램도 더불어 설치한다.</p>
+<pre class="shell"><code>$ sudo apt-get install -y r-base-core</code></pre>
+<h4 id="r-스크립트-실행환경">2.2. R 스크립트 실행환경</h4>
+<p>R과 스크립트를 실행할 <code>Rscript</code> 실행프로그램이 위치한 디렉토리를 확인한다. 여기에 사용되는 명령어는 <code>which</code>다. <code>which R</code> 명령어를 통해 R 실행파일이 <code>/usr/bin/</code> 디렉토리에 위치한 것을 확인할 수 있다.</p>
+<pre class="shell"><code>$ which R</code></pre>
+<pre class="output"><code>/usr/bin/R</code></pre>
+<p><code>which Rscript</code> 명령어를 통해 Rcript 실행파일도 <code>/usr/bin/</code> 디렉토리에 위치한 것을 확인할 수 있다.</p>
+<pre class="shell"><code>$ which Rscript</code></pre>
+<pre class="output"><code>/usr/bin/Rscript</code></pre>
+<p><code>echo $PATH</code> 명령어를 통해 <code>/usr/bin</code>, 경우에 따라서는 <code>/usr/local/bin</code> 디렉토리에 R과 Rscript 실행파일이 존재하는 것을 확인한다.</p>
+<pre class="shell"><code>$ echo $PATH</code></pre>
+<pre class="output"><code>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games</code></pre>
+<h4 id="r-스크립트파일-실행">2.3. R 스크립트파일 실행</h4>
+<p><code>.R</code> 스크립트 파일을 명령라인 인터페이스로 실행하는 방법은 다양한다. 먼저 <code>hello_world.R</code> 스크립트 파일을 생성한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#! /usr/bin/env Rscript</span>
+
+<span class="kw">print</span>(<span class="st">&quot;Hello World!!!&quot;</span>)</code></pre></div>
+<p>쉬뱅(shebang, #!) 다음에 스크립트를 실행할 프로그램을 지정한다. <code>Rscript</code>로 지정하여 R스크립트를 실행하는데 사용한다.</p>
+<p><code>#! /usr/bin/env Rscript</code></p>
+<pre class="shell"><code>$ chmod +x hello_world.R
+$ ./hello_world.R</code></pre>
+<p><code>chmod +x</code> 명령어를 통해서 일반 텍스트 파일을 실행가능한 파일 형식으로 지정한다. <code>hello_world.R</code> 파일이 실행가능한 형태가 되었기 때문에 <code>./hello_world.R</code> 명령어로 R스크립트를 실행시킨다.</p>
+<pre class="output"><code>Hello World!!!</code></pre>
+<h4 id="기타-r-스크립트파일-실행-방법">2.4. 기타 R 스크립트파일 실행 방법</h4>
+<p>R스크립트를 실행하는 방법은 다양하다.</p>
+<pre class="shell"><code>$ R --slave -f hello_world.R</code></pre>
+<pre class="shell"><code>$ Rscript hello_world.R</code></pre>
+<p><code>Rscript</code> 명령어로 실행을 시켜도 동일한 산출 결과가 출력된다.</p>
+<pre class="shell"><code>$ R CMD BATCH hello_world.R hello_world_output.txt</code></pre>
+<p><code>R CMD BATCH</code> 명령어로 실행시키면 실행결과가 <code>hello_world_output.txt</code> 파일에 저장된다. <code>hello_world_output.txt</code> 파일명을 지정하지 않으면 <code>hello_world.Rout</code> 파일에 저장된다.</p>
+<pre class="shell"><code>$ R --no-save &lt;&lt; RSCRIPT
+     print(&quot;Hello World&quot;)
+  RSCRIPT</code></pre>
+<p><code>R --no-save &lt;&lt;</code> 사용법도 가능하다.</p>
 <ul>
 <li><a href="https://cran.r-project.org/web/packages/optparse/index.html">optparse - Command Line Option Parser</a></li>
 <li><a href="https://cran.r-project.org/web/packages/argparse/index.html">argparse - Command line optional and positional argument parser</a></li>
 <li><a href="https://cran.r-project.org/web/packages/getopt/">getopt - C-like getopt behavior</a></li>
 </ul>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://www.r-bloggers.com/r-scripts/">R scripts</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
         </div>
       </div>
       </article>
