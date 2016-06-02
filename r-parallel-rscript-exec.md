@@ -11,7 +11,7 @@ subtitle: .R 스크립트 실행
 > * R스크립트를 유닉스 철학에 따라 실행한다. 
 
 
-<img src="fig/paralle-r-pipeline.png" alt="R 파이프라인" width="70%">
+<img src="fig/parallel-r-pipeline.png" alt="R 파이프라인" width="70%">
 
 통계 예측모형, 기계학습, 딥러닝 시스템을 개발할 경우 유닉스/리눅스 운영체제로 환경을 통일하고 텍스트 파일을 모든 프로그램과 시스템이 의사소통하는 기본 인터페이스로 잡고, 이를 파이프로 연결한다.
 
