@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">optparse` 파이썬 스타일</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li><code>optparse</code> 파이썬 스타일을 사용해서 동일한 문제를 푼다.</li>
+</ul>
+</div>
+</section>
+<h3 id="파이썬-optparse-스타일">파이썬 <code>optparse</code> 스타일</h3>
+<p><code>commandArgs</code>를 사용해서 인자를 받는 R스크립트를 실행하는 방법이 전통적인 방법이라면, <code>optparse</code> 파이썬 라이브러리를 R에서 사용하여 동일한 작업을 수행한다.</p>
+<p><code>make_option</code>을 통해 명령라인 인터페이스에 들어갈 인자를 설정한다. 그리고, <code>optparse</code>에서 설정한 인자값을 R코드에서 받아 명령어를 실행시키는 구조로 R스크립트를 작성한다.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co">#!/usr/bin/env Rscript</span>
+
+<span class="co">##==========================================================================</span>
+<span class="co">## R스크립트 인자 설정</span>
+<span class="co">##==========================================================================</span>
+
+library(optparse)
+
+option_list <span class="op">&lt;-</span> <span class="bu">list</span>(
+    make_option(c(<span class="st">&quot;-f&quot;</span>, <span class="st">&quot;--file&quot;</span>), <span class="bu">type</span><span class="op">=</span><span class="st">&quot;character&quot;</span>, default<span class="op">=</span>NULL, 
+              <span class="bu">help</span><span class="op">=</span><span class="st">&quot;dataset file name&quot;</span>, metavar<span class="op">=</span><span class="st">&quot;character&quot;</span>),
+    make_option(c(<span class="st">&quot;-o&quot;</span>, <span class="st">&quot;--out&quot;</span>), <span class="bu">type</span><span class="op">=</span><span class="st">&quot;character&quot;</span>, default<span class="op">=</span><span class="st">&quot;out.txt&quot;</span>, 
+              <span class="bu">help</span><span class="op">=</span><span class="st">&quot;output file name [default= </span><span class="sc">%d</span><span class="st">efault]&quot;</span>, metavar<span class="op">=</span><span class="st">&quot;character&quot;</span>)
+)<span class="op">;</span> 
+ 
+opt_parser <span class="op">&lt;-</span> OptionParser(option_list<span class="op">=</span>option_list)<span class="op">;</span>
+opt <span class="op">&lt;-</span> parse_args(opt_parser)<span class="op">;</span>
+
+<span class="cf">if</span> (<span class="op">is</span>.null(opt$file)){
+  print_help(opt_parser)
+  stop(<span class="st">&quot;At least one argument must be supplied (input file).n&quot;</span>, call.<span class="op">=</span>FALSE)
+}
+
+<span class="co">##==========================================================================</span>
+<span class="co">## 자동화 프로그램</span>
+<span class="co">##==========================================================================</span>
+<span class="co"># 데이터 불러오기</span>
+gdp.df <span class="op">&lt;-</span> read.csv(opt$file, sep<span class="op">=</span><span class="st">&quot;,&quot;</span>, head<span class="op">=</span>FALSE)
+<span class="co"># 평균계산</span>
+gdp.mean <span class="op">&lt;-</span> mean(gdp.df$V1)
+<span class="co"># 계산결과 파일저장</span>
+cat(strsplit(opt$file, <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.&#39;</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>], <span class="st">&quot;평균: &quot;</span>, gdp.mean, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>, encoding<span class="op">=</span><span class="st">&quot;utf-8&quot;</span>, <span class="bu">file</span><span class="op">=</span>opt$out)</code></pre></div>
+<h3 id="실행결과">실행결과</h3>
+<p><code>Rscript r-args-ex04.R</code>을 실행하면서 인자를 넣지 않게 되면 메시지를 출력하고, R 스크립트 실행을 멈춘다.</p>
+<pre class="shell"><code>$ Rscript r-args-ex04.R</code></pre>
+<pre class="output"><code>Usage: r-args-ex04.R [options]
+
+Options:
+        -f CHARACTER, --file=CHARACTER
+                dataset file name
+
+        -o CHARACTER, --out=CHARACTER
+                output file name [default= out.txt]
+
+        -h, --help
+                Show this help message and exit
+
+Error: At least one argument must be supplied (input file).n
+Execution halted</code></pre>
+<p><code>optparse</code>에서 설정된 <code>-f</code> 옵션플래그에 처리할 데이터명을 지정하고, 작업처리된 결과를 <code>-o</code> 옵션플래그로 지정해서 R스크립트로 처리한 결과를 파일로 떨구어 저장시킨다.</p>
+<pre class="shell"><code>$ Rscript r-args-ex04.R -f france.csv -o france_output.csv
+$ cat france_output.csv</code></pre>
+<pre class="output"><code>france 평균:  20.95751</code></pre>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>

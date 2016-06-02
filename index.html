@@ -42,10 +42,11 @@
 <ol style="list-style-type: decimal">
 <li><a href="r-parallel.html">R 병렬처리</a>
 <ul>
-<li><a href="r-parallel-local-export.html">분석결과 내보내기</a></li>
 <li><a href="r-parallel-rscript-unix.html">유닉스 철학과 파이프라인</a></li>
 <li><a href="r-parallel-rscript-exec.html"><code>.R</code> 스크립트 실행</a></li>
 <li><a href="r-parallel-rscript-args.html"><code>.R</code> 스크립트를 인자와 함께 실행</a></li>
+<li><a href="r-parallel-rscript-optparse.html"><code>optparse</code> 파이썬 스타일</a></li>
+<li><a href="r-parallel-local-export.html">분석결과 내보내기</a></li>
 </ul></li>
 </ol>
 <section class="prereq panel panel-warning">
@@ -57,6 +58,20 @@
 <p><span class="math display">\[x = \frac{-b \pm \sqrt{b^2 - 4 a c}}{2 a}\]</span></p>
 </div>
 </section>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="가장최신-r-설치-r-latest-install"><span class="glyphicon glyphicon-pushpin"></span>가장최신 R 설치 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h3>
+</div>
+<div class="panel-body">
+<pre class="shell"><code>$ codename=$(lsb_release -c -s)
+$ echo &quot;deb http://cran.fhcrc.org/bin/linux/ubuntu $codename/&quot; | sudo tee -a /etc/apt/sources.list &gt; /dev/null
+$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+$ sudo add-apt-repository ppa:marutter/rdev
+$ sudo apt-get update
+$ sudo apt-get upgrade
+$ sudo apt-get install r-base r-base-dev</code></pre>
+</div>
+</aside>
 <h3 id="xwmooc-오픈-교재">xwMOOC 오픈 교재</h3>
 <ul>
 <li><a href="http://unplugged.xwmooc.org">컴퓨터 과학 언플러그드</a><br />
@@ -92,6 +107,12 @@
 <li><a href="http://sympy.xwmooc.org/">기호 수학(Symbolic Math)</a></li>
 <li><a href="http://politics.xwmooc.org/">선거와 투표</a></li>
 </ul>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://askubuntu.com/questions/614530/how-to-install-latest-version-of-r-on-ubuntu-12-04-lts">How to install latest version of R on Ubuntu 12.04 LTS?</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
         </div>
       </div>
       </article>

@@ -15,17 +15,32 @@ title: R 병렬 프로그래밍
 ## 학습목차
 
 1. [R 병렬처리](r-parallel.html) 
-    - [분석결과 내보내기](r-parallel-local-export.html)
     - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
     - [`.R` 스크립트 실행](r-parallel-rscript-exec.html)
     - [`.R` 스크립트를 인자와 함께 실행](r-parallel-rscript-args.html)
-
+    - [`optparse` 파이썬 스타일](r-parallel-rscript-optparse.html)
+    - [분석결과 내보내기](r-parallel-local-export.html)
+    
 > ### xwMOOC는 수학을 사랑합니다. {.prereq}
 > 
 > 2차 방정식 $a x^2 + b x + c = 0$ 에 대한 해답은 ...
 >
 > $$x = \frac{-b \pm \sqrt{b^2 - 4 a c}}{2 a}$$ 
 
+
+> ### 가장최신 R 설치 [^r-latest-install] {.callout}
+> 
+> ~~~ {.shell}
+> $ codename=$(lsb_release -c -s)
+> $ echo "deb http://cran.fhcrc.org/bin/linux/ubuntu $codename/" | sudo tee -a /etc/apt/sources.list > /dev/null
+> $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+> $ sudo add-apt-repository ppa:marutter/rdev
+> $ sudo apt-get update
+> $ sudo apt-get upgrade
+> $ sudo apt-get install r-base r-base-dev
+> ~~~
+
+[^r-latest-install]: [How to install latest version of R on Ubuntu 12.04 LTS?](http://askubuntu.com/questions/614530/how-to-install-latest-version-of-r-on-ubuntu-12-04-lts)
 
 ### xwMOOC 오픈 교재
 
