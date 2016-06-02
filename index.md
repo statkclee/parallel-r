@@ -16,7 +16,9 @@ title: R 병렬 프로그래밍
 
 1. [R 병렬처리](r-parallel.html) 
     - [분석결과 내보내기](r-parallel-local-export.html)
+    - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
     - [`.R` 스크립트 실행](r-parallel-rscript-exec.html)
+    - [`.R` 스크립트를 인자와 함께 실행](r-parallel-rscript-args.html)
 
 > ### xwMOOC는 수학을 사랑합니다. {.prereq}
 > 

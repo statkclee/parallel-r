@@ -1,46 +1,23 @@
 ---
 layout: page
 title: 데이터 과학
-subtitle: .R 스크립트 실행
+subtitle: .R 스크립트를 인자와 함께 실행
 ---
 
 > ## 학습 목표 {.objectives}
 >
-> * 유닉스 철학을 이해한다.
-> * 데이터과학 작업 파이프라인을 이해한다.
-> * R스크립트를 유닉스 철학에 따라 실행한다. 
+> * 명령라인 인터페이스에서 R 스크립트를 실행한다.
+> * 다양한 R 스크립트 실행방법을 실습한다.
 
-### 1. 유닉스 철학과 RScript
-
-<img src="fig/parallel-r-pipeline.png" alt="R 파이프라인" width="70%">
-
-통계 예측모형, 기계학습, 딥러닝 시스템을 개발할 경우 유닉스/리눅스 운영체제로 환경을 통일하고 텍스트 파일을 모든 프로그램과 시스템이 의사소통하는 기본 인터페이스로 잡고, 이를 파이프로 연결한다.
-
-1. 텍스트 데이터로 분석에 사용될 혹은 훈련데이터로 준비한다.
-1. 파이썬 혹은 쉘스크립트, R스크립트를 활용하여 전처리한다.
-1. R `caret` 혹은 파이썬 `Scikit-learn` 예측모형을 적합, 기계학습 훈련, 시각화를 수행한다.
-1. 마크다운(웹), LaTeX(조판) 출력형식에 맞춰 서식을 결정한다.
-1. 최종 결과를 텍스트, 이미지 파일, pdf, html로 출력한다.
-
-~~~ {.shell}
-$ cat data.txt | preProcesswithPython.py | runModelwithR.R | formatOutput.sh > mlOutput.txt
-~~~
-
-> ### [유닉스 철학](https://en.wikipedia.org/wiki/Unix_philosophy) {.callout}
-> 
-> Write programs that do one thing and do it well. Write programs to work together. Write programs to handle text streams, because that is a universal interface. -- Doug McIlroy
-> 
-> * 한가지 작업만 매우 잘하는 프로그램을 작성한다(Write programs that do one thing and do it well)
-> * 프로그램이 함께 동작하도록 작성한다(Write programs to work together)
-> * 텍스트를 다루는 프로그램을 작성한다. 이유는 어디서나 사용되는 인터페이스가 되기 때문이다(Write programs to handle text streams, because that is a universal interface)
-
-### 2. R 스크립트 실행환경 [^R-scripts]
+### 1. R 스크립트 실행환경 [^R-scripts]
 
 [^R-scripts]: [R scripts](http://www.r-bloggers.com/r-scripts/)
 
+<img src="fig/parallel-r-script-exec.png" alt="R 스크핍트 실행" width="70%">
+
 유닉스/리눅스 운영체제가 준비되었다면 R스크립트 실행환경을 준비한다.
 
-#### 2.1. R설치
+#### 1.1. R설치
 
 R을 스크립트 형태(`.R`) 파일로 실행할 경우 가장 먼저 `r-base-core`를 설치한다. 그래픽 사용자 인터페이스가 없는 형태의 R이 설치되며 R 스크립트 실행에 필요한 연관된 프로그램도 더불어 설치한다.
 
@@ -48,7 +25,7 @@ R을 스크립트 형태(`.R`) 파일로 실행할 경우 가장 먼저 `r-base-
 $ sudo apt-get install -y r-base-core
 ~~~
 
-#### 2.2. R 스크립트 실행환경 
+#### 1.2. R 스크립트 실행환경 
 
 R과 스크립트를 실행할 `Rscript` 실행프로그램이 위치한 디렉토리를 확인한다. 여기에 사용되는 명령어는 `which`다.
 `which R` 명령어를 통해 R 실행파일이 `/usr/bin/` 디렉토리에 위치한 것을 확인할 수 있다.
@@ -81,7 +58,7 @@ $ echo $PATH
 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 ~~~
 
-#### 2.3. R 스크립트파일 실행 
+#### 1.3. R 스크립트파일 실행 
 
 `.R` 스크립트 파일을 명령라인 인터페이스로 실행하는 방법은 다양한다. 먼저 `hello_world.R` 스크립트 파일을 생성한다.
 
@@ -107,7 +84,7 @@ $ ./hello_world.R
 Hello World!!!
 ~~~
 
-#### 2.4. 기타 R 스크립트파일 실행 방법
+#### 1.4. 기타 R 스크립트파일 실행 방법
 
 R스크립트를 실행하는 방법은 다양하다.
 
@@ -134,6 +111,79 @@ $ R --no-save << RSCRIPT
 ~~~
 
 `R --no-save <<` 사용법도 가능하다.
+
+### 2. 실습 예제 [^swcarpentry-r-cmd]
+
+[^swcarpentry-r-cmd]: [R프로그래밍 - 명령-라인 프로그램](http://statkclee.github.io/r-novice-inflammation/05-cmdline-kr.html)
+
+#### 2.1. R스크립트 작성
+
+`Rscript r_session_info.R` 명령어를 실행해서 실제로 RStudio나 R 콘솔을 열지 않고도 R 세션정보를 명령라인 인터페이스에서 처리하는 R 스크립트를 작성한다.
+
+텍스트 편집기를 열고, `sessionInfo()`를 적고 파일명을 `r_session_info.R`로 저장한다.
+
+~~~ {.r}
+sessionInfo()
+~~~
+
+배쉬쉘에서 R스크립트를 실행해서 R 세션정보를 받아확인한다.
+
+~~~ {.shell}
+$ Rscript r_session_info.R
+~~~
+
+~~~ {.output}
+R version 3.0.2 (2013-09-25)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  base
+~~~
+
+#### 2.2. R스크립트 출력결과 파일로 저장
+
+`>` 파이프 연산자를 사용해서 R 스크립트 출력결과를 텍스트 파일로 저장한다.
+
+~~~ {.shell}
+$ Rscript r_session_info.R > r_session_info_pipe_output.txt
+~~~
+
+또다른 방법은 R 스크립트 내부에서 출력결과를 파일에 저장하고 프로그램을 종료하는 방법도 있다.
+
+`caputre.output` 함수를 `cat`과 함께 사용하는데, 한글도 적용이 가능하도록, `encoding="UTF-8"`도 추가한다.
+
+~~~ {.r}
+output <- capture.output(sessionInfo())
+cat("R 세션정보", output, file="./r_session_info_rscript.txt", sep="\n", encoding="UTF-8")
+~~~
+
+`Rscript r_session_info.R` 명령어를 실행시키면 다음과 같이 실행결과가 텍스트 파일 `r_session_info_rscript.txt`로 떨어진다.
+
+~~~ {.output}
+R 세션정보
+R version 3.0.2 (2013-09-25)
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  base
+UTF-8
+~~~
 
 * [optparse - Command Line Option Parser](https://cran.r-project.org/web/packages/optparse/index.html)
 * [argparse - Command line optional and positional argument parser](https://cran.r-project.org/web/packages/argparse/index.html)
