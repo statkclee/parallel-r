@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">정보수집 프로파일링을 통한 성능향상</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>정보수집 프로파일링을 통한 성능향상을 이해한다.</li>
+<li>병목점을 식별하고 적절한 성능향상 전략을 적용시킨다.</li>
+<li>동기화 및 비동기화된 R 코드 전략에 대해 살펴본다.</li>
+</ul>
+</div>
+</section>
+<h3 id="profviz-프로파일링-팩키지-wch-profvis">1. <code>profviz</code> 프로파일링 팩키지 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h3>
+<p>작성한 R코드가 느린 것은 원래 목적 자체가 속도보다는 데이터를 시각화하고 탐색적으로 분석하는데 초점이 맞춰져서 인터랙티브하게 빠른 개발 생애주기(lifecycle)를 우선하기 때문이다. 따라서 인터랙티브한 방식이 아닌 방법으로 R코드를 실행시켜야만 된다.</p>
+<p>다양한 방법이 존재하지만, 명령라인 쉘상에서 <code>&lt;</code>, 파이프, <code>R CMD BATCH</code> 방식이나, <code>Rscript</code>를 사용해서 R스크립트를 실행시킨다. 문제는 기능은 동작을 하지만, 성능이 잘 나오지 않는 경우도 많다. 이런 경우 R코드 어느 부분이 병목점인지 파악하고 나서 적절한 전략을 적용시키는 것이 중요하다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>R --slave &lt;<span class="st"> </span>rscript.R
+$<span class="st"> </span>cat rscript.R |<span class="st"> </span>R --slave
+$<span class="st"> </span>R CMD BATCH rscript.R
+$<span class="st"> </span>Rscript rscript.R</code></pre></div>
+<h3 id="다이아몬드-데이터-profvis-팩키지-적용-profvis-rstudio">2. 다이아몬드 데이터 <code>profvis</code> 팩키지 적용 <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></h3>
+<p>다이아몬드 데이터에 <code>profvis</code> 팩키지를 적용하여 속도 및 메모리가 얼마나 소요되는지 확인한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
+## 다이아몬드 데이터 profvis 프로파일링
+##========================================================================
+<span class="co"># install.packages(&quot;profvis&quot;)</span>
+
+<span class="kw">library</span>(profvis)
+
+<span class="kw">profvis</span>({
+  <span class="kw">data</span>(diamonds, <span class="dt">package =</span> <span class="st">&quot;ggplot2&quot;</span>)
+  
+  <span class="kw">plot</span>(price ~<span class="st"> </span>carat, <span class="dt">data =</span> diamonds)
+  m &lt;-<span class="st"> </span><span class="kw">lm</span>(price ~<span class="st"> </span>carat, <span class="dt">data =</span> diamonds)
+  <span class="kw">abline</span>(m, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)
+})</code></pre></div>
+<p><code>htmlwidgets</code> 팩키지를 사용해서 <code>profvis</code>로 프로파일링한 결과를 <code>.html</code> 파일로 동일하게 저장하여 재현가능하게 사용하는 것도 가능하다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
+## profvis 프로파일링 결과 내보내기
+##========================================================================
+<span class="kw">library</span>(htmlwidgets)
+
+diamonds_profvis &lt;-<span class="st"> </span><span class="kw">profvis</span>({
+  <span class="kw">data</span>(diamonds, <span class="dt">package =</span> <span class="st">&quot;ggplot2&quot;</span>)
+  
+  <span class="kw">plot</span>(price ~<span class="st"> </span>carat, <span class="dt">data =</span> diamonds)
+  m &lt;-<span class="st"> </span><span class="kw">lm</span>(price ~<span class="st"> </span>carat, <span class="dt">data =</span> diamonds)
+  <span class="kw">abline</span>(m, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)
+})
+
+<span class="kw">saveWidget</span>(<span class="dt">widget=</span>diamonds_profvis, <span class="dt">file=</span><span class="st">&quot;diamonds_profvis.html&quot;</span>)</code></pre></div>
+<p><a href="html/diamonds_profvis.html"><img src="fig/profvis_diamonds.png" alt="다이아몬드 프로파일링 결과" width="50%"></a></p>
+<h3 id="성능-병목점-식별">3. 성능 병목점 식별</h3>
+<p><span class="math inline">\(400,000 \times 150\)</span> 크기를 갖는 행렬을 생성하고 나서 이를 데이터프레임으로 저장한다. 평균이 5인 정규분포에서 생성된 데이터에서 평균을 빼서 중심을 0으로 맞추는 작업을 수행하자. <code>apply</code> 함수를 사용해서 평균을 계산하고 난 후에 <code>for</code> 루프를 돌려 150개 열마다 각 열마다 계산된 평균을 빼서 저장시키는 R코드다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
+## profvis 프로파일링
+##========================================================================
+<span class="kw">library</span>(profvis)
+
+<span class="co"># 400,000 행 150열을 갖는 데이터를 생성</span>
+times &lt;-<span class="st"> </span><span class="dv">400000</span>
+cols &lt;-<span class="st"> </span><span class="dv">150</span>
+data &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="dt">x =</span> <span class="kw">matrix</span>(<span class="kw">rnorm</span>(times *<span class="st"> </span>cols, <span class="dt">mean =</span> <span class="dv">5</span>), <span class="dt">ncol =</span> cols))
+data &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">id =</span> <span class="kw">paste0</span>(<span class="st">&quot;g&quot;</span>, <span class="kw">seq_len</span>(times)), data)
+
+ver_01 &lt;-<span class="st"> </span><span class="kw">profvis</span>({
+    data1 &lt;-<span class="st"> </span>data   <span class="co"># Store in another variable for this run</span>
+    
+    <span class="co"># Get column means</span>
+    means &lt;-<span class="st"> </span><span class="kw">apply</span>(data1[, <span class="kw">names</span>(data1) !=<span class="st"> &quot;id&quot;</span>], <span class="dv">2</span>, mean)
+    
+    <span class="co"># Subtract mean from each column</span>
+    for (i in <span class="kw">seq_along</span>(means)) {
+      data1[, <span class="kw">names</span>(data1) !=<span class="st"> &quot;id&quot;</span>][, i] &lt;-<span class="st"> </span>data1[, <span class="kw">names</span>(data1) !=<span class="st"> &quot;id&quot;</span>][, i] -<span class="st"> </span>means[i]
+    }
+  })
+
+ver_01
+
+<span class="kw">saveWidget</span>(<span class="dt">widget=</span>ver_01, <span class="dt">file=</span><span class="st">&quot;ver.01_html&quot;</span>)</code></pre></div>
+<p><a href="html/ver_01.html"><img src="fig/ver_01.png" alt="성능향상 예제 01" width="70%"></a></p>
+<p>150개 칼럼에 대해 평균을 구하는데 1.36초 평균을 빼서 저장하는데 0.75초 총 2.1초 정도가 소요된 것을 확인할 수 있다. 현황이 파악되었으니, R코드 성능을 개선시키는데 다음 네가지 전략을 살펴본다.</p>
+<h3 id="성능계선-전략-도출">4. 성능계선 전략 도출</h3>
+<p>현황이 파악되었으니, 다음 단계로 병목점에 대한 성능향상 전략을 전개하는 것이다. 우선 <code>apply</code>는 가장 일반적인 함수로 행과 열 모두 요약할 수 있는 기능을 제공한다. 하지만, 이번 경우에는 칼럼에 대한 평균을 계산하기 때문에 <code>colMeans</code> 함수를 사용하는 것이 성능향상을 기대할 수 있는 한 방법이 된다. <code>apply</code> 함수 내부에서 행렬로 변환하고 행렬을 전치하는 연산이 들어가는 것을 콜스택을 추적하면서 볼 수 있다. 따라서 <code>lapply</code>로 리스트를 통해 성능향상을 취하는 방법도 훌륭한 대안이 되고, <code>vapply</code> 로 벡터로 칼럼 평균을 구하는 전략도 성능향상이 기대되는 전략이 된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ver_02 &lt;-<span class="st"> </span><span class="kw">profvis</span>({
+  data1 &lt;-<span class="st"> </span>data
+  <span class="co"># 4가지 전략</span>
+  means &lt;-<span class="st"> </span><span class="kw">apply</span>(data1, <span class="dv">2</span>, mean)
+  means &lt;-<span class="st"> </span><span class="kw">colMeans</span>(data1)
+  means &lt;-<span class="st"> </span><span class="kw">lapply</span>(data1, mean)
+  means &lt;-<span class="st"> </span><span class="kw">vapply</span>(data1, mean, <span class="kw">numeric</span>(<span class="dv">1</span>))
+})
+
+ver_02
+
+<span class="kw">saveWidget</span>(<span class="dt">widget=</span>ver_02, <span class="dt">file=</span><span class="st">&quot;ver_02.html&quot;</span>)</code></pre></div>
+<p><a href="html/ver_02.html"><img src="fig/ver_02.png" alt="성능향상 예제 02" width="70%"></a></p>
+<h3 id="성능계선-전략-적용">5. 성능계선 전략 적용</h3>
+<p><code>vapply</code>를 통해 가장 성능이 좋게 나온 것을 적용하여 처음 약 2.1초(2,110ms)걸리던 것이 0.6초(630ms)로 3배 이상 속도가 빨라진 것을 확인할 수 있다.</p>
+<p>어떻게 보면 가장 범용인 <code>apply</code> 함수는 데이터프레임을 받아 행렬로 변환시키고 (<code>as.matrix</code>) 나서, 이를 <code>aperm</code>으로 행렬을 전치시키는 작업을 수행하고 나서 숙제로 받은 평균을 계산하니 대부분의 신간을 행렬생성과 전치작업에 소요되고 정작 칼럼 평균을 계산하는 데는 상대적으로 시간을 많이 쓰지는 못하는 결과로 나타난다.</p>
+<p>반면에 <code>lapply</code>와 <code>vapply</code>는 리스트와 벡터로 자료형을 바로잡고서 칼럼평균을 계산하니 작업 수행시간이 대폭 줄게 된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 3. 성능개선 적용</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+ver_03 &lt;-<span class="st"> </span><span class="kw">profvis</span>({
+  data1 &lt;-<span class="st"> </span>data   <span class="co"># Store in another variable for this run</span>
+  
+  <span class="co"># Get column means</span>
+  means &lt;-<span class="st"> </span><span class="kw">vapply</span>(data1, mean, <span class="kw">numeric</span>(<span class="dv">1</span>))
+  
+  <span class="co"># Subtract mean from each column</span>
+  for (i in <span class="kw">seq_along</span>(means)) {
+    data1[, <span class="kw">names</span>(data1) !=<span class="st"> &quot;id&quot;</span>][, i] &lt;-<span class="st"> </span>data1[, <span class="kw">names</span>(data1) !=<span class="st"> &quot;id&quot;</span>][, i] -<span class="st"> </span>means[i]
+  }
+})
+
+ver_03
+
+<span class="kw">saveWidget</span>(<span class="dt">widget=</span>ver_03, <span class="dt">file=</span><span class="st">&quot;ver_03.html&quot;</span>)</code></pre></div>
+<p><a href="html/ver_03.html"><img src="fig/ver_03.png" alt="성능향상 예제 03" width="70%"></a></p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://www.rstudio.com/resources/videos/profiling-and-performance/">Profiling and performance</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="https://rstudio.github.io/profvis/">Profvis — Interactive Visualizations for Profiling R Code</a><a href="#fnref2">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>

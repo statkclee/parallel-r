@@ -20,6 +20,7 @@ R코드 어느 부분에서 가장 많은 수행시간과 메모리 저장공간
 `Rprof`, `Rprofmem` 함수를 추상화해서 시각화하는 팩키지가 `profviz` 로 출시되었고, `rbenchmark` 는 비교하는 목적으로 사용된다.
 
 ### 2. `Rprof` 프로파일링 [^wch-profvis]
+
 [^wch-profvis]: [Profiling and performance](https://www.rstudio.com/resources/videos/profiling-and-performance/)
 
 `Rprof` 함수는 정해진 시간, 예를 들어 `interval = 0.02` 기본디폴트 설정값으로 되어 20 $frac{1}{1000}$ 천분의 1초로 측정을 한다. 측정결과는 지정한 경로명에 위치한 파일에 저장되고, `summaryRprof` 함수로 꺼내본다.

@@ -29,6 +29,7 @@ title: R 병렬 프로그래밍
     - [분석결과 공유](http://statkclee.github.io/r-docker/06-Sharing-all-your-analysis.html)
 1. **성능 측정**
     - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
+    - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
 
     
 > ### xwMOOC는 수학을 사랑합니다. {.prereq}
