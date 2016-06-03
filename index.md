@@ -27,7 +27,8 @@ title: R 병렬 프로그래밍
     - [도커허브(Dockerhub)](http://statkclee.github.io/r-docker/04-Dockerhub.html)
     - [도커파일(Dockerfiles)](http://statkclee.github.io/r-docker/05-dockerfiles.html)
     - [분석결과 공유](http://statkclee.github.io/r-docker/06-Sharing-all-your-analysis.html)
-
+1. **성능 측정**
+    - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
 
     
 > ### xwMOOC는 수학을 사랑합니다. {.prereq}
@@ -50,6 +51,11 @@ title: R 병렬 프로그래밍
 > ~~~
 
 [^r-latest-install]: [How to install latest version of R on Ubuntu 12.04 LTS?](http://askubuntu.com/questions/614530/how-to-install-latest-version-of-r-on-ubuntu-12-04-lts)
+
+### R 팩키지 설치 [^r-packages-install]
+
+[^r-packages-install]: [How should I deal with “package 'xxx' is not available (for R version x.y.z)” warning?](http://stackoverflow.com/questions/25721884/how-should-i-deal-with-package-xxx-is-not-available-for-r-version-x-y-z-wa)
+
 
 ### xwMOOC 오픈 교재
 
