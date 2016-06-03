@@ -9,9 +9,7 @@ subtitle: 정보수집 프로파일링(profiling) - profviz
 > * 정보수집 프로파일링(profiling)에 대해 이해한다.
 > * 프로파일링을 적용해서 성능병목점을 식별하고 성능을 향상시킨다.
 
-<img src="fig/paralle-r-local-export.png" alt="로컬 컴퓨터 출력결과 내보내기" width="70%">
-
-### 정보수집 프로파일링
+### 1. 정보수집 프로파일링
 
 R코드 어느 부분에서 가장 많은 수행시간과 메모리 저장공간을 사용했는지 파악하는 것이 중요하다. 수행시간과 메모리 저장공간을 측정하는데 사용되는 도구가 정보수집 **프로파일링(Profiling)** 이다.
 
@@ -21,9 +19,12 @@ R코드 어느 부분에서 가장 많은 수행시간과 메모리 저장공간
 
 `Rprof`, `Rprofmem` 함수를 추상화해서 시각화하는 팩키지가 `profviz` 로 출시되었고, `rbenchmark` 는 비교하는 목적으로 사용된다.
 
-### 1. `Rprof` 프로파일링
+### 2. `Rprof` 프로파일링 [^wch-profvis]
+[^wch-profvis]: [Profiling and performance](https://www.rstudio.com/resources/videos/profiling-and-performance/)
 
 `Rprof` 함수는 정해진 시간, 예를 들어 `interval = 0.02` 기본디폴트 설정값으로 되어 20 $frac{1}{1000}$ 천분의 1초로 측정을 한다. 측정결과는 지정한 경로명에 위치한 파일에 저장되고, `summaryRprof` 함수로 꺼내본다.
+
+<img src="fig/rprof-mechansim.png" alt="Rprof 동작 방식" width="70%">
 
 `Rprof` 함수는 R에 기본 내장된 프로파일링 함수로 사용법은 다음과 같다.
 
@@ -42,7 +43,7 @@ summaryRprof("프로파일링 경과를 저장할 파일경로 및 파일명")
 
 [^Rprof]: [Profiling R code](http://www.r-bloggers.com/profiling-r-code/)
 
-#### 1.1. `Rprof` 프로파일링 요약
+#### 2.1. `Rprof` 프로파일링 요약
 
 * `by.self` : 해당 함수가 온전히 사용한 시간
 * `by.total` : 해당 함수와 호출된 함수 모두에서 사용된 시간 
@@ -51,7 +52,7 @@ summaryRprof("프로파일링 경과를 저장할 파일경로 및 파일명")
 
 추가로 한번만 측정하면 측정 중간에 쓰레기수거(Garbage Collection, GC) 작업 등으로 인해 정확한 실행시간 측정에 오차가 발생할 수 있다. 이를 방지하고자, `replicate`를 사용해서 반복측정한다.
 
-#### 1.2. `Rprof` 사례
+#### 2.2. `Rprof` 사례
 
 `example(glm)`을 통해 일반화선형모형을 적합하여 모형을 개발하는데 사용된 시간을 살펴본다.
 전체적으로 80 천분의 1초가 소요되었으며 "ifelse", "psub", "set", "unlist"에서 시간이 
@@ -116,7 +117,7 @@ $sampling.time
 [1] 0.08
 ~~~
 
-#### 1.3. `Rprof` 시각화
+#### 2.3. `Rprof` 시각화
 
 숫자를 통해 프로파일링 결과를 살펴보는 것도 의미가 있지만, 시각화를 통해 전체적인 프로파일링 정보를 살펴본다.
 `profr` 팩키지를 설치하고 `ggplot2` 시각화 팩키지로 프로파일링된 결과를 살펴본다.
@@ -135,5 +136,33 @@ x = profr(example(glm))
 ggplot(x)
 ~~~
 
-<img srt="fig/rprof-ggplot.png" alt="Rprof 시각화" width="50%">
+<img src="fig/rprof-ggplot.png" alt="Rprof 시각화" width="50%">
+
+#### 2.4. `diamonds` 회귀분석 프로파일링 예제
+
+`profr`로 시각화하는데 `data("diamonds")` 부터 `abline(lm.m, col = "blue")`까지 R코드 실행부분을 별도 R스크립트로 저장하였다. 
+
+~~~ {.r}
+##========================================================================
+## 다이아몬드 데이터
+##========================================================================
+# 1. 텍스트 정보
+Rprof(tmp <- tempfile())
+data("diamonds")
+# 1. 산점도
+plot(price ~ carat, data=diamonds)
+# 2. 선형모형 적합
+lm.m <- lm(price ~ carat, data=diamonds)
+# 3. 데이터와 모형 적합 평가
+abline(lm.m, col = "blue")
+Rprof()
+
+summaryRprof(tmp)
+
+# 2. 시각화
+library(profr)
+library(ggplot2)
+x = profr(source("diamonds-prof-ex.R"))
+ggplot(x)
+~~~
 

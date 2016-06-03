@@ -39,8 +39,7 @@
 </ul>
 </div>
 </section>
-<p><img src="fig/paralle-r-local-export.png" alt="로컬 컴퓨터 출력결과 내보내기" width="70%"></p>
-<h3 id="정보수집-프로파일링">정보수집 프로파일링</h3>
+<h3 id="정보수집-프로파일링">1. 정보수집 프로파일링</h3>
 <p>R코드 어느 부분에서 가장 많은 수행시간과 메모리 저장공간을 사용했는지 파악하는 것이 중요하다. 수행시간과 메모리 저장공간을 측정하는데 사용되는 도구가 정보수집 <strong>프로파일링(Profiling)</strong> 이다.</p>
 <ul>
 <li><code>system.time</code> : 간단히 수행시간을 측정하는 함수</li>
@@ -48,8 +47,9 @@
 <li><code>Rprofmem</code> R 메모리 사용량을 프로파일링하는 함수</li>
 </ul>
 <p><code>Rprof</code>, <code>Rprofmem</code> 함수를 추상화해서 시각화하는 팩키지가 <code>profviz</code> 로 출시되었고, <code>rbenchmark</code> 는 비교하는 목적으로 사용된다.</p>
-<h3 id="rprof-프로파일링">1. <code>Rprof</code> 프로파일링</h3>
+<h3 id="rprof-프로파일링-wch-profvis">2. <code>Rprof</code> 프로파일링 <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></h3>
 <p><code>Rprof</code> 함수는 정해진 시간, 예를 들어 <code>interval = 0.02</code> 기본디폴트 설정값으로 되어 20 <span class="math inline">\(frac{1}{1000}\)</span> 천분의 1초로 측정을 한다. 측정결과는 지정한 경로명에 위치한 파일에 저장되고, <code>summaryRprof</code> 함수로 꺼내본다.</p>
+<p><img src="fig/rprof-mechansim.png" alt="Rprof 동작 방식" width="70%"></p>
 <p><code>Rprof</code> 함수는 R에 기본 내장된 프로파일링 함수로 사용법은 다음과 같다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Rprof</span>(<span class="st">&quot;프로파일링 경과를 저장할 파일경로 및 파일명&quot;</span>)
 ## 프로파일링을 통해 정보를 추적할 R 코드
@@ -61,7 +61,7 @@
  
 <span class="co"># 프로파일링 추적결과를 요약하고 정리</span>
 <span class="kw">summaryRprof</span>(<span class="st">&quot;프로파일링 경과를 저장할 파일경로 및 파일명&quot;</span>)</code></pre></div>
-<h4 id="rprof-프로파일링-요약">1.1. <code>Rprof</code> 프로파일링 요약</h4>
+<h4 id="rprof-프로파일링-요약">2.1. <code>Rprof</code> 프로파일링 요약</h4>
 <ul>
 <li><code>by.self</code> : 해당 함수가 온전히 사용한 시간</li>
 <li><code>by.total</code> : 해당 함수와 호출된 함수 모두에서 사용된 시간</li>
@@ -69,7 +69,7 @@
 <li><code>sampling.time</code> : 프로파일링을 통해 수행된 전체 시간.</li>
 </ul>
 <p>추가로 한번만 측정하면 측정 중간에 쓰레기수거(Garbage Collection, GC) 작업 등으로 인해 정확한 실행시간 측정에 오차가 발생할 수 있다. 이를 방지하고자, <code>replicate</code>를 사용해서 반복측정한다.</p>
-<h4 id="rprof-사례">1.2. <code>Rprof</code> 사례</h4>
+<h4 id="rprof-사례">2.2. <code>Rprof</code> 사례</h4>
 <p><code>example(glm)</code>을 통해 일반화선형모형을 적합하여 모형을 개발하는데 사용된 시간을 살펴본다. 전체적으로 80 천분의 1초가 소요되었으며 “ifelse”, “psub”, “set”, “unlist”에서 시간이 균등하게 사용된 것을 볼 수 있다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
 ## Rprof 예제
@@ -124,7 +124,7 @@ $sample.interval
 
 $sampling.time
 [1] 0.08</code></pre>
-<h4 id="rprof-시각화">1.3. <code>Rprof</code> 시각화</h4>
+<h4 id="rprof-시각화">2.3. <code>Rprof</code> 시각화</h4>
 <p>숫자를 통해 프로파일링 결과를 살펴보는 것도 의미가 있지만, 시각화를 통해 전체적인 프로파일링 정보를 살펴본다. <code>profr</code> 팩키지를 설치하고 <code>ggplot2</code> 시각화 팩키지로 프로파일링된 결과를 살펴본다.</p>
 <p>일반선형모형을 적합시킨 결과 콜스택 깊이가 20까지 올라간 것도 확인이 된다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
@@ -136,11 +136,35 @@ $sampling.time
 <span class="kw">library</span>(ggplot2)
 x =<span class="st"> </span><span class="kw">profr</span>(<span class="kw">example</span>(glm))
 <span class="kw">ggplot</span>(x)</code></pre></div>
-<p><img srt="fig/rprof-ggplot.png" alt="Rprof 시각화" width="50%"></p>
+<p><img src="fig/rprof-ggplot.png" alt="Rprof 시각화" width="50%"></p>
+<h4 id="diamonds-회귀분석-프로파일링-예제">2.4. <code>diamonds</code> 회귀분석 프로파일링 예제</h4>
+<p><code>profr</code>로 시각화하는데 <code>data(&quot;diamonds&quot;)</code> 부터 <code>abline(lm.m, col = &quot;blue&quot;)</code>까지 R코드 실행부분을 별도 R스크립트로 저장하였다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
+## 다이아몬드 데이터
+##========================================================================
+<span class="co"># 1. 텍스트 정보</span>
+<span class="kw">Rprof</span>(tmp &lt;-<span class="st"> </span><span class="kw">tempfile</span>())
+<span class="kw">data</span>(<span class="st">&quot;diamonds&quot;</span>)
+<span class="co"># 1. 산점도</span>
+<span class="kw">plot</span>(price ~<span class="st"> </span>carat, <span class="dt">data=</span>diamonds)
+<span class="co"># 2. 선형모형 적합</span>
+lm.m &lt;-<span class="st"> </span><span class="kw">lm</span>(price ~<span class="st"> </span>carat, <span class="dt">data=</span>diamonds)
+<span class="co"># 3. 데이터와 모형 적합 평가</span>
+<span class="kw">abline</span>(lm.m, <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>)
+<span class="kw">Rprof</span>()
+
+<span class="kw">summaryRprof</span>(tmp)
+
+<span class="co"># 2. 시각화</span>
+<span class="kw">library</span>(profr)
+<span class="kw">library</span>(ggplot2)
+x =<span class="st"> </span><span class="kw">profr</span>(<span class="kw">source</span>(<span class="st">&quot;diamonds-prof-ex.R&quot;</span>))
+<span class="kw">ggplot</span>(x)</code></pre></div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p><a href="http://www.r-bloggers.com/profiling-r-code/">Profiling R code</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="https://www.rstudio.com/resources/videos/profiling-and-performance/">Profiling and performance</a><a href="#fnref2">↩</a></p></li>
 </ol>
 </div>
         </div>
