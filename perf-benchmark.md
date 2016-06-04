@@ -98,3 +98,22 @@ test replications elapsed relative
 > C:\Rtools\gcc-4.6.3\bin
 > C:\Rtools\bin
 > ~~~
+
+
+### 3. 기준정보 벤치마크 시각화
+
+`microbenchmark` 팩키지에 시각화하는 기능이 내장되어 있다. `boxplot` 등 기본 그래픽 기능을 활용하여 상대적인 비교를 시각적으로 수행한다.
+
+~~~ {.r}
+#-------------------------------------------------------------------------
+# 3. 시각화
+#-------------------------------------------------------------------------
+# install.packages("microbenchmark")
+library(microbenchmark)
+bm_res <- microbenchmark(f(10), f(15), f(20), unit="s")
+
+boxplot(bm_res)
+~~~
+
+<img src="fig/perf-boxplot.png" alt="기준정보 벤치마킹 결과 시각화" width="50%">
+

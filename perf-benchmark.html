@@ -94,6 +94,17 @@ C:\Rtools\gcc-4.6.3\bin
 C:\Rtools\bin</code></pre>
 </div>
 </aside>
+<h3 id="기준정보-벤치마크-시각화">3. 기준정보 벤치마크 시각화</h3>
+<p><code>microbenchmark</code> 팩키지에 시각화하는 기능이 내장되어 있다. <code>boxplot</code> 등 기본 그래픽 기능을 활용하여 상대적인 비교를 시각적으로 수행한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 3. 시각화</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># install.packages(&quot;microbenchmark&quot;)</span>
+<span class="kw">library</span>(microbenchmark)
+bm_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<span class="kw">f</span>(<span class="dv">10</span>), <span class="kw">f</span>(<span class="dv">15</span>), <span class="kw">f</span>(<span class="dv">20</span>), <span class="dt">unit=</span><span class="st">&quot;s&quot;</span>)
+
+<span class="kw">boxplot</span>(bm_res)</code></pre></div>
+<p><img src="fig/perf-boxplot.png" alt="기준정보 벤치마킹 결과 시각화" width="50%"></p>
 <div class="footnotes">
 <hr />
 <ol>
