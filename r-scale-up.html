@@ -41,13 +41,61 @@
 </ul>
 </div>
 </section>
-<h3 id="r-스케일-업-전략-개요">R 스케일-업 전략 개요</h3>
-<p>R 스케일-업(Scale-up) 성능향상 전략은 R의 강점을 최대한 유지시키면서 단점을 보안하는 전략이기도 하다.</p>
+<h2 id="r-스케일-업-전략-개요">R 스케일-업 전략 개요</h2>
+<p>R 스케일-업(Scale-up) 성능향상 전략은 R의 강점을 최대한 유지시키면서 단점을 보안하는 전략이기도 하다. R 성능향상 전략은 크게 R코드를 직접적으로 변경하는 전략과 R코드 주변을 최적화하는 방법으로 나눌 수 있다.</p>
+<p>R코드를 변경하지 않고도 컴파일러를 바꾸는 등의 최소한 노력으로 성능향상을 기대할 수 있다. 하지만, 그다지 높은 성능향상을 기대할 수는 없다. 두번째 전략은 루프를 돌리는 대신에 저장공간을 희생해서 고성능 R코드를 작성하는 것으로 <strong>벡터화(Vectorization)</strong> 로 알려진 방법으로 저장공간을 동적으로 요청해서 생성하는 대신에 미리 저장공간을 쭉 생성해 놓고 계산결과를 채워넣는 방식이다. 마지막 방법은 R 코드를 기본으로 작성하고 성능향상이 필요한 부분을 <code>Rcpp</code> 즉, C++의 힘을 빌어 C++로 작성한 것과 같은 고성능을 내는 방법이다.</p>
+<ul>
+<li><strong>공짜 성능향상</strong>: 컴파일러 선정, 바이트코드 컴파일러(compiler), BLAS 라이브러리 등</li>
+<li><strong>고성능 R코드 작성</strong>: 루프, <code>ply</code> 함수, 벡터화</li>
+<li><strong>Rcpp</strong>: R코드 대신 성능이 필요한 부분을 C++ 코드로 작성</li>
+</ul>
+<h3 id="공짜-성능향상">공짜 성능향상</h3>
+<h4 id="하드웨어-체적화된-컴파일러">하드웨어 체적화된 컴파일러</h4>
+<p>GNU gcc/gfortran과 clang/gfortran은 자유롭게 사용할 수 있어 어떤 것이나 컴파일하지만, 가장 속도가 빠른 바이너리 파일을 만들어낸다고 보장은 하지 못한다. 인텔 icc/ifort 컴파일러는 인텔 하드웨어를 사용하는 경우 훌륭한 대안이 되는데 인텔 하드웨어에 최적화되어서 icc 컴파일러를 사용하면 속도가 향상된다. 하지만, <code>Intel Composer suite</code> 를 사용할 경우 비용을 지불해야 한다.</p>
+<h4 id="바이트코드-컴파일러-compiler">바이트코드 컴파일러 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h4>
+<p>티어니 교수의 <code>compiler</code> 팩키지 <code>cmpfun()</code> 함수를 사용하면 경우에 따라서는 3~4배 성능을 끌어올릴 수 있다. R2.14 버전부터 내장 R함수에 사전 컴파일작업이 수행되어 특별한 성능향상이 기대되지 않지만, 수치연산과 다른 R함수를 많이 호출하지 않고, 자료형을 변환이 빈번하지 않는 함수에는 성능향상이 기대된다.</p>
+<p><code>compiler</code> 팩키지를 사용하게 되면 크기가 약간 커지고, 빌드과정에 시간이 다소 소요되지만, 다소 속도가 빨라지는 장점을 갖게 된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(compiler)
+f &lt;-<span class="st"> </span>function(n, x) for (i in <span class="dv">1</span>:n) x =<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span>x)^(-<span class="dv">1</span>)
+g &lt;-<span class="st"> </span><span class="kw">cmpfun</span>(f)
+
+<span class="kw">disassemble</span>(g)</code></pre></div>
+<p><code>disassemble</code> 함수로 바이트코드 컴파일 결과를 확인할 수 있다.</p>
+<pre class="output"><code>list(.Code, list(8L, LDCONST.OP, 1L, GETVAR.OP, 2L, COLON.OP, 
+    3L, STARTFOR.OP, 0L, 4L, 24L, LDCONST.OP, 1L, GETVAR.OP, 
+    5L, ADD.OP, 6L, LDCONST.OP, 7L, EXPT.OP, 8L, SETVAR.OP, 5L, 
+    POP.OP, STEPFOR.OP, 11L, ENDFOR.OP, INVISIBLE.OP, RETURN.OP), 
+    list(for (i in 1:n) x = (1 + x)^(-1), 1, n, 1:n, i, x, 1 + 
+        x, -1, (1 + x)^(-1)))</code></pre>
+<p><code>microbenchmark</code>를 통해 비교를 <span class="math inline">\(\frac {1}{(1-x)^n}\)</span> 함수를 람다식으로 계산한 R코드와 이를 바이트코드로 컴파일한 것의 성능차이를 비교한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(microbenchmark)
+compare &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<span class="kw">f</span>(<span class="dv">1000</span>, <span class="dv">1</span>), <span class="kw">g</span>(<span class="dv">1000</span>, <span class="dv">1</span>), <span class="dt">times =</span> <span class="dv">1000</span>)</code></pre></div>
+<p>성능이 약 10 차이가 나는 것을 확인할 수 있다. 가장 잘 성능차이가 나는 사례를 들었기 때문에 이런 차이가 나는 것이지만, 보통은 약간의 성능향상만을 자주 관측하게 된다.</p>
+<pre class="output"><code>Unit: microseconds
+       expr     min      lq      mean  median      uq      max neval cld
+ f(1000, 1) 498.567 518.473 578.14138 548.020 570.569 1833.160  1000   b
+ g(1000, 1)  46.342  47.586  51.26195  47.898  49.142  244.152  1000  a </code></pre>
+<p>시각화 결과를 <code>autoplot</code>을 통해 도식화한다.</p>
+<pre><code>library(ggplot2)
+autoplot(compare)</code></pre>
+<p><img src="fig/bytecode-compile.png" alt="바이트코드 컴파일 기준성능 벤치마킹 비교" width="50%"></p>
+<p>현실일 수도 있는 사례를 살펴본다. <span class="math inline">\(n \times n\)</span> 정방행렬을 난수를 채워 생성하고 칼럼마다 합을 구하고 그 최소값을 구하는 함수를 바이트코드로 컴파일할 경우 성능은 별차이가 없는 것으로 나온다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g &lt;-<span class="st"> </span>function(n) {
+  x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">runif</span> (n*n), <span class="dt">nrow=</span>n , <span class="dt">ncol=</span>n)
+  <span class="kw">min</span>(<span class="kw">colSums</span>(x))
+}
+
+g_comp &lt;-<span class="st"> </span><span class="kw">cmpfun</span>(g)
+n &lt;-<span class="st"> </span><span class="dv">1000</span>
+<span class="kw">benchmark</span>(<span class="kw">g</span>(n), <span class="kw">g_comp</span>(n) , <span class="dt">columns=</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))</code></pre></div>
+<pre class="output"><code>       test replications elapsed relative
+1      g(n)          100   10.39    1.000
+2 g_comp(n)          100   10.41    1.002</code></pre>
 <h3 id="c-rcpp-사용">C++ <code>Rcpp</code> 사용</h3>
 <p>GPL 라이선스로 <code>Rcpp</code>, <code>RcppArmadillo</code>, <code>RcppEigen</code> 등이 <code>Rcpp</code> 생태계를 이루며 C++로 컴파일된 코드에 대한 R 인터페이스를 제공한다. <code>Rcpp</code>는 컴파일된 코드로 우선 <strong>속도가 빠르다.</strong> 설치와 사용이 상대적으로 쉽고, 저자가 직접 작성한 책도 있고 문서화도 잘되었고, 컴뮤니티도 건강하다. 그렇다고 해서 <code>Rcpp</code>만으로 C++를 몰라도, R에서 C++로 자동으로 변환되는 등 요술방망이는 아니다.</p>
 <aside class="callout panel panel-info">
 <div class="panel-heading">
-<h3 id="r과-팩키지는-어떤-언어로-구성되어-있나-r-core-lang-r-package-lang-r-blackduck"><span class="glyphicon glyphicon-pushpin"></span>R과 팩키지는 어떤 언어로 구성되어 있나? <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></h3>
+<h3 id="r과-팩키지는-어떤-언어로-구성되어-있나-r-core-lang-r-package-lang-r-blackduck"><span class="glyphicon glyphicon-pushpin"></span>R과 팩키지는 어떤 언어로 구성되어 있나? <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h3>
 </div>
 <div class="panel-body">
 <table>
@@ -67,7 +115,7 @@
 <li>Advanced R, Hadley Wickham: <a href="http://adv-r.had.co.nz/Rcpp.html">High Performance Functions with Rcpp</a></li>
 <li>Seamless R and C++ Integration with Rcpp: <a href="http://www.springer.com/us/book/9781461468677">Seamless R and C++ Integration with Rcpp</a></li>
 </ul>
-<h4 id="몬테카를로-모의시험-pi-계산-nimbios-rcpp">몬테카를로 모의시험 <span class="math inline">\(\pi\)</span> 계산 <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h4>
+<h4 id="몬테카를로-모의시험-pi-계산-nimbios-rcpp">몬테카를로 모의시험 <span class="math inline">\(\pi\)</span> 계산 <a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></h4>
 <p><span class="math inline">\(\pi\)</span>를 계산하는 <span class="math inline">\([0,1] \times [0,1]\)</span> 정사각형에 균등분포 관측점 <span class="math inline">\((x_i , y_i )\)</span>을 임의 추출하여 원내부에 위치하는 관측점의 갯수를 기록해서 전체 임의추출한 표본 수자로 나눈다.</p>
 <ol style="list-style-type: decimal">
 <li>원내부에 위치한 점을 기록할 변수(<code>r</code>)를 선언한다.</li>
@@ -161,10 +209,11 @@ pi_bm_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="http://librestats.com/2011/08/27/how-much-of-r-is-written-in-r/">How Much of R is Written in R?</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p><a href="http://librestats.com/2011/08/29/how-much-of-r-is-written-in-r-part-2-contributed-packages/">How Much of R is Written in R Part 2: Contributed Packages</a><a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p><a href="https://www.openhub.net/p/rproject/analyses/latest/languages_summary">Blackduck OpenHub R</a><a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p><a href="https://www.youtube.com/watch?v=zs7CvPP7OVM">Using R for HPC Part III - Interfacing to compiled code</a><a href="#fnref4">↩</a></p></li>
+<li id="fn1"><p><a href="http://www.noamross.net/blog/2013/4/25/faster-talk.html">FasteR! HigheR! StrongeR! - A Guide to Speeding Up R Code for Busy People</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://librestats.com/2011/08/27/how-much-of-r-is-written-in-r/">How Much of R is Written in R?</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="http://librestats.com/2011/08/29/how-much-of-r-is-written-in-r-part-2-contributed-packages/">How Much of R is Written in R Part 2: Contributed Packages</a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p><a href="https://www.openhub.net/p/rproject/analyses/latest/languages_summary">Blackduck OpenHub R</a><a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p><a href="https://www.youtube.com/watch?v=zs7CvPP7OVM">Using R for HPC Part III - Interfacing to compiled code</a><a href="#fnref5">↩</a></p></li>
 </ol>
 </div>
         </div>

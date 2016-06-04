@@ -12,9 +12,94 @@ subtitle: R 스케일-업 성능향상
 > * `Rcpp`를 통한 성능향상 방법도 살펴본다.
 
 
-### R 스케일-업 전략 개요
+## R 스케일-업 전략 개요
 
 R 스케일-업(Scale-up) 성능향상 전략은 R의 강점을 최대한 유지시키면서 단점을 보안하는 전략이기도 하다.
+R 성능향상 전략은 크게 R코드를 직접적으로 변경하는 전략과 R코드 주변을 최적화하는 방법으로 나눌 수 있다. 
+
+R코드를 변경하지 않고도 컴파일러를 바꾸는 등의 최소한 노력으로 성능향상을 기대할 수 있다. 하지만, 그다지 높은 성능향상을 기대할 수는 없다. 두번째 전략은 루프를 돌리는 대신에 저장공간을 희생해서 고성능 R코드를 작성하는 것으로 **벡터화(Vectorization)** 로 알려진 방법으로 저장공간을 동적으로 요청해서 생성하는 대신에 미리 저장공간을 쭉 생성해 놓고 계산결과를 채워넣는 방식이다. 마지막 방법은 R 코드를 기본으로 작성하고 성능향상이 필요한 부분을 `Rcpp` 즉, C++의 힘을 빌어 C++로 작성한 것과 같은 고성능을 내는 방법이다.
+
+* **공짜 성능향상**: 컴파일러 선정, 바이트코드 컴파일러(compiler), BLAS 라이브러리 등
+* **고성능 R코드 작성**: 루프, `ply` 함수, 벡터화 
+* **Rcpp**: R코드 대신 성능이 필요한 부분을 C++ 코드로 작성
+
+### 공짜 성능향상
+
+#### 하드웨어 체적화된 컴파일러
+
+GNU gcc/gfortran과 clang/gfortran은 자유롭게 사용할 수 있어 어떤 것이나 컴파일하지만, 가장 속도가 빠른 바이너리 파일을 만들어낸다고 보장은 하지 못한다. 인텔 icc/ifort 컴파일러는 인텔 하드웨어를 사용하는 경우 훌륭한 대안이 되는데 인텔 하드웨어에 최적화되어서 icc 컴파일러를 사용하면 속도가 향상된다. 하지만, `Intel Composer suite` 를 사용할 경우 비용을 지불해야 한다. 
+
+#### 바이트코드 컴파일러 [^compiler]
+
+[^compiler]: [FasteR! HigheR! StrongeR! - A Guide to Speeding Up R Code for Busy People](http://www.noamross.net/blog/2013/4/25/faster-talk.html)
+
+티어니 교수의 `compiler` 팩키지 `cmpfun()` 함수를 사용하면 경우에 따라서는 3~4배 성능을 끌어올릴 수 있다. R2.14 버전부터 내장 R함수에 사전 컴파일작업이 수행되어 특별한 성능향상이 기대되지 않지만, 수치연산과 다른 R함수를 많이 호출하지 않고, 자료형을 변환이 빈번하지 않는 함수에는 성능향상이 기대된다.
+
+`compiler` 팩키지를 사용하게 되면 크기가 약간 커지고, 빌드과정에 시간이 다소 소요되지만, 다소 속도가 빨라지는 장점을 갖게 된다.
+
+~~~ {.r}
+library(compiler)
+f <- function(n, x) for (i in 1:n) x = (1 + x)^(-1)
+g <- cmpfun(f)
+
+disassemble(g)
+~~~
+
+`disassemble` 함수로 바이트코드 컴파일 결과를 확인할 수 있다.
+
+~~~ {.output}
+list(.Code, list(8L, LDCONST.OP, 1L, GETVAR.OP, 2L, COLON.OP, 
+    3L, STARTFOR.OP, 0L, 4L, 24L, LDCONST.OP, 1L, GETVAR.OP, 
+    5L, ADD.OP, 6L, LDCONST.OP, 7L, EXPT.OP, 8L, SETVAR.OP, 5L, 
+    POP.OP, STEPFOR.OP, 11L, ENDFOR.OP, INVISIBLE.OP, RETURN.OP), 
+    list(for (i in 1:n) x = (1 + x)^(-1), 1, n, 1:n, i, x, 1 + 
+        x, -1, (1 + x)^(-1)))
+~~~
+
+`microbenchmark`를 통해 비교를 $\frac {1}{(1-x)^n}$ 함수를 람다식으로 계산한 R코드와
+이를 바이트코드로 컴파일한 것의 성능차이를 비교한다.
+
+~~~ {.r}
+library(microbenchmark)
+compare <- microbenchmark(f(1000, 1), g(1000, 1), times = 1000)
+~~~
+
+성능이 약 10 차이가 나는 것을 확인할 수 있다. 가장 잘 성능차이가 나는 사례를 들었기 때문에 이런 차이가 나는 것이지만, 보통은 약간의 성능향상만을 자주 관측하게 된다.
+
+~~~ {.output}
+Unit: microseconds
+       expr     min      lq      mean  median      uq      max neval cld
+ f(1000, 1) 498.567 518.473 578.14138 548.020 570.569 1833.160  1000   b
+ g(1000, 1)  46.342  47.586  51.26195  47.898  49.142  244.152  1000  a 
+~~~
+
+시각화 결과를 `autoplot`을 통해 도식화한다.
+
+~~~
+library(ggplot2)
+autoplot(compare)
+~~~
+
+<img src="fig/bytecode-compile.png" alt="바이트코드 컴파일 기준성능 벤치마킹 비교" width="50%">
+
+현실일 수도 있는 사례를 살펴본다. $n \times n$ 정방행렬을 난수를 채워 생성하고 칼럼마다 합을 구하고 그 최소값을 구하는 함수를 바이트코드로 컴파일할 경우 성능은 별차이가 없는 것으로 나온다.
+
+~~~ {.r}
+g <- function(n) {
+  x <- matrix(runif (n*n), nrow=n , ncol=n)
+  min(colSums(x))
+}
+
+g_comp <- cmpfun(g)
+n <- 1000
+benchmark(g(n), g_comp(n) , columns= c("test", "replications", "elapsed", "relative"))
+~~~
+
+~~~ {.output}
+       test replications elapsed relative
+1      g(n)          100   10.39    1.000
+2 g_comp(n)          100   10.41    1.002
+~~~
 
 
 ### C++ `Rcpp` 사용
