@@ -43,7 +43,9 @@ GPL 라이선스로 `Rcpp`, `RcppArmadillo`, `RcppEigen` 등이 `Rcpp` 생태계
 * Advanced R, Hadley Wickham: [High Performance Functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
 * Seamless R and C++ Integration with Rcpp: [Seamless R and C++ Integration with Rcpp](http://www.springer.com/us/book/9781461468677)
 
-#### 몬테카를로 모의시험 $\pi$ 계산
+#### 몬테카를로 모의시험 $\pi$ 계산 [^NIMbios-rcpp]
+
+[^NIMbios-rcpp]: [Using R for HPC Part III - Interfacing to compiled code](https://www.youtube.com/watch?v=zs7CvPP7OVM)
 
 $\pi$를 계산하는 $[0,1] \times [0,1]$ 정사각형에 균등분포 관측점 $(x_i , y_i )$을 임의 추출하여 원내부에 위치하는 관측점의 갯수를 기록해서 전체 임의추출한 표본 수자로 나눈다.
 
