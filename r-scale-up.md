@@ -23,13 +23,13 @@ R코드를 변경하지 않고도 컴파일러를 바꾸는 등의 최소한 노
 * **고성능 R코드 작성**: 루프, `ply` 함수, 벡터화 
 * **Rcpp**: R코드 대신 성능이 필요한 부분을 C++ 코드로 작성
 
-### 공짜 성능향상
+### 1. 공짜 성능향상
 
-#### 하드웨어 체적화된 컴파일러
+#### 1.1. 하드웨어 체적화된 컴파일러
 
 GNU gcc/gfortran과 clang/gfortran은 자유롭게 사용할 수 있어 어떤 것이나 컴파일하지만, 가장 속도가 빠른 바이너리 파일을 만들어낸다고 보장은 하지 못한다. 인텔 icc/ifort 컴파일러는 인텔 하드웨어를 사용하는 경우 훌륭한 대안이 되는데 인텔 하드웨어에 최적화되어서 icc 컴파일러를 사용하면 속도가 향상된다. 하지만, `Intel Composer suite` 를 사용할 경우 비용을 지불해야 한다. 
 
-#### 바이트코드 컴파일러 [^compiler]
+#### 1.2. 바이트코드 컴파일러 [^compiler]
 
 [^compiler]: [FasteR! HigheR! StrongeR! - A Guide to Speeding Up R Code for Busy People](http://www.noamross.net/blog/2013/4/25/faster-talk.html)
 
@@ -101,8 +101,160 @@ benchmark(g(n), g_comp(n) , columns= c("test", "replications", "elapsed", "relat
 2 g_comp(n)          100   10.41    1.002
 ~~~
 
+#### 1.3. BLAS 선택 [^r-blas]
 
-### C++ `Rcpp` 사용
+[^r-blas]: [R, R with Atlas, R with OpenBLAS and Revolution R Open-which is fastest?](http://www.r-bloggers.com/r-r-with-atlas-r-with-openblas-and-revolution-r-open-which-is-fastest/)
+
+BLAS(Basic Linear Algebra Subprograms)는 기본선형대수를 구현한 모듈로 통계에서 가장 기반이 되는 프로그램이다. 다양한 BLAS 구현이 존재하고, 행렬분해(matrix factorization)를 비롯하여 선행대수 연산을 담당한다.
+
+표준정규분포에서 나온 표본을 $m \times n$ 행렬로 생성한 다음 `svd` 분해를 R에 기본 설치된 BLAS, OpenBLAS, ATLAS, 마이크로소프트에서 인수한 Revolution R에 포함된 BLAS 모듈로 각각 실행을 해보고 성능을 확인한다.
+
+~~~ {.r}
+set.seed(1234)
+m <- 2000
+n <- 2000
+
+x <- matrix(rnorm(m*n), m,n)
+
+object.size (x)
+
+benchmark(svd(x))
+~~~
+
+BLAS 모듈에 대한 성능을 비교한 [R코드](http://r.research.att.com/benchmarks/R-benchmark-25.R)에서 확인 가능하다. 결과는 R에 기본으로 설치된 BLAS가 가장 성능이 좋지 못하고 나머지는 유사하게 나오는 것으로 확인된다.
+
+
+| R VERSION      | FASTEST | SLOWEST | MEAN  |
+|----------------|---------|---------|-------|
+| Vanilla R      | 63.65   | 66.21   | 64.61 |
+| OpenBLAS R     | 15.63   | 18.96   | 16.94 |
+| ATLAS R        | 16.92   | 21.57   | 18.24 |
+| Revolution R   | 14.96   | 16.08   | 15.49 |
+
+
+#### 1.4. 고성능 R코드 작성
+
+동일한 기능을 수행하는 R코드를 성능 및 다른 품질속성을 고려하여 작성한다.
+
+* 루프를 활용
+    * 데이터 초기화를 하지 않는 경우 
+    * 데이터 초기화를 한 경우
+* `ply`, 즉 구문 설탕(Syntactic sugar)를 활용한다.
+* 벡터화를 활용한다.
+
+정해진 횟수 예를 들어 50,000번 $x$를 $x^2$로 제곱하여 결과를 화면에 출력하는 R코드를 자료형을 초기화한 경우, 초기화하지 않은 경우, 구문에 달콤 기능을 넣은 ply, 그리고 메모리를 많이 사용하는 벡터화를 통해 동일한 기능을 구현한다.
+
+~~~ {.r}
+##========================================================================
+## 루프, ply, 벡터화 
+##========================================================================
+
+#-------------------------------------------------------------------------
+# 1. 자료형 초기화 설정을 하지 않는 경우
+#-------------------------------------------------------------------------
+
+square_loop_noinit <- function(n) {
+  x <- c()
+  for (i in 1:n) {
+    x <- c(x, i^2)
+  }
+  x
+}
+
+# square_loop_noinit(100)
+
+#-------------------------------------------------------------------------
+# 2. 자료형 초기화 설정을 한 경우
+#-------------------------------------------------------------------------
+
+square_loop_withinit <- function(n) {
+  x <- integer(n)
+  for(i in 1:n) {
+    x[i] <- i^2
+  }
+  x
+}
+
+# square_loop_withinit(100)
+
+#-------------------------------------------------------------------------
+# 3. ply 기능을 활용하여 구현한 경우
+#-------------------------------------------------------------------------
+
+square_sapply <- function(n) sapply (1:n , function(i) i^2)
+
+# square_sapply(100)
+
+#-------------------------------------------------------------------------
+# 4. 벡터화를 통해 구현한 경우
+#-------------------------------------------------------------------------
+
+square_vec <- function(n) (1:n) * (1:n)
+
+# square_vec(100)
+
+#=========================================================================
+# 5. 벡터화를 통해 구현한 경우
+#=========================================================================
+
+n <- 50000
+
+benchmark(square_loop_noinit(n), square_loop_withinit(n) ,
+          square_sapply(n), square_vec(n), 
+          columns= c("test", "replications", "elapsed", "relative"))          
+~~~
+
+구현된 결과를 보면, 벡터화를 통한 것이 가장 좋은 성능을 보이고 있고, ply와 데이터 초기화를 한 경우
+성능이 비슷하게 나오고, 전혀 초기화 설정을 하지 않는 것이 가장 성능이 낮은 것을 알 수 있다.
+
+~~~ {.output}
+                     test replications elapsed  relative
+1   square_loop_noinit(n)          100  167.47    8373.5
+2 square_loop_withinit(n)          100    3.56     178.0
+3        square_sapply(n)          100    4.61     230.5
+4           square_vec(n)          100    0.02       1.0
+~~~
+
+> #### 고성능 R코드 작성 연습문제 {.callout}
+> 
+> 1에서 100,000 사이 자연수 중에서 5, 17, 5와 17 모두로 나눠지는 자연수 갯수를 계산하시요.
+> *힌트:* `sapply()` 함수, 벡터화를 통해 구현하시오. `sum(c(TRUE, TRUE, FALSE))`는 2를 반환시킨다.
+> 
+> ~~~ {.r}
+> # sapply 적용한 경우
+> div_by_5_or_17 <- function(n){
+>   if(n %% 5 ==0 || n %% 17 ==0){
+>     return(TRUE)}
+>   else{
+>     return(FALSE)}
+> }
+> 
+> div_sapply <- function(n) sum(sapply(1:n, div_by_5_or_17))
+> # div_sapply(100)
+> 
+> # 벡터화 적용
+> 
+> div_vec <- function(n) {
+>   numbers <- 1:n
+>   sum((numbers %% 5 == 0) | (numbers %% 17 == 0) )
+> }
+> 
+> # div_vec(100)
+> 
+> library(rbenchmark)
+> n <- 100000
+> benchmark(sapply=div_sapply(n), vec=div_vec(n))
+> ~~~ 
+> 
+> ~~~ {.output}
+>     test replications elapsed relative user.self sys.self
+> 1 sapply          100   25.80   33.077     25.62     0.01
+> 2    vec          100    0.78    1.000      0.77     0.00
+> ~~~
+
+
+
+### 2. C++ `Rcpp` 사용
 
 GPL 라이선스로 `Rcpp`, `RcppArmadillo`, `RcppEigen` 등이 `Rcpp` 생태계를 이루며 C++로 컴파일된 코드에 대한 R 인터페이스를 제공한다.
 `Rcpp`는 컴파일된 코드로 우선 **속도가 빠르다.** 설치와 사용이 상대적으로 쉽고, 저자가 직접 작성한 책도 있고 문서화도 잘되었고, 컴뮤니티도 건강하다. 그렇다고 해서 `Rcpp`만으로 C++를 몰라도, R에서 C++로 자동으로 변환되는 등 요술방망이는 아니다.
@@ -122,13 +274,7 @@ GPL 라이선스로 `Rcpp`, `RcppArmadillo`, `RcppEigen` 등이 `Rcpp` 생태계
 
 [^r-blackduck]: [Blackduck OpenHub R](https://www.openhub.net/p/rproject/analyses/latest/languages_summary)
 
-#### Rcpp 참고자료
-
-* Rcpp 소품문: [Rcpp - Seamless R and C++ Integration](https://cran.r-project.org/web/packages/Rcpp/index.html)
-* Advanced R, Hadley Wickham: [High Performance Functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
-* Seamless R and C++ Integration with Rcpp: [Seamless R and C++ Integration with Rcpp](http://www.springer.com/us/book/9781461468677)
-
-#### 몬테카를로 모의시험 $\pi$ 계산 [^NIMbios-rcpp]
+#### 2.1. 몬테카를로 모의시험 $\pi$ 계산 [^NIMbios-rcpp]
 
 [^NIMbios-rcpp]: [Using R for HPC Part III - Interfacing to compiled code](https://www.youtube.com/watch?v=zs7CvPP7OVM)
 
@@ -239,3 +385,8 @@ boxplot(pi_bm_res)
 
 <img src="fig/pi_mc_perf.png" alt="몬테카를로 모의시험 원주율 기준성능비교" width="50%">
 
+#### 2.2. Rcpp 참고자료
+
+* Rcpp 소품문: [Rcpp - Seamless R and C++ Integration](https://cran.r-project.org/web/packages/Rcpp/index.html)
+* Advanced R, Hadley Wickham: [High Performance Functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
+* Seamless R and C++ Integration with Rcpp: [Seamless R and C++ Integration with Rcpp](http://www.springer.com/us/book/9781461468677)

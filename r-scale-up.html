@@ -49,10 +49,10 @@
 <li><strong>고성능 R코드 작성</strong>: 루프, <code>ply</code> 함수, 벡터화</li>
 <li><strong>Rcpp</strong>: R코드 대신 성능이 필요한 부분을 C++ 코드로 작성</li>
 </ul>
-<h3 id="공짜-성능향상">공짜 성능향상</h3>
-<h4 id="하드웨어-체적화된-컴파일러">하드웨어 체적화된 컴파일러</h4>
+<h3 id="공짜-성능향상">1. 공짜 성능향상</h3>
+<h4 id="하드웨어-체적화된-컴파일러">1.1. 하드웨어 체적화된 컴파일러</h4>
 <p>GNU gcc/gfortran과 clang/gfortran은 자유롭게 사용할 수 있어 어떤 것이나 컴파일하지만, 가장 속도가 빠른 바이너리 파일을 만들어낸다고 보장은 하지 못한다. 인텔 icc/ifort 컴파일러는 인텔 하드웨어를 사용하는 경우 훌륭한 대안이 되는데 인텔 하드웨어에 최적화되어서 icc 컴파일러를 사용하면 속도가 향상된다. 하지만, <code>Intel Composer suite</code> 를 사용할 경우 비용을 지불해야 한다.</p>
-<h4 id="바이트코드-컴파일러-compiler">바이트코드 컴파일러 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h4>
+<h4 id="바이트코드-컴파일러-compiler">1.2. 바이트코드 컴파일러 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h4>
 <p>티어니 교수의 <code>compiler</code> 팩키지 <code>cmpfun()</code> 함수를 사용하면 경우에 따라서는 3~4배 성능을 끌어올릴 수 있다. R2.14 버전부터 내장 R함수에 사전 컴파일작업이 수행되어 특별한 성능향상이 기대되지 않지만, 수치연산과 다른 R함수를 많이 호출하지 않고, 자료형을 변환이 빈번하지 않는 함수에는 성능향상이 기대된다.</p>
 <p><code>compiler</code> 팩키지를 사용하게 되면 크기가 약간 커지고, 빌드과정에 시간이 다소 소요되지만, 다소 속도가 빨라지는 장점을 갖게 된다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(compiler)
@@ -91,11 +91,169 @@ n &lt;-<span class="st"> </span><span class="dv">1000</span>
 <pre class="output"><code>       test replications elapsed relative
 1      g(n)          100   10.39    1.000
 2 g_comp(n)          100   10.41    1.002</code></pre>
-<h3 id="c-rcpp-사용">C++ <code>Rcpp</code> 사용</h3>
+<h4 id="blas-선택-r-blas">1.3. BLAS 선택 <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></h4>
+<p>BLAS(Basic Linear Algebra Subprograms)는 기본선형대수를 구현한 모듈로 통계에서 가장 기반이 되는 프로그램이다. 다양한 BLAS 구현이 존재하고, 행렬분해(matrix factorization)를 비롯하여 선행대수 연산을 담당한다.</p>
+<p>표준정규분포에서 나온 표본을 <span class="math inline">\(m \times n\)</span> 행렬로 생성한 다음 <code>svd</code> 분해를 R에 기본 설치된 BLAS, OpenBLAS, ATLAS, 마이크로소프트에서 인수한 Revolution R에 포함된 BLAS 모듈로 각각 실행을 해보고 성능을 확인한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1234</span>)
+m &lt;-<span class="st"> </span><span class="dv">2000</span>
+n &lt;-<span class="st"> </span><span class="dv">2000</span>
+
+x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(m*n), m,n)
+
+<span class="kw">object.size</span> (x)
+
+<span class="kw">benchmark</span>(<span class="kw">svd</span>(x))</code></pre></div>
+<p>BLAS 모듈에 대한 성능을 비교한 <a href="http://r.research.att.com/benchmarks/R-benchmark-25.R">R코드</a>에서 확인 가능하다. 결과는 R에 기본으로 설치된 BLAS가 가장 성능이 좋지 못하고 나머지는 유사하게 나오는 것으로 확인된다.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">R VERSION</th>
+<th align="left">FASTEST</th>
+<th align="left">SLOWEST</th>
+<th align="left">MEAN</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Vanilla R</td>
+<td align="left">63.65</td>
+<td align="left">66.21</td>
+<td align="left">64.61</td>
+</tr>
+<tr class="even">
+<td align="left">OpenBLAS R</td>
+<td align="left">15.63</td>
+<td align="left">18.96</td>
+<td align="left">16.94</td>
+</tr>
+<tr class="odd">
+<td align="left">ATLAS R</td>
+<td align="left">16.92</td>
+<td align="left">21.57</td>
+<td align="left">18.24</td>
+</tr>
+<tr class="even">
+<td align="left">Revolution R</td>
+<td align="left">14.96</td>
+<td align="left">16.08</td>
+<td align="left">15.49</td>
+</tr>
+</tbody>
+</table>
+<h4 id="고성능-r코드-작성">1.4. 고성능 R코드 작성</h4>
+<p>동일한 기능을 수행하는 R코드를 성능 및 다른 품질속성을 고려하여 작성한다.</p>
+<ul>
+<li>루프를 활용
+<ul>
+<li>데이터 초기화를 하지 않는 경우</li>
+<li>데이터 초기화를 한 경우</li>
+</ul></li>
+<li><code>ply</code>, 즉 구문 설탕(Syntactic sugar)를 활용한다.</li>
+<li>벡터화를 활용한다.</li>
+</ul>
+<p>정해진 횟수 예를 들어 50,000번 <span class="math inline">\(x\)</span>를 <span class="math inline">\(x^2\)</span>로 제곱하여 결과를 화면에 출력하는 R코드를 자료형을 초기화한 경우, 초기화하지 않은 경우, 구문에 달콤 기능을 넣은 ply, 그리고 메모리를 많이 사용하는 벡터화를 통해 동일한 기능을 구현한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
+## 루프, ply, 벡터화 
+##========================================================================
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 1. 자료형 초기화 설정을 하지 않는 경우</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+square_loop_noinit &lt;-<span class="st"> </span>function(n) {
+  x &lt;-<span class="st"> </span><span class="kw">c</span>()
+  for (i in <span class="dv">1</span>:n) {
+    x &lt;-<span class="st"> </span><span class="kw">c</span>(x, i^<span class="dv">2</span>)
+  }
+  x
+}
+
+<span class="co"># square_loop_noinit(100)</span>
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 2. 자료형 초기화 설정을 한 경우</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+square_loop_withinit &lt;-<span class="st"> </span>function(n) {
+  x &lt;-<span class="st"> </span><span class="kw">integer</span>(n)
+  for(i in <span class="dv">1</span>:n) {
+    x[i] &lt;-<span class="st"> </span>i^<span class="dv">2</span>
+  }
+  x
+}
+
+<span class="co"># square_loop_withinit(100)</span>
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 3. ply 기능을 활용하여 구현한 경우</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+square_sapply &lt;-<span class="st"> </span>function(n) <span class="kw">sapply</span> (<span class="dv">1</span>:n , function(i) i^<span class="dv">2</span>)
+
+<span class="co"># square_sapply(100)</span>
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 4. 벡터화를 통해 구현한 경우</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+square_vec &lt;-<span class="st"> </span>function(n) (<span class="dv">1</span>:n) *<span class="st"> </span>(<span class="dv">1</span>:n)
+
+<span class="co"># square_vec(100)</span>
+
+<span class="co">#=========================================================================</span>
+<span class="co"># 5. 벡터화를 통해 구현한 경우</span>
+<span class="co">#=========================================================================</span>
+
+n &lt;-<span class="st"> </span><span class="dv">50000</span>
+
+<span class="kw">benchmark</span>(<span class="kw">square_loop_noinit</span>(n), <span class="kw">square_loop_withinit</span>(n) ,
+          <span class="kw">square_sapply</span>(n), <span class="kw">square_vec</span>(n), 
+          <span class="dt">columns=</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))          </code></pre></div>
+<p>구현된 결과를 보면, 벡터화를 통한 것이 가장 좋은 성능을 보이고 있고, ply와 데이터 초기화를 한 경우 성능이 비슷하게 나오고, 전혀 초기화 설정을 하지 않는 것이 가장 성능이 낮은 것을 알 수 있다.</p>
+<pre class="output"><code>                     test replications elapsed  relative
+1   square_loop_noinit(n)          100  167.47    8373.5
+2 square_loop_withinit(n)          100    3.56     178.0
+3        square_sapply(n)          100    4.61     230.5
+4           square_vec(n)          100    0.02       1.0</code></pre>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h4 id="고성능-r코드-작성-연습문제"><span class="glyphicon glyphicon-pushpin"></span>고성능 R코드 작성 연습문제</h4>
+</div>
+<div class="panel-body">
+<p>1에서 100,000 사이 자연수 중에서 5, 17, 5와 17 모두로 나눠지는 자연수 갯수를 계산하시요. <em>힌트:</em> <code>sapply()</code> 함수, 벡터화를 통해 구현하시오. <code>sum(c(TRUE, TRUE, FALSE))</code>는 2를 반환시킨다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sapply 적용한 경우</span>
+div_by_5_or_17 &lt;-<span class="st"> </span>function(n){
+  if(n %%<span class="st"> </span><span class="dv">5</span> ==<span class="dv">0</span> ||<span class="st"> </span>n %%<span class="st"> </span><span class="dv">17</span> ==<span class="dv">0</span>){
+    <span class="kw">return</span>(<span class="ot">TRUE</span>)}
+  else{
+    <span class="kw">return</span>(<span class="ot">FALSE</span>)}
+}
+
+div_sapply &lt;-<span class="st"> </span>function(n) <span class="kw">sum</span>(<span class="kw">sapply</span>(<span class="dv">1</span>:n, div_by_5_or_17))
+<span class="co"># div_sapply(100)</span>
+
+<span class="co"># 벡터화 적용</span>
+
+div_vec &lt;-<span class="st"> </span>function(n) {
+  numbers &lt;-<span class="st"> </span><span class="dv">1</span>:n
+  <span class="kw">sum</span>((numbers %%<span class="st"> </span><span class="dv">5</span> ==<span class="st"> </span><span class="dv">0</span>) |<span class="st"> </span>(numbers %%<span class="st"> </span><span class="dv">17</span> ==<span class="st"> </span><span class="dv">0</span>) )
+}
+
+<span class="co"># div_vec(100)</span>
+
+<span class="kw">library</span>(rbenchmark)
+n &lt;-<span class="st"> </span><span class="dv">100000</span>
+<span class="kw">benchmark</span>(<span class="dt">sapply=</span><span class="kw">div_sapply</span>(n), <span class="dt">vec=</span><span class="kw">div_vec</span>(n))</code></pre></div>
+<pre class="output"><code>    test replications elapsed relative user.self sys.self
+1 sapply          100   25.80   33.077     25.62     0.01
+2    vec          100    0.78    1.000      0.77     0.00</code></pre>
+</div>
+</aside>
+<h3 id="c-rcpp-사용">2. C++ <code>Rcpp</code> 사용</h3>
 <p>GPL 라이선스로 <code>Rcpp</code>, <code>RcppArmadillo</code>, <code>RcppEigen</code> 등이 <code>Rcpp</code> 생태계를 이루며 C++로 컴파일된 코드에 대한 R 인터페이스를 제공한다. <code>Rcpp</code>는 컴파일된 코드로 우선 <strong>속도가 빠르다.</strong> 설치와 사용이 상대적으로 쉽고, 저자가 직접 작성한 책도 있고 문서화도 잘되었고, 컴뮤니티도 건강하다. 그렇다고 해서 <code>Rcpp</code>만으로 C++를 몰라도, R에서 C++로 자동으로 변환되는 등 요술방망이는 아니다.</p>
 <aside class="callout panel panel-info">
 <div class="panel-heading">
-<h3 id="r과-팩키지는-어떤-언어로-구성되어-있나-r-core-lang-r-package-lang-r-blackduck"><span class="glyphicon glyphicon-pushpin"></span>R과 팩키지는 어떤 언어로 구성되어 있나? <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h3>
+<h3 id="r과-팩키지는-어떤-언어로-구성되어-있나-r-core-lang-r-package-lang-r-blackduck"><span class="glyphicon glyphicon-pushpin"></span>R과 팩키지는 어떤 언어로 구성되어 있나? <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> <a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></h3>
 </div>
 <div class="panel-body">
 <table>
@@ -109,13 +267,7 @@ n &lt;-<span class="st"> </span><span class="dv">1000</span>
 <p>블랙덕에서 분석한 R언어는 C/C++가 약 40%, 포트란이 약 30%, R이 약 20%, 쉘스크립트 Autoconf가 나머지 대부분을 차지한다. 따라서, R 코어는 성능에 초점을 둔 C/C++, 포트란이 대부분으로 구성되어 있음을 알 수 있다. 반면에, R언어를 갖고 개발자가 기여한 언어를 본다면 R코드가 거의 절반이고, C/C++, 포트란을 합하게 되면 절반에 해당된다.</p>
 </div>
 </aside>
-<h4 id="rcpp-참고자료">Rcpp 참고자료</h4>
-<ul>
-<li>Rcpp 소품문: <a href="https://cran.r-project.org/web/packages/Rcpp/index.html">Rcpp - Seamless R and C++ Integration</a></li>
-<li>Advanced R, Hadley Wickham: <a href="http://adv-r.had.co.nz/Rcpp.html">High Performance Functions with Rcpp</a></li>
-<li>Seamless R and C++ Integration with Rcpp: <a href="http://www.springer.com/us/book/9781461468677">Seamless R and C++ Integration with Rcpp</a></li>
-</ul>
-<h4 id="몬테카를로-모의시험-pi-계산-nimbios-rcpp">몬테카를로 모의시험 <span class="math inline">\(\pi\)</span> 계산 <a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></h4>
+<h4 id="몬테카를로-모의시험-pi-계산-nimbios-rcpp">2.1. 몬테카를로 모의시험 <span class="math inline">\(\pi\)</span> 계산 <a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a></h4>
 <p><span class="math inline">\(\pi\)</span>를 계산하는 <span class="math inline">\([0,1] \times [0,1]\)</span> 정사각형에 균등분포 관측점 <span class="math inline">\((x_i , y_i )\)</span>을 임의 추출하여 원내부에 위치하는 관측점의 갯수를 기록해서 전체 임의추출한 표본 수자로 나눈다.</p>
 <ol style="list-style-type: decimal">
 <li>원내부에 위치한 점을 기록할 변수(<code>r</code>)를 선언한다.</li>
@@ -206,14 +358,21 @@ pi_bm_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<
 
 <span class="kw">boxplot</span>(pi_bm_res)</code></pre></div>
 <p><img src="fig/pi_mc_perf.png" alt="몬테카를로 모의시험 원주율 기준성능비교" width="50%"></p>
+<h4 id="rcpp-참고자료">2.2. Rcpp 참고자료</h4>
+<ul>
+<li>Rcpp 소품문: <a href="https://cran.r-project.org/web/packages/Rcpp/index.html">Rcpp - Seamless R and C++ Integration</a></li>
+<li>Advanced R, Hadley Wickham: <a href="http://adv-r.had.co.nz/Rcpp.html">High Performance Functions with Rcpp</a></li>
+<li>Seamless R and C++ Integration with Rcpp: <a href="http://www.springer.com/us/book/9781461468677">Seamless R and C++ Integration with Rcpp</a></li>
+</ul>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p><a href="http://www.noamross.net/blog/2013/4/25/faster-talk.html">FasteR! HigheR! StrongeR! - A Guide to Speeding Up R Code for Busy People</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p><a href="http://librestats.com/2011/08/27/how-much-of-r-is-written-in-r/">How Much of R is Written in R?</a><a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p><a href="http://librestats.com/2011/08/29/how-much-of-r-is-written-in-r-part-2-contributed-packages/">How Much of R is Written in R Part 2: Contributed Packages</a><a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p><a href="https://www.openhub.net/p/rproject/analyses/latest/languages_summary">Blackduck OpenHub R</a><a href="#fnref4">↩</a></p></li>
-<li id="fn5"><p><a href="https://www.youtube.com/watch?v=zs7CvPP7OVM">Using R for HPC Part III - Interfacing to compiled code</a><a href="#fnref5">↩</a></p></li>
+<li id="fn2"><p><a href="http://www.r-bloggers.com/r-r-with-atlas-r-with-openblas-and-revolution-r-open-which-is-fastest/">R, R with Atlas, R with OpenBLAS and Revolution R Open-which is fastest?</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="http://librestats.com/2011/08/27/how-much-of-r-is-written-in-r/">How Much of R is Written in R?</a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p><a href="http://librestats.com/2011/08/29/how-much-of-r-is-written-in-r-part-2-contributed-packages/">How Much of R is Written in R Part 2: Contributed Packages</a><a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p><a href="https://www.openhub.net/p/rproject/analyses/latest/languages_summary">Blackduck OpenHub R</a><a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p><a href="https://www.youtube.com/watch?v=zs7CvPP7OVM">Using R for HPC Part III - Interfacing to compiled code</a><a href="#fnref6">↩</a></p></li>
 </ol>
 </div>
         </div>
