@@ -39,6 +39,7 @@
 </ul>
 </div>
 </section>
+<h2 id="병렬-프로그래밍을-위한-하드웨어-환경">1. 병렬 프로그래밍을 위한 하드웨어 환경</h2>
 <p><img src="fig/parallel-hw-arch.png" alt="병렬컴퓨팅 하드웨어 아키텍처" width="70%"></p>
 <aside class="callout panel panel-info">
 <div class="panel-heading">
@@ -57,6 +58,137 @@
 <p>벽걸이 시간과 속도향상과 암달의 법칙 {.callout}</p>
 <p>병렬 프로그래밍에서 <strong>벽걸이 시간(wallclock time)</strong> 이 중요한데 작업시작과 작업종류를 측정한다. <a href="https://ko.wikipedia.org/wiki/암달의_법칙">암달의 법칙(Amdahl’s law)</a>은 암달의 저주로도 불리며, 프로그램을 100% 병렬처리가 가능하도록 만들고 프로세서를 늘리면 성능이 무한대로 가능하지만, 현실적으로 100% 병렬 프로그램을 작성할 수는 없다. 예를 들어, 95% 병렬처리가 가능하다고 가정하면, 무한대 프로세서를 사용해도 최대 20배로 <strong>속도향상(speedup)</strong> 이 제한된다.</p>
 </blockquote>
+<h2 id="병렬-프로그래밍을-r-팩키지-툴체인">2. 병렬 프로그래밍을 R 팩키지 툴체인</h2>
+<p><a href="http://cran.r-project.org/web/views/HighPerformanceComputing.html">CRAN Task View - High-Performance and Parallel Computing with R</a> 사이트에 가면 R에서 바라본 다양한 고성능 슈퍼컴퓨팅 관련 작업이 일목요연하게 정리되어 있다.</p>
+<h3 id="공유-메모리-모형을-활용한-r-병렬-컴퓨팅">2.1. 공유 메모리 모형을 활용한 R 병렬 컴퓨팅</h3>
+<p><code>parallel</code>은 독립적으로 서로 다른 사람들이 개발한 <code>snow</code> 와 <code>multicore</code>를 합친 것이다. <code>multicore</code>는 <strong>포크(fork)</strong> 를 사용하는 반면에 <code>snow</code>는 소켓(socket)을 사용한다. 윈도우에서는 지원이 제한되는 경우가 있기 때문에, 가능하면 리눅스 계열을 운영체제를 사용한다.</p>
+<h4 id="parallel-계열">2.1.1. <code>parallel</code> 계열</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 1.1. multicore</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+x &lt;-<span class="st"> </span><span class="kw">lapply</span> (<span class="dv">1</span>:<span class="dv">10</span> , sqrt )
+<span class="kw">library</span>(parallel)
+x.mc &lt;-<span class="st"> </span><span class="kw">mclapply</span>(<span class="dv">1</span>:<span class="dv">10</span>, sqrt)
+<span class="kw">all.equal</span> (x.mc ,x)
+
+<span class="kw">simplify2array</span>(<span class="kw">mclapply</span>(<span class="dv">1</span>:<span class="dv">10</span> , function(i) <span class="kw">Sys.getpid</span>(), <span class="dt">mc.cores=</span><span class="dv">1</span>))
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 1.2. snow</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># ## Set up the worker processes</span>
+cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="kw">detectCores</span>())
+cl
+<span class="co"># socket cluster with 4 nodes on host</span>
+<span class="kw">parSapply</span>(cl, <span class="dv">1</span>:<span class="dv">5</span>, sqrt)
+<span class="kw">stopCluster</span>(cl)</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">팩키지</th>
+<th align="left">함수</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">공통</td>
+<td align="left"><code>detectCores()</code>, <code>splitIndices()</code></td>
+</tr>
+<tr class="even">
+<td align="left"><code>multicore</code></td>
+<td align="left"><code>mclapply()</code>, <code>mcmapply()</code>, <code>mcparallel()</code>, <code>mccollect()</code></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>snow</code></td>
+<td align="left"><code>makeCluster()</code>, <code>stopCluster()</code>, <code>parLapply()</code>, <code>parSapply()</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="foreach-계열">2.1.2. <code>foreach</code> 계열</h4>
+<p>지금은 마이크로소프트에 인수된 Revolution Analytics에서 개발된 <code>foreach</code> 팩키지로 일종의 통합 인터페이스로 백엔드에 <code>doMC</code>, <code>doMPI</code>, <code>doParallel</code>, <code>doRedis</code>, <code>doRNG</code>, <code>doSNOW</code>를 두고 통합된 인터페이스를 제공하려고 한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(foreach)
+### Example 1
+<span class="kw">foreach</span>(<span class="dt">i=</span><span class="dv">1</span>:<span class="dv">3</span>) %do%<span class="st"> </span><span class="kw">sqrt</span>(i)
+### Example 2
+n &lt;-<span class="st"> </span><span class="dv">50</span>
+reps &lt;-<span class="st"> </span><span class="dv">100</span>
+
+x &lt;-<span class="st"> </span><span class="kw">foreach</span>(<span class="dt">i=</span><span class="dv">1</span>:reps) %do%<span class="st"> </span>{
+  <span class="kw">sum</span>(<span class="kw">rnorm</span>(n, <span class="dt">mean=</span>i)) /<span class="st"> </span>(n*reps)
+}</code></pre></div>
+<h3 id="메시지-전달을-통한-분산-r-병렬-컴퓨팅">3. 메시지 전달을 통한 분산 R 병렬 컴퓨팅</h3>
+<p>분산 R 병렬 컴퓨팅을 수행해야 되는 이유는 각 범용 컴퓨터 메모리가 한정되어 있기 때문이다. 만약 데이터가 메모리보다 더 커다란 경우 메시지 전달을 통한 분산 처리를 통한 방법이 남는다.</p>
+<p><code>Rmpi</code>가 대표적인 메시지 전달을 통한 분산병렬연산 작업을 수행한다. 분산된 컴퓨터는 직접 다른 컴퓨터의 메모리에 접근하여 작업을 할 수 없기 때문에 네트워크를 통해 메시지를 전달해서 공동작업을 수행한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(snow)
+<span class="kw">library</span>(Rmpi)
+
+cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="dv">2</span>, <span class="dt">type=</span><span class="st">&quot;MPI&quot;</span>)
+<span class="kw">clusterCall</span>(cl, function() <span class="kw">Sys.getpid</span>())
+<span class="kw">clusterCall</span>(cl, runif, <span class="dv">2</span>)
+<span class="kw">stopCluster</span>(cl)
+<span class="kw">mpi.quit</span>()</code></pre></div>
+<h4 id="공유메모리-분산컴퓨팅-사례-제곱근">3.1. 공유메모리 분산컴퓨팅 사례 – 제곱근</h4>
+<p>윈도우에서 <code>mclapply()</code>는 코어를 하나만 제공하기 때문에 리눅스나 맥에서 수행하다. <code>mclapply</code>, <code>parSapply</code>, <code>foreach</code>를 사용해서 1에서 100,00까지 제곱근을 계산을 수행하고 기준정보 벤치마킹 작업을 수행한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(parallel)
+<span class="kw">library</span>(doParallel)
+<span class="kw">library</span>(rbenchmark)
+
+## 환경설정
+n &lt;-<span class="st"> </span><span class="dv">100000</span>
+ncores &lt;-<span class="st"> </span><span class="dv">7</span>
+
+cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(ncores)
+<span class="kw">registerDoParallel</span>(cl)
+
+## 병렬처리 작업
+f &lt;-<span class="st"> </span>function(n) <span class="kw">simplify2array</span>(<span class="kw">mclapply</span>(<span class="dv">1</span>:n, sqrt, <span class="dt">mc.cores=</span>ncores))
+g &lt;-<span class="st"> </span>function(n) <span class="kw">parSapply</span>(cl, <span class="dv">1</span>:n, sqrt)
+h &lt;-<span class="st"> </span>function(n, ncores)
+{
+  <span class="kw">foreach</span>(<span class="dt">i=</span><span class="dv">1</span>:ncores, <span class="dt">.combine=</span>c) %dopar%
+<span class="st">  </span>{
+    roots &lt;-<span class="st"> </span><span class="kw">numeric</span>(n/ncores)
+    for (j in <span class="dv">1</span>:(n/ncores))
+      roots[j] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(i*j)
+    roots
+  }
+}
+## 벤치마킹 정보 비교
+<span class="kw">benchmark</span>(<span class="dt">mclapply=</span><span class="kw">f</span>(n), <span class="dt">parSapply=</span><span class="kw">g</span>(n), <span class="dt">foreach=</span><span class="kw">h</span>(n, ncores),
+          <span class="dt">columns=</span><span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))
+
+<span class="kw">stopCluster</span>(cl)</code></pre></div>
+<p>작업수행결과 <code>foreach</code>가 가장 좋은 성능을 보이고 있다. 맥에서 7코어를 사용해서 작업을 수행한 것이다.</p>
+<pre class="output"><code>       test replications elapsed relative
+3   foreach          100   2.013    1.000
+1  mclapply          100   8.394    4.170
+2 parSapply          100   6.660    3.308</code></pre>
+<h4 id="공유메모리-분산컴퓨팅-사례-몬티홀-퀴즈쇼">3.2. 공유메모리 분산컴퓨팅 사례 – 몬티홀 퀴즈쇼</h4>
+<p><a href="https://ko.wikipedia.org/wiki/몬티_홀_문제">몬티 홀 문제</a>는 미국의 TV 게임쇼(Let’s make a deal)에서 유래한 퍼즐이다. 세 개의 문 중에 하나를 선택하여 문 뒤에 있는 선물을 가질 수 있는 게임쇼에 참가했다. 한 문 뒤에는 자동차가 있고, 나머지 두 문 뒤에는 염소가 있다. 이때 어떤 사람이 예를 들어 1번 문을 선택했을 때, 게임쇼 진행자는 3번 문을 열어 문뒤에 염소가 있음을 보여주면서 1번 대신 2번을 선택하겠냐고 물었다. 참가자가 자동차를 가지려할 때 원래 선택했던 번호를 바꾸는 것이 유리할까? 이때 진행자는 자동차와 염소가 어떤 문에 있는지 알고 있기 때문에, 진행자가 자동차가 있는 문을 여는 일은 절대 발생하지 않는다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lets_make_a_deal &lt;-<span class="st"> </span>function()
+{
+  prize_door &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:<span class="dv">3</span>, <span class="dt">size=</span><span class="dv">1</span>)
+  first_selection &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span>:<span class="dv">3</span>, <span class="dt">size=</span><span class="dv">1</span>)
+  ### 항상 최초 선택을 바꾼다고 설정한다.
+  if (prize_door ==<span class="st"> </span>first_selection)
+    <span class="kw">return</span>(<span class="st">&quot;lose&quot;</span>)
+  else
+    <span class="kw">return</span>(<span class="st">&quot;win&quot;</span>)
+}
+
+wincount &lt;-<span class="st"> </span>function(winlosevec) <span class="kw">sum</span>(winlosevec==<span class="st">&quot;win&quot;</span>)
+
+<span class="kw">library</span>(parallel)
+n &lt;-<span class="st"> </span><span class="dv">1000000</span>
+
+<span class="kw">system.time</span>({
+  winlose &lt;-<span class="st"> </span><span class="kw">simplify2array</span>(<span class="kw">mclapply</span>(<span class="dv">1</span>:n, lets_make_a_deal, <span class="dt">mc.cores=</span><span class="dv">7</span>))
+  <span class="kw">print</span>(<span class="kw">wincount</span>(winlose) /<span class="st"> </span>n)
+})</code></pre></div>
+<p>백만번 모의시험을 수행했을 때, 이론적인 확률값 <span class="math inline">\(\frac{2}{3}\)</span>에 수렴한다.</p>
+<pre class="output"><code># [1] 0.666874
+# 사용자  시스템 elapsed 
+# 11.510   1.579   3.066 </code></pre>
         </div>
       </div>
       </article>
