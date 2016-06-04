@@ -12,7 +12,7 @@ title: R 병렬 프로그래밍
 > 금수저, 은수저 슈퍼파워를 받은 사람과 기계학습을 통달한 흑수저들간의 무한경쟁이 드뎌 시작되었다. 물론, 
 > 금수저를 입에 물고 기계학습을 통달한 사람이 가장 유리한 출발을 시작한 것도 사실이다.
 
-## 학습목차
+## 학습목차 
 
 1. [고성능 R 아키텍처](r-perf-arch.html)
     - [R 스케일-업 성능향상](r-scale-up.html)
@@ -37,8 +37,23 @@ title: R 병렬 프로그래밍
     - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
     - [성능 측정기준 벤치마킹](perf-benchmark.html)
 1. **빅데이터**
-    - 
-    
+    - 하둡
+
+## 왜 R 언어인가? [^r-rank] [^r-r4stats]
+
+[Rexer Analytics](http://www.rexeranalytics.com/)가 2015년 응답자 1,220명을 대상으로 실시한 결과 R이 데이터 분석 소프트웨어 분야에서 압도적인 1위 위치를 점유하고 있음을 확인할 수 있다.
+
+[^r-rank]: [Interactive-The Top Programming Languages](http://spectrum.ieee.org/static/interactive-the-top-programming-languages#index)
+
+[^r-r4stats]: [The Popularity of Data Analysis Software](http://r4stats.com/articles/popularity/)
+
+
+| | |
+|-----------------------------------|-----------------------------------|
+|<img src="fig/rexersurveyalltools2015.png" alt="Rexer Analytics 설문조사 2015 (응답자 1,220)" width="70%"> | <img src="fig/ieee-r-ranking.png" alt="Rexer Analytics 설문조사 2015 (응답자 1,220)" width="70%">
+
+
+
 > ### xwMOOC는 수학을 사랑합니다. {.prereq}
 > 
 > 2차 방정식 $a x^2 + b x + c = 0$ 에 대한 해답은 ...
