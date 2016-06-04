@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">RStudio 빅데이터 전략</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h3 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h3>
+</div>
+<div class="panel-body">
+<ul>
+<li>빅데이터 문제를 정의한다.</li>
+<li>빅데이터 문제에 대한 해결책을 파악한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="빅데이터-문제-정의">1. 빅데이터 문제 정의</h3>
+<table>
+<thead>
+<tr class="header">
+<th align="left">구분</th>
+<th align="left">데이터 크기</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">매우 큰 데이터</td>
+<td align="left">컴퓨터 한대 메모리에 저장될 수 없는 크기 : <strong>5 TB이상</strong></td>
+</tr>
+<tr class="even">
+<td align="left">중간 데이터</td>
+<td align="left">서버 컴퓨터 메모리에 저장할 수 있는 크기 : <strong>10 GB – 5 TB</strong></td>
+</tr>
+<tr class="odd">
+<td align="left">작은 데이터</td>
+<td align="left">노트북 컴퓨터 메모리에 저장할 수 있는 크기 : <strong>10 GB 이하</strong></td>
+</tr>
+</tbody>
+</table>
+<p>전통적으로 R은 작은 데이터를 빠르게 탐색하는데 최적의 환경을 제공한다. 중간크기 데이터를 작업하지 못할 기술적인 이유는 없지만, 거의 작업이 이뤄지지 않고 있다.</p>
+<h3 id="빅데이터-처리-전략">2. 빅데이터 처리 전략</h3>
+<ol style="list-style-type: decimal">
+<li>빅데이터 문제 소규모 분석방법(Big Data-Small Analytics) : 요약/표본추출/부분집합 추출 (90%)
+<ul>
+<li>SparkR은 필요없다.</li>
+</ul></li>
+<li>병렬처리가 가능한 문제: 작은 데이터 문제로 쪼개서 분할 정복 (9%)
+<ul>
+<li>SparkR을 사용해도 되지만, 공유메모리 병렬프로그램 <code>parallel</code>, <code>foreach</code> 혹은 메시지 전달 분산 병렬컴퓨팅 <code>Rmpi</code>도 대안이 된다.</li>
+</ul></li>
+<li>빅데이터 문제 대규모 분석방법(Big Data-Large Scale Analytics): 더이상 어찌할 수 없는 큰 문제 데이터 (1%)
+<ul>
+<li>SparkR이 이런 문제에는 적합하다. 특히, 추천시스템을 개발하는 경우 필요한데 이유는 매우 크고 성긴 행렬에서 패턴을 찾아 내는 모형이 개발되기 때문이다.</li>
+</ul></li>
+</ol>
+<p>빅데이터로 컴퓨터 한대 메모리에 적재가 되지 않는 경우 SparkR을 사용해서 여러 컴퓨터에 분산해서 R로 작업한다.</p>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>

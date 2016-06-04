@@ -37,7 +37,7 @@ title: R 병렬 프로그래밍
     - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
     - [성능 측정기준 벤치마킹](perf-benchmark.html)
 1. **빅데이터**
-    - 하둡
+    - [RStudio 빅데이터 전략](big-data-strategy.html)
 
 ## 왜 R 언어인가? [^r-rank] [^r-r4stats]
 
