@@ -15,10 +15,10 @@ title: R 병렬 프로그래밍
 ## 학습목차 
 
 1. [고성능 R 아키텍처](r-perf-arch.html)
+    - [왜 고성능 R 아키텍처가 필요한가?](why-r-hpc.html)
     - [R 스케일-업 성능향상](r-scale-up.html)
-        - [예제](r-scale-up-ex.html)         
     - [R 스케일-아웃 성능향상](r-scale-out.html)     
-        - [예제](r-scale-out-ex.html) 
+        - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html) 
 1. **R코드 자동화**
     - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
     - [`.R` 스크립트 실행](r-parallel-rscript-exec.html)

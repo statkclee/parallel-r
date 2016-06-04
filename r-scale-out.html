@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">R 스케일-아웃 성능향상</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>R 스케일-아웃 전략을 통한 성능향상에 대해 살펴본다.</li>
+<li></li>
+</ul>
+</div>
+</section>
+<p><img src="fig/parallel-hw-arch.png" alt="병렬컴퓨팅 하드웨어 아키텍처" width="70%"></p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="병렬-프로그래밍-개념과-용어-정의"><span class="glyphicon glyphicon-pushpin"></span>병렬 프로그래밍 개념과 용어 정의</h3>
+</div>
+<div class="panel-body">
+<ul>
+<li><strong>암시적 병렬성(Implicit Parallelism)</strong> : 병렬 연산처리과정이 사용자로부터 숨겨서 보이지 않음. 예를 들어, 멀티스레드(Multi-thread BLAS)가 여기에 해당된다. 스레드란 한 메시지 처리를 완료한데 필요한 일련의 작업 혹은 프로그램 흐름을 지칭한다.</li>
+<li><strong>명시적 병렬성(Explicit Parallelism)</strong> : 명시적으로 작업을 수행하기 때문에 작업조합이 필요하다. <code>parallel</code> 팩키지 <code>mclapply()</code>가 여기에 해당된다.</li>
+<li><strong>처치 곤란한 만큼 동시작업이 가능한 병렬(embarrassingly parallel) 혹은 느슨한 결합(Loosely Coupled:)</strong> : 다소 반어법적으로 처치 곤란할 정도로 많다는 의미가 병렬처리 작업에 대입되어, 의존성이 거의 없어 임의 순서나 방법으로 처리가 가능한 작업이 여기에 해당된다.</li>
+<li><strong>밀착결합(Tightly Coupled:)</strong> : 느슨한 결합의 반대의 경우로 컴퓨팅 계산작업에 많은 의존성을 갖는 경우가 해당된다.</li>
+</ul>
+</div>
+</aside>
+<blockquote>
+<p>벽걸이 시간과 속도향상과 암달의 법칙 {.callout}</p>
+<p>병렬 프로그래밍에서 <strong>벽걸이 시간(wallclock time)</strong> 이 중요한데 작업시작과 작업종류를 측정한다. <a href="https://ko.wikipedia.org/wiki/암달의_법칙">암달의 법칙(Amdahl’s law)</a>은 암달의 저주로도 불리며, 프로그램을 100% 병렬처리가 가능하도록 만들고 프로세서를 늘리면 성능이 무한대로 가능하지만, 현실적으로 100% 병렬 프로그램을 작성할 수는 없다. 예를 들어, 95% 병렬처리가 가능하다고 가정하면, 무한대 프로세서를 사용해도 최대 20배로 <strong>속도향상(speedup)</strong> 이 제한된다.</p>
+</blockquote>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
