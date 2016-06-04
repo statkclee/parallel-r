@@ -43,6 +43,129 @@
 </section>
 <h3 id="r-스케일-업-전략-개요">R 스케일-업 전략 개요</h3>
 <p>R 스케일-업(Scale-up) 성능향상 전략은 R의 강점을 최대한 유지시키면서 단점을 보안하는 전략이기도 하다.</p>
+<h3 id="c-rcpp-사용">C++ <code>Rcpp</code> 사용</h3>
+<p>GPL 라이선스로 <code>Rcpp</code>, <code>RcppArmadillo</code>, <code>RcppEigen</code> 등이 <code>Rcpp</code> 생태계를 이루며 C++로 컴파일된 코드에 대한 R 인터페이스를 제공한다. <code>Rcpp</code>는 컴파일된 코드로 우선 <strong>속도가 빠르다.</strong> 설치와 사용이 상대적으로 쉽고, 저자가 직접 작성한 책도 있고 문서화도 잘되었고, 컴뮤니티도 건강하다. 그렇다고 해서 <code>Rcpp</code>만으로 C++를 몰라도, R에서 C++로 자동으로 변환되는 등 요술방망이는 아니다.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="r과-팩키지는-어떤-언어로-구성되어-있나-r-core-lang-r-package-lang-r-blackduck"><span class="glyphicon glyphicon-pushpin"></span>R과 팩키지는 어떤 언어로 구성되어 있나? <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></h3>
+</div>
+<div class="panel-body">
+<table>
+<tbody>
+<tr class="odd">
+<td align="left"><img src="fig/pct_r_code.png" alt="R은 어떤 언어로 작성되었나?" width="70%"></td>
+<td align="left"><img src="fig/pct_contrib_source_files.png" alt="R 팩키지는 어떤 언어로 작성되었나?" width="70%"></td>
+</tr>
+</tbody>
+</table>
+<p>블랙덕에서 분석한 R언어는 C/C++가 약 40%, 포트란이 약 30%, R이 약 20%, 쉘스크립트 Autoconf가 나머지 대부분을 차지한다. 따라서, R 코어는 성능에 초점을 둔 C/C++, 포트란이 대부분으로 구성되어 있음을 알 수 있다. 반면에, R언어를 갖고 개발자가 기여한 언어를 본다면 R코드가 거의 절반이고, C/C++, 포트란을 합하게 되면 절반에 해당된다.</p>
+</div>
+</aside>
+<h4 id="rcpp-참고자료">Rcpp 참고자료</h4>
+<ul>
+<li>Rcpp 소품문: <a href="https://cran.r-project.org/web/packages/Rcpp/index.html">Rcpp - Seamless R and C++ Integration</a></li>
+<li>Advanced R, Hadley Wickham: <a href="http://adv-r.had.co.nz/Rcpp.html">High Performance Functions with Rcpp</a></li>
+<li>Seamless R and C++ Integration with Rcpp: <a href="http://www.springer.com/us/book/9781461468677">Seamless R and C++ Integration with Rcpp</a></li>
+</ul>
+<h4 id="몬테카를로-모의시험-pi-계산">몬테카를로 모의시험 <span class="math inline">\(\pi\)</span> 계산</h4>
+<p><span class="math inline">\(\pi\)</span>를 계산하는 <span class="math inline">\([0,1] \times [0,1]\)</span> 정사각형에 균등분포 관측점 <span class="math inline">\((x_i , y_i )\)</span>을 임의 추출하여 원내부에 위치하는 관측점의 갯수를 기록해서 전체 임의추출한 표본 수자로 나눈다.</p>
+<ol style="list-style-type: decimal">
+<li>원내부에 위치한 점을 기록할 변수(<code>r</code>)를 선언한다.</li>
+<li><span class="math inline">\(x\)</span>축과 <span class="math inline">\(y\)</span>축, 균등분포에서 <span class="math inline">\([0,1]\)</span> 사이 난수를 뽑아낸다.</li>
+<li><span class="math inline">\(x^2 + y^2 \leq 1\)</span> 인지 판정한다.</li>
+<li>만약 원 내부에 위치하면 앞에서 선언한 변수 <code>r</code>을 하나씩 증가시킨다.</li>
+<li>2,3,4번 과정을 <code>n</code>번 만큼 반복하고 결과를 <span class="math inline">\(4 \times \frac {r}{n}\)</span> 를 반환한다.</li>
+</ol>
+<p><span class="math display">\[ \pi \approx 4 \times \left( \frac{\mbox{원 내부}}{\mbox{전체}} \right) \]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##========================================================================
+## Rcpp 원주율 계산
+##========================================================================
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 1. 순수한 R 코드</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+pi_loop_r &lt;-<span class="st"> </span>function (n){
+  r &lt;-<span class="st"> </span>0L
+  for (i in <span class="dv">1</span>:<span class="st"> </span>n) {
+    u &lt;-<span class="st"> </span><span class="kw">runif</span> (<span class="dv">1</span>)
+    v &lt;-<span class="st"> </span><span class="kw">runif</span> (<span class="dv">1</span>)
+
+    if ( u ^<span class="dv">2</span> +<span class="st"> </span>v ^<span class="dv">2</span> &lt;=<span class="st"> </span><span class="dv">1</span>)
+      r &lt;-<span class="st"> </span>r +<span class="st"> </span><span class="dv">1</span>
+  }
+  <span class="kw">return</span> ( <span class="dv">4</span> *<span class="st"> </span>r /<span class="st"> </span>n )
+}
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 2. 벡터화 R 코드</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+pi_vec_r &lt;-<span class="st"> </span>function(n){
+  x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">runif</span>(n*<span class="dv">2</span>), <span class="dt">ncol=</span><span class="dv">2</span>)
+  r &lt;-<span class="st"> </span><span class="kw">sum</span>(<span class="kw">rowSums</span>(x^<span class="dv">2</span>) &lt;=<span class="st"> </span><span class="dv">1</span>)
+  
+  <span class="kw">return</span>(<span class="dv">4</span> *<span class="st"> </span>r/n)
+}
+
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 3. Rcpp 코드</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+code &lt;-<span class="st"> &quot;</span>
+<span class="st"># include &lt;Rcpp.h&gt;</span>
+
+<span class="st">// [[Rcpp::export]]</span>
+<span class="st">double pi_rcpp(const int n)</span>
+<span class="st">{</span>
+<span class="st">  int i, r = 0;</span>
+<span class="st">  double u, v;</span>
+<span class="st">  for (i =0; i &lt; n; i ++) {</span>
+<span class="st">    u = R::runif(0, 1);</span>
+<span class="st">    v = R::runif(0, 1);</span>
+<span class="st">    if(u*u + v*v &lt;= 1)</span>
+<span class="st">      r ++;</span>
+<span class="st">  }</span>
+<span class="st">  return ( double ) 4. * r / n ;</span>
+<span class="st">}&quot;</span>
+
+<span class="co"># library (Rcpp)</span>
+<span class="kw">sourceCpp</span>(<span class="dt">code =</span> code)</code></pre></div>
+<p><span class="math inline">\(\pi\)</span> 원주율을 for 루프를 사용해서 구현한 방법과 메모리를 희생하더라도 일단 쭉 메모리에 데이터를 깔고 원주율을 계산하는 벡터화 방법, <code>Rcpp</code>를 사용해서 구현한 세가지 코딩방법에 대한 기준성능을 벤치마킹하여 비교한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 4. 알고리듬 비교</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+<span class="kw">library</span>(rbenchmark)
+n &lt;-<span class="st"> </span>100000L
+<span class="kw">benchmark</span>(<span class="dt">R.loop =</span> <span class="kw">pi_loop_r</span>(n),
+          <span class="dt">R.vec =</span> <span class="kw">pi_vec_r</span>(n) ,
+          <span class="dt">Rcpp =</span> <span class="kw">pi_rcpp</span>(n) ,
+          <span class="dt">columns=</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))</code></pre></div>
+<p><code>benchmark</code> 성능비교 결과 <code>Rcpp</code>로 구현한 C++ 코드가 벡터화보다 3.8배, 루프를 돌린 것과 비교하여 204배 성능이 좋은 것이 확인된다.</p>
+<pre class="output"><code>test replications elapsed relative
+ 1 R.loop          100  54.526  204.217
+ 2  R.vec          100   1.016    3.805
+ 3   Rcpp          100   0.267    1.000</code></pre>
+<p><code>microbenchmark</code>를 사용해서 시각화를 해도 확연한 성능차이를 시각화를 통해 확인된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 5. 시각화</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+<span class="kw">library</span>(microbenchmark)
+pi_bm_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<span class="dt">R.loop =</span> <span class="kw">pi_loop_r</span>(n),
+                         <span class="dt">R.vec =</span> <span class="kw">pi_vec_r</span>(n) ,
+                         <span class="dt">Rcpp =</span> <span class="kw">pi_rcpp</span>(n), <span class="dt">unit=</span><span class="st">&quot;s&quot;</span>)
+
+<span class="kw">boxplot</span>(pi_bm_res)</code></pre></div>
+<p><img src="fig/pi_mc_perf.png" alt="몬테카를로 모의시험 원주율 기준성능비교" width="50%"></p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://librestats.com/2011/08/27/how-much-of-r-is-written-in-r/">How Much of R is Written in R?</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://librestats.com/2011/08/29/how-much-of-r-is-written-in-r-part-2-contributed-packages/">How Much of R is Written in R Part 2: Contributed Packages</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="https://www.openhub.net/p/rproject/analyses/latest/languages_summary">Blackduck OpenHub R</a><a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
         </div>
       </div>
       </article>

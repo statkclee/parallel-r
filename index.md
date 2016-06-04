@@ -50,7 +50,7 @@ title: R 병렬 프로그래밍
 
 | | |
 |-----------------------------------|-----------------------------------|
-|<img src="fig/rexersurveyalltools2015.png" alt="Rexer Analytics 설문조사 2015 (응답자 1,220)" width="70%"> | <img src="fig/ieee-r-ranking.png" alt="Rexer Analytics 설문조사 2015 (응답자 1,220)" width="70%">
+|<img src="fig/rexersurveyalltools2015.png" alt="Rexer Analytics 설문조사 2015 (응답자 1,220)" width="70%"> | <img src="fig/ieee-r-ranking.png" alt="IEEE 조사" width="70%">
 
 
 
