@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">성능 측정기준 벤치마킹</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>R 스크립트, 함수 성능 측정기준을 설정한다.</li>
+<li><code>rbenchmark</code> 팩키지를 활용한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="rbenchmark-기준성능-평가-팩키지">1. <code>rbenchmark</code> 기준성능 평가 팩키지</h3>
+<p><code>rbenchmark</code> 팩키지는 펄(Perl) 벤치마크 모듈에 영감을 받아 제작되었다. <code>system.time</code>을 감싼 함수 하나로 구성된 팩키지다.</p>
+<p>사용법은 <code>benchmark</code> 함수에 기준성능을 평가할 함수를 넣어주고, <code>columns= c(&quot;test&quot;, &quot;replications&quot;, &quot;elapsed&quot;, &quot;relative&quot;)</code> 출력하려고 하는 인자를 넣어준다.</p>
+<h3 id="피보나치-예제">2. 피보나치 예제</h3>
+<p>피보나치 순열을 재귀를 사용해서 구현한 R코드와 Rcpp코드의 성능을 비교한다. Rcpp 저자인 Dirk Eddelbuettel 박사가 EARL 2015에서 스택오버플로우 예제를 참조하여 작성한 예제다. <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p><span class="math display">\[ f(n) = \begin{cases} n, &amp; n &lt; 2 \mbox{  일 때}\\ f(n-1) + f(n-2), &amp; n \geq 2 \mbox{  일 때} \end{cases}\]</span></p>
+<h4 id="순수-r-코드-구현">2.1. 순수 R 코드 구현</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
+<span class="co"># 1. 순수한 R 코드</span>
+<span class="co">#-------------------------------------------------------------------------</span>
+
+f &lt;-<span class="st"> </span>function(n) {
+  if (n&lt;<span class="dv">2</span>) <span class="kw">return</span>(n)
+  <span class="kw">return</span>(<span class="kw">f</span>(n<span class="dv">-1</span>) +<span class="st"> </span><span class="kw">f</span>(n<span class="dv">-2</span>))
+}
+
+<span class="kw">sapply</span>(<span class="dv">0</span>:<span class="dv">10</span>, f)</code></pre></div>
+<p>피보나치 수열을 R코드로 구현한 후 <code>sapply</code> 함수로 0 에서 10까지 숫자를 피보나치 함수 <code>f</code>에 넣어 계산한다.</p>
+<pre class="output"><code>[1]  0  1  1  2  3  5  8 13 21 34 55</code></pre>
+<p><code>rbenchmark</code> 팩키지를 사용해서 <code>10</code>, <code>15</code>, <code>20</code>일 경우를 기준성능을 상호비교한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages(&quot;rbenchmark&quot;)</span>
+<span class="kw">library</span>(rbenchmark)
+
+<span class="kw">benchmark</span>(<span class="kw">f</span>(<span class="dv">10</span>), <span class="kw">f</span>(<span class="dv">15</span>), <span class="kw">f</span>(<span class="dv">20</span>), <span class="dt">columns=</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))</code></pre></div>
+<p>피보나치 순열 10일 때 보다 20일 때, 상대적으로 131배나 많은 시간이 소요된 것이 확인된다. 이제 C/C++ 즉, <code>Rcpp</code>로 구현한 성능을 살펴본다.</p>
+<pre class="output"><code>   test replications elapsed relative
+1 f(10)          100    0.03    1.000
+2 f(15)          100    0.33   11.000
+3 f(20)          100    3.95  131.667</code></pre>
+<h4 id="rcpp-코드-구현">2.2. Rcpp 코드 구현</h4>
+<p>피보나치 구현하는 코드를 C/C++로 구현한 후에 <code>Rcpp::cppFunction</code> 내부에 C/C++코드를 넣어주고 실행시키면 된다. 전통적으로 재귀를 사용한 피보나치 순열 구현은 성능이 좋지 않은 것으로 유명한데, C/C++로 구현하여 <code>Rcpp</code> 팩키지로 실행한 것을 보면 450배 순수 R코드에 비해 성능이 월등한 것을 알 수 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
+
+Rcpp::<span class="kw">cppFunction</span>(
+  <span class="st">&quot;int g(int n) {</span>
+<span class="st">      if (n &lt; 2) return(n);</span>
+<span class="st">      return(g(n-1)+g(n-2));</span>
+<span class="st">  }&quot;</span>)
+
+<span class="kw">benchmark</span>(<span class="kw">f</span>(<span class="dv">25</span>), <span class="kw">g</span>(<span class="dv">25</span>), <span class="dt">columns=</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))</code></pre></div>
+<pre class="output"><code>test replications elapsed relative
+1 f(25)          100  17.404  446.256
+2 g(25)          100   0.039    1.000</code></pre>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="윈도우즈-rcpp-설치"><span class="glyphicon glyphicon-pushpin"></span>윈도우즈 Rcpp 설치</h3>
+</div>
+<div class="panel-body">
+<p><code>Rcpp</code>를 윈도우즈에 설치할 경우 <code>Rtools</code>가 설치되어야 한다. 그리고 <code>Rtools</code>를 윈도우 사용자경로에 추가해야 한다.</p>
+<p><code>writeLines(strsplit(Sys.getenv(&quot;PATH&quot;), &quot;;&quot;)[[1L]])</code> 명령어를 실행하여 <code>R</code>과 <code>Rtools</code>가 경로명에서 확인되어야 한다.</p>
+<pre class="output"><code>C:\Program Files\R\R-3.2.3\bin
+C:\Rtools\gcc-4.6.3\bin
+C:\Rtools\bin</code></pre>
+</div>
+</aside>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://www.youtube.com/watch?v=qXuLNQSPmCA">EARL 2015 - Day 2 Keynote - Making R Applications go Faster and Further - Dirk Eddelbuettel</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
