@@ -111,6 +111,65 @@ $ sudo apt-get install r-base r-base-dev</code></pre>
 </div>
 </aside>
 <h3 id="r-팩키지-설치-r-packages-install">R 팩키지 설치 <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h3>
+<ol style="list-style-type: decimal">
+<li>R 팩키지명이 제대로 입력되었는지 확인한다.
+<ul>
+<li>R 팩키지는 대소문자를 구분한다.</li>
+</ul></li>
+<li><code>setRepositories()</code> 명령어로 팩키지를 받아올 저장소를 설정한다.
+<ul>
+<li><code>setRepositories(ind = c(1:6, 8))</code>와 같이 저장소 설정을 <code>Rprofile.site</code> 파일에 적용시켜 영구저장한다.</li>
+</ul></li>
+<li>설치하려는 팩키지가 저장소에 없는 경우가 있다.
+<ul>
+<li><code>available.packages()</code> 명령어로 저장소에서 받아올 수 있는 팩키지를 확인한다.
+<ul>
+<li><code>&quot;ggplot2&quot; %in% rownames(available.packages())</code></li>
+<li><code>ap &lt;- available.packages()</code>, <code>&quot;ggplot2&quot; %in% rownames(ap)</code></li>
+</ul></li>
+<li><code>chooseCRANmirror()</code> 명령어로 CRAN 저장소를 설정한다.</li>
+</ul></li>
+<li>팩키지, 라이브러리가 아닌 데이터만 필요한 경우는 다음과 같이 데이터만 뽑아낸다.
+<ul>
+<li>현재 팩키지에 설치된 모든 데이터를 살펴본다.
+<ul>
+<li><code>data(package = .packages(all.available = TRUE))</code></li>
+</ul></li>
+<li>특정 팩키지에 설치된 데이터만 살펴본다.
+<ul>
+<li><code>data(package = &quot;rpart&quot;)</code></li>
+</ul></li>
+<li>특정 팩키지에 설치된 데이터를 불러온다.
+<ul>
+<li><code>data(solder, package = &quot;rpart&quot;)</code><br />
+</li>
+</ul></li>
+</ul></li>
+<li>R 코어 엔진의 버젼이 낮은 경우에 팩키지 설치에 문제가 된다.
+<ul>
+<li>R 팩키지가 설치될 때 최근 R 버젼을 요구하는 경우도 드물지 않다.</li>
+<li>윈도우의 경우 다음 명령어로 간단히 처리한다.
+<ul>
+<li><code>library(installr)</code>, <code>updateR()</code></li>
+</ul></li>
+</ul></li>
+<li>팩키지가 더이상 유지보수되지 않고 아카이빙되어 더이상 서비스 되지 않는다.
+<ul>
+<li><code>R CMD check</code> 테스트를 통과하지 못한 경우도 포함된다.</li>
+</ul></li>
+<li>윈도우, 맥(OS X), 리눅스 특정 운영체제에 팩키지가 없다.
+<ul>
+<li><code>CRAN (extras)</code> 저장소를 찾아본다.</li>
+<li>팩키지 소스파일을 구해서 윈도우즈 <code>Rtools</code>, 맥 OS X XCode 개발툴로 컴파일한다.</li>
+</ul></li>
+<li>팩키지가 GitHub/Bitbucket/Gitorious 저장소에서 받아오는 경우
+<ul>
+<li><code>library(devtools)</code> 를 설치한다.</li>
+<li><code>install_github(&quot;packageauthor/foobarbaz&quot;)</code> : GitHub에서 설치하는 경우</li>
+<li><code>install_bitbucket(&quot;packageauthor/foobarbaz&quot;)</code> : Bitbucket에서 설치하는 경우</li>
+<li><code>install_gitorious(&quot;packageauthor/foobarbaz&quot;)</code> : Gitorious에서 설치하는 경우</li>
+</ul></li>
+</ol>
 <h3 id="xwmooc-오픈-교재">xwMOOC 오픈 교재</h3>
 <ul>
 <li><a href="http://unplugged.xwmooc.org">컴퓨터 과학 언플러그드</a><br />
