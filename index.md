@@ -39,6 +39,7 @@ title: R 병렬 프로그래밍
 1. **빅데이터**
     - [RStudio 빅데이터 전략](big-data-strategy.html)
     - [SparkR 설치](spark-hadoop-install.html)
+    - [SparkR 헬로 월드](sparkr-hello-world.html)
 
 ## 왜 R 언어인가? [^r-rank] [^r-r4stats]
 
