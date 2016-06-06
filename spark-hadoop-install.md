@@ -11,7 +11,9 @@ minutes: 10
 > * 가상컴퓨터, 자바, 하둡-스파크, R를 왜 설치하는지 이해한다.
 > * SparkR로 빅데이터 헬로 월드를 찍어본다.
 
-### 1. R 기반 스파크-하둡 플랫폼
+### 1. R 기반 스파크-하둡 플랫폼 [^apache-spark-ubuntu]
+
+[^apache-spark-ubuntu]: [Install Apache Spark on Ubuntu-14.04](http://blog.prabeeshk.com/blog/2014/10/31/install-apache-spark-on-ubuntu-14-dot-04/)
 
 <img src="fig/sparkR-arch.png" alt="R 기반 스파크-하둡 아키텍처" width="70%">
 
@@ -73,6 +75,23 @@ $ sudo apt-get update
 $ sudo apt-get install openjdk-8-jdk
 ~~~
 
+또다른 방법으로 `webupd8team/java`를 사용하는 것도 가능하다.
+
+~~~ {.shell}
+$ sudo apt-add-repository ppa:webupd8team/java
+$ sudo apt-get update
+$ sudo apt-get install oracle-java8-installer
+$ java -version
+~~~
+
+`java -version` 명령어를 통해 자바가 정상적으로 설치된 것을 확인한다.
+
+~~~ {.output}
+java version "1.8.0_91"
+Java(TM) SE Runtime Environment (build 1.8.0_91-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.91-b14, mixed mode)
+~~~
+
 만약 스파크를 자바를 설치하지 않고 설치할 경우 `JAVA_HOME is not set` 라는 오류가 뜨는데, 절대로 당황하지 말고, `openjdk`를 설치하면 해결된다.
 
 ~~~ {.error}
@@ -80,7 +99,38 @@ vagrant@vagrant-ubuntu-trusty-64:~/spark-1.6$ ./bin/spark-shell
 JAVA_HOME is not set
 ~~~
 
-#### 2.3. 하둡과 스파크 설치 [^hadoop-vs-spark]
+#### 2.3. 스칼라 설치
+
+최신 [스칼라 2.11.8](http://www.scala-lang.org/download/2.11.8.html) 버젼을 다운로드한다.
+`/usr/local/src/scala` 디렉토리를 생성하고 다운로드 받은 스칼라 압축파일을 푼다.
+
+~~~ {.shell}
+$ wget http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
+$  sudo mkdir /usr/local/src/scala
+$  sudo tar xvf scala-2.11.8.tgz -C /usr/local/src/scala/
+~~~
+
+`.bashrc` 파일을 편집하여 스칼라가 설치된 디렉토리를 경로에 추가한다.
+
+~~~ {.shell}
+$ sudo gedit .bashrc
+$ . .bashrc
+~~~
+
+> #### .bashrc 파일 추가 {.callout}
+> 
+> export SCALA_HOME=/usr/local/src/scala/scala-2.11.8
+> export PATH=$SCALA_HOME/bin:$PATH
+
+~~~ {.shell}
+$ scala -version
+Scala code runner version 2.11.8 -- Copyright 2002-2016, LAMP/EPFL
+~~~
+
+`scala -version` 명령어로 스칼라가 정상적으로 설치된 것을 확인한다.
+
+
+#### 2.4. 하둡과 스파크 설치 [^hadoop-vs-spark]
 
 [^hadoop-vs-spark]: [What is the difference between Apache Spark and Apache Hadoop (Map-Reduce)?](https://www.quora.com/What-is-the-difference-between-Apache-Spark-and-Apache-Hadoop-Map-Reduce)
 
@@ -130,6 +180,29 @@ SQL context available as sqlContext.
 
 scala>
 ~~~
+
+##### 2.4.1. 소스코드 컴파일 설치
+
+컴파일된 스파크를 사용해도 되고 소스코드를 가지고 직접 빌드해서 스파크를 설치한다.
+
+~~~ {.shell}
+parallels@ubuntu:~$ cd spark-1.6.1/
+parallels@ubuntu:~/spark-1.6.1$ sbt/sbt assembly
+~~~
+
+스파크 소스코드가 설치된 곳으로 가서 `sbt/sbt assembly` 명령어로 실행을 하면 빌드를 시작한다. 시간이 조금 걸리는 시원한 커피를 한잔 마시고 와도 좋다.
+
+스파크를 빌드하는데 SBT(Simple Build Tool)이 사용되는데 스파크에 번들로 같이 제공된다.
+
+만약 가상컴퓨터 위에 우분투를 올려 컴파일하는 경우 1GB 메모리는 오류 메시지가 나니 충분히 준비하고 `sbt/sbt assembly` 명령어를 실행한다.
+
+~~~ {.shell}
+parallels@ubuntu:~/spark-1.6.1$ ./bin/run-example SparkPi 10
+~~~
+
+명령어를 실행시켜 스파크가 제대로 설치되었는지 확인한다.
+$\pi$는 대략 3.14634 값을 출력한다.
+
 
 #### 2.4. R, RStudio 스파크 설치
 
@@ -199,3 +272,77 @@ head(SparkDf)
 ~~~
 
 <img src="fig/sparkR-setup-screen.png" alt="sparkR 설치 화면" width="77%">
+
+### 3. 맥 운영체제 [^mac-sparkr-install]
+
+[^mac-sparkr-install]: [Six lines to install and start SparkR on Mac OS X Yosemite](http://www.r-bloggers.com/six-lines-to-install-and-start-sparkr-on-mac-os-x-yosemite/)
+
+맥(OS X)에서 SparkR을 설치하는 것은 단 6줄로 간단히 처리할 수 있다.
+
+1. 만약 자바가 설치되지 않은 경우, 자바를 설치한다. 
+1. 하둡을 설치한다.
+1. 아파치-스파크를 설치한다.
+1. RStudio 에서 SparkR을 설정한다.
+
+~~~ {.shell}
+$ brew install Caskroom/cask/java
+$ brew install hadoop
+$ brew install apache-spark
+$ SparkR
+~~~
+
+~~~ {.output}
+parallel-r $ SparkR
+
+R version 3.2.4 (2016-03-10) -- "Very Secure Dishes"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R은 자유 소프트웨어이며, 어떠한 형태의 보증없이 배포됩니다.
+또한, 일정한 조건하에서 이것을 재배포 할 수 있습니다.
+배포와 관련된 상세한 내용은 'license()' 또는 'licence()'을 통하여 확인할 수 있습니다.
+
+R은 많은 기여자들이 참여하는 공동프로젝트입니다.
+'contributors()'라고 입력하시면 이에 대한 더 많은 정보를 확인하실 수 있습니다.
+그리고, R 또는 R 패키지들을 출판물에 인용하는 방법에 대해서는 'citation()'을 통해 확인하시길 부탁드립니다.
+
+'demo()'를 입력하신다면 몇가지 데모를 보실 수 있으며, 'help()'를 입력하시면 온라인 도움말을 이용하실 수 있습니다.
+또한, 'help.start()'의 입력을 통하여 HTML 브라우저에 의한 도움말을 사용하실수 있습니다
+R의 종료를 원하시면 'q()'을 입력해주세요.
+
+Launching java with spark-submit command /usr/local/Cellar/apache-spark/1.6.0/libexec/bin/spark-submit   "sparkr-shell" /var/folders/g3/97168ry52ll6zfyl6ykyk3br0000gn/T//Rtmp6KjqqH/backend_port136f6e14d4f5 
+log4j:WARN No appenders could be found for logger (io.netty.util.internal.logging.InternalLoggerFactory).
+....
+....
+16/06/06 14:50:12 INFO BlockManagerMaster: Registered BlockManager
+
+ Welcome to
+    ____              __ 
+   / __/__  ___ _____/ /__ 
+  _\ \/ _ \/ _ `/ __/  '_/ 
+ /___/ .__/\_,_/_/ /_/\_\   version  1.6.0 
+    /_/ 
+
+
+ Spark context is available as sc, SQL context is available as sqlContext
+ > 
+~~~
+
+RStudio에서 SparkR을 실행할 경우 다음과 명령어를 실행한다.
+
+~~~ {.r}
+## 스파크가 설치된 환경정보를 받아온다.
+spark_path <- strsplit(system("brew info apache-spark",intern=T)[4],' ')[[1]][1] 
+
+## SparkR 라이브러리 디렉토리를 지정한다.
+.libPaths(c(file.path(spark_path,"libexec", "R", "lib"), .libPaths())) 
+
+## SparkR 라이브러리를 적재한다.
+library(SparkR)
+
+sc <- sparkR.init()
+sqlContext <- sparkRSQL.init(sc)
+df <- createDataFrame(sqlContext, iris) 
+head(df)
+~~~
+
