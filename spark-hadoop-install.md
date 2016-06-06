@@ -200,6 +200,12 @@ parallels@ubuntu:~/spark-1.6.1$ sbt/sbt assembly
 parallels@ubuntu:~/spark-1.6.1$ ./bin/run-example SparkPi 10
 ~~~
 
+~~~ {.output}
+....
+Pi is roughly 3.142296
+...
+~~~
+
 명령어를 실행시켜 스파크가 제대로 설치되었는지 확인한다.
 $\pi$는 대략 3.14634 값을 출력한다.
 
