@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">SparkR 도커</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h3 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h3>
+</div>
+<div class="panel-body">
+<ul>
+<li>도커를 이용하여 <code>SparkR</code>이 설치된 컨테이너를 활용한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="sparkr-도커-설치">1. <code>SparkR</code> 도커 설치</h3>
+<p>로컬 컴퓨터에 <code>SparkR</code>이 설치된 도커 이미지를 다운로드 받아 스파크 데이터 분석을 시작한다.</p>
+<p>리눅스, 맥, 윈도우에 도커 설치는 <a href="http://statkclee.github.io/r-docker/">R 도커</a>를 참조한다.</p>
+<ol style="list-style-type: decimal">
+<li><a href="https://hub.docker.com">도커허브(docker hub)</a>에서 <code>sparkr</code>을 검색하고 가장 많은 <code>pull</code> 횟수를 기록한 도커 이미지를 찾는다.</li>
+<li><code>docker pull</code> 명령어로 이미지를 다운로드 받는다.</li>
+<li><code>docker run</code> 명령어로 스파크R을 실행시킨다.</li>
+</ol>
+<p>현재기준 가장 많은 <code>pull</code> 을 기록한 <a href="https://hub.docker.com/r/beniyama/sparkr-docker/">beniyama/sparkr-docker</a>를 사용한다.</p>
+<pre class="shell"><code>$ docker pull beniyama/sparkr-docker
+$ docker images</code></pre>
+<p>스파크R이 설치된 beniyama/sparkr-docker 도커이미지는 4GB가 넘는 대용량임을 확인할 수 있다.</p>
+<pre class="output"><code>REPOSITORY               TAG                 IMAGE ID            CREATED             SIZE
+ubuntu                   latest              2fa927b5cdd3        9 days ago          122 MB
+rocker/hadleyverse       latest              4b8ce08aa722        2 weeks ago         2.92 GB
+hello-world              latest              8deff69ab810        5 weeks ago         967 B
+beniyama/sparkr-docker   latest              c844baaf0528        18 months ago       4.144 GB</code></pre>
+<p><code>docker run -d -p 8787:8787 -t beniyama/sparkr-docker</code> 명령어로 8787 포트로 실행을 하고, 도커가 처음 실행될 때 생성된 IP주소 <code>IP 192.168.99.100</code>주소를 포트번호와 함께 웹브라우저에 입력하면 RStudio 로그인 화면이 나온다.</p>
+<ul>
+<li>ID: rstudio</li>
+<li>PW: rstudio</li>
+</ul>
+<p>로그인하면 SparkR 설정이 완료된 컨테이너에 접속이 완료된 것이다.</p>
+<pre class="shell"><code>$ docker run -d -p 8787:8787 -t beniyama/sparkr-docker</code></pre>
+<p><img src="fig/sparkr-docker.png" alt="스파크R 도커 설치화면" width="50%"></p>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
