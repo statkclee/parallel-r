@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">우분투 SparkR 설치</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h3 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h3>
+</div>
+<div class="panel-body">
+<ul>
+<li>우분투 SparkR 설치을 설치한다.</li>
+<li><code>SparkR</code> 설치를 위한 <code>devtools</code>를 설치한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="sparkr로-분석할-데이터를-준비한다.">1. SparkR로 분석할 데이터를 준비한다.</h3>
+<p><code>nycflights13.csv</code> 파일을 다운로드 받아 SparkR로 분석을 준비한다.</p>
+<pre class="shell"><code>$ wget https://s3-us-west-2.amazonaws.com/sparkr-data/nycflights13.csv</code></pre>
+<h3 id="spark와-하둡을-설치한-다음-r과-rstudio에-연결시킨다.">2. Spark와 하둡을 설치한 다음 R과 RStudio에 연결시킨다.</h3>
+<ol style="list-style-type: decimal">
+<li><code>devtools</code>를 설치한다.</li>
+<li><code>devtools::install_github()</code> 명령어로 아파치스파크를 다운로드 한다.
+<ul>
+<li>devtools::install_github(‘apache/spark@v1.6.1’, subdir=‘R/pkg’) 명령어를 실행시킨다.</li>
+<li><code>v1.6.1</code> 버젼은 아파치스파크 설치버젼과 일치시킨다.</li>
+</ul></li>
+<li>외부 CSV 파일을 불러오기 위해, <code>spark-csv</code> <code>.jar</code> 파일을 다운로드하여 설치한다.
+<ul>
+<li><code>spark-csv_2.11-1.4.0.jar</code> 파일은 <a href="https://spark-packages.org/package/databricks/spark-csv">spark-csv</a>에서 다운로드 받는다.</li>
+<li>스파크가 설치된 홈디렉토리에서 <code>./bin/spark-shell --packages com.databricks:spark-csv_2.11:1.4.0</code> 명령어를 실행하여 설치한다.</li>
+<li>위 명령어가 동작되지 않는 경우 <code>/home/parallels/.ivy2/jars</code> 디렉토리에서 <code>.jar</code> 파일을 복사해 넣는다.</li>
+</ul></li>
+</ol>
+<h4 id="devtools-팩키지-전-설치전-필수적으로-설치할-라이브러리">2.1. <code>devtools</code> 팩키지 전 설치전 필수적으로 설치할 라이브러리</h4>
+<p><code>devtools</code> 팩키지로 GitHub에서 SparkR을 설치하기 전에 필수적으로 설치할 라이브러리를 사전에 설치시킨다.</p>
+<pre class="shell"><code>$ sudo apt-get -y install libcurl4-gnutls-dev
+$ sudo apt-get -y install libxml2-dev
+$ sudo apt-get -y install libssl-dev</code></pre>
+<h4 id="devtools와-sparkr을-설치">2.2. <code>devtools</code>와 <code>SparkR</code>을 설치</h4>
+<p><code>devtools</code>와 <code>SparkR</code>을 차례로 설치한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;devtools&quot;</span>)
+devtools::<span class="kw">install_github</span>(<span class="st">&#39;apache/spark@v1.6.1&#39;</span>, <span class="dt">subdir=</span><span class="st">&#39;R/pkg&#39;</span>)</code></pre></div>
+<h4 id="sparkr과-spark-csv-설정">2.3. SparkR과 spark-csv 설정</h4>
+<p>SparkR과 spark-csv 설정을 다음과 같이 진행한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.setenv</span>(<span class="dt">SPARK_HOME =</span> <span class="st">&quot;/home/parallels/spark-1.6.1/&quot;</span>)
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARKR_SUBMIT_ARGS=</span><span class="st">&quot;--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell&quot;</span>)
+<span class="kw">.libPaths</span>(<span class="kw">c</span>(<span class="kw">file.path</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;SPARK_HOME&quot;</span>), <span class="st">&quot;R&quot;</span>,<span class="st">&quot;lib&quot;</span>),  <span class="kw">.libPaths</span>()))
+<span class="kw">library</span>(SparkR)</code></pre></div>
+<h4 id="nycflights13.csv-sparkr로-분석">2.4. <code>nycflights13.csv</code> SparkR로 분석</h4>
+<p><code>nycflights13.csv</code> 데이터를 스파크 문법에 맞춰 분석을 시작한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Initialize SparkContext and SQLContext</span>
+sc &lt;-<span class="st"> </span><span class="kw">sparkR.init</span>(<span class="dt">appName=</span><span class="st">&quot;SparkR-Flights-example&quot;</span>)
+sqlContext &lt;-<span class="st"> </span><span class="kw">sparkRSQL.init</span>(sc)
+
+flights &lt;-<span class="st"> </span><span class="kw">read.df</span>(sqlContext, <span class="st">&quot;nycflights13.csv&quot;</span>,<span class="st">&quot;com.databricks.spark.csv&quot;</span>,<span class="dt">header=</span><span class="st">&quot;true&quot;</span>)
+<span class="kw">head</span>(flights)</code></pre></div>
+<p>출력결과가 다음과 같이 나오면 SparkR에서 외부 csv 데이터를 불러와서 작업을 시작할 모든 준비가 마친 것이다.</p>
+<pre class="output"><code>&gt; head(flights)
+16/06/06 01:45:13 INFO MemoryStore: Block broadcast_13 stored as values in memory (estimated size 127.2 KB, free 721.9 KB)
+16/06/06 01:45:13 INFO MemoryStore: Block broadcast_13_piece0 stored as bytes in memory (estimated size 13.8 KB, free 735.7 KB)
+16/06/06 01:45:13 INFO BlockManagerInfo: Added broadcast_13_piece0 in memory on localhost:33386 (size: 13.8 KB, free: 511.0 MB)
+16/06/06 01:45:13 INFO SparkContext: Created broadcast 13 from textFile at TextFile.scala:30
+16/06/06 01:45:13 INFO FileInputFormat: Total input paths to process : 1
+16/06/06 01:45:13 INFO SparkContext: Starting job: dfToCols at NativeMethodAccessorImpl.java:-2
+16/06/06 01:45:13 INFO DAGScheduler: Got job 5 (dfToCols at NativeMethodAccessorImpl.java:-2) with 1 output partitions
+16/06/06 01:45:13 INFO DAGScheduler: Final stage: ResultStage 5 (dfToCols at NativeMethodAccessorImpl.java:-2)
+16/06/06 01:45:13 INFO DAGScheduler: Parents of final stage: List()
+16/06/06 01:45:13 INFO DAGScheduler: Missing parents: List()
+16/06/06 01:45:13 INFO DAGScheduler: Submitting ResultStage 5 (MapPartitionsRDD[38] at dfToCols at NativeMethodAccessorImpl.java:-2), which has no missing parents
+16/06/06 01:45:13 INFO MemoryStore: Block broadcast_14 stored as values in memory (estimated size 7.5 KB, free 743.2 KB)
+16/06/06 01:45:13 INFO MemoryStore: Block broadcast_14_piece0 stored as bytes in memory (estimated size 4.2 KB, free 747.4 KB)
+16/06/06 01:45:13 INFO BlockManagerInfo: Added broadcast_14_piece0 in memory on localhost:33386 (size: 4.2 KB, free: 511.0 MB)
+16/06/06 01:45:13 INFO SparkContext: Created broadcast 14 from broadcast at DAGScheduler.scala:1006
+16/06/06 01:45:13 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 5 (MapPartitionsRDD[38] at dfToCols at NativeMethodAccessorImpl.java:-2)
+16/06/06 01:45:13 INFO TaskSchedulerImpl: Adding task set 5.0 with 1 tasks
+16/06/06 01:45:13 INFO TaskSetManager: Starting task 0.0 in stage 5.0 (TID 5, localhost, partition 0,PROCESS_LOCAL, 2375 bytes)
+16/06/06 01:45:13 INFO Executor: Running task 0.0 in stage 5.0 (TID 5)
+16/06/06 01:45:13 INFO HadoopRDD: Input split: file:/home/rstudio/nycflights13.csv:0+11744183
+16/06/06 01:45:13 INFO Executor: Finished task 0.0 in stage 5.0 (TID 5). 3920 bytes result sent to driver
+16/06/06 01:45:13 INFO TaskSetManager: Finished task 0.0 in stage 5.0 (TID 5) in 17 ms on localhost (1/1)
+16/06/06 01:45:13 INFO TaskSchedulerImpl: Removed TaskSet 5.0, whose tasks have all completed, from pool 
+16/06/06 01:45:13 INFO DAGScheduler: ResultStage 5 (dfToCols at NativeMethodAccessorImpl.java:-2) finished in 0.013 s
+16/06/06 01:45:13 INFO DAGScheduler: Job 5 finished: dfToCols at NativeMethodAccessorImpl.java:-2, took 0.022469 s
+  year month day dep_time dep_delay arr_time arr_delay carrier tailnum flight origin dest air_time distance hour minute
+1 2013     1   1      517         2      830        11      UA  N14228   1545    EWR  IAH      227     1400    5     17
+2 2013     1   1      533         4      850        20      UA  N24211   1714    LGA  IAH      227     1416    5     33
+3 2013     1   1      542         2      923        33      AA  N619AA   1141    JFK  MIA      160     1089    5     42
+4 2013     1   1      544        -1     1004       -18      B6  N804JB    725    JFK  BQN      183     1576    5     44
+5 2013     1   1      554        -6      812       -25      DL  N668DN    461    LGA  ATL      116      762    5     54
+6 2013     1   1      554        -4      740        12      UA  N39463   1696    EWR  ORD      150      719    5     54</code></pre>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
