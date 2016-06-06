@@ -113,6 +113,23 @@ $ sudo apt-get upgrade
 $ sudo apt-get install r-base r-base-dev</code></pre>
 </div>
 </aside>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="rstudio-설치"><span class="glyphicon glyphicon-pushpin"></span>RStudio 설치</h3>
+</div>
+<div class="panel-body">
+<p><a href="https://www.rstudio.com/products/rstudio/download-server-2/">Download RStudio Server</a>로 가서 RStudio 서버를 다운로드하고 설치한다.</p>
+<pre class="shell"><code>$ sudo apt-get install gdebi-core
+$ wget https://download2.rstudio.org/rstudio-server-0.99.902-amd64.deb
+$ sudo gdebi rstudio-server-0.99.902-amd64.deb</code></pre>
+<p><code>rstudio</code>를 사용자로 등록하고 나서 웹브라우져를 열고 <code>http://localhost:8787</code>에 접속하고 나서, <code>rstudio</code> 계정으로 로그인한다.</p>
+<pre class="shell"><code>parallels@ubuntu:~/spark-1.6.1$ sudo useradd -m rstudio
+parallels@ubuntu:~/spark-1.6.1$ sudo passwd rstudio
+Enter new UNIX password: 
+Retype new UNIX password: 
+passwd: password updated successfully</code></pre>
+</div>
+</aside>
 <h3 id="r-팩키지-설치-r-packages-install">R 팩키지 설치 <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h3>
 <ol style="list-style-type: decimal">
 <li>R 팩키지명이 제대로 입력되었는지 확인한다.
