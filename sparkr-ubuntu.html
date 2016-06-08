@@ -35,14 +35,62 @@
 <div class="panel-body">
 <ul>
 <li>우분투 SparkR 설치을 설치한다.</li>
+<li>스파크를 설치하기 위한 사전 의존성을 점검하고 설치한다.</li>
 <li><code>SparkR</code> 설치를 위한 <code>devtools</code>를 설치한다.</li>
+<li>R과 RStudio를 스파크와 SparkR에 연결하고 설정을 완료한다.</li>
 </ul>
 </div>
 </section>
 <h3 id="sparkr로-분석할-데이터를-준비한다.">1. SparkR로 분석할 데이터를 준비한다.</h3>
 <p><code>nycflights13.csv</code> 파일을 다운로드 받아 SparkR로 분석을 준비한다.</p>
 <pre class="shell"><code>$ wget https://s3-us-west-2.amazonaws.com/sparkr-data/nycflights13.csv</code></pre>
-<h3 id="spark와-하둡을-설치한-다음-r과-rstudio에-연결시킨다.">2. Spark와 하둡을 설치한 다음 R과 RStudio에 연결시킨다.</h3>
+<h3 id="스파크와-하둡-설치">2. 스파크와 하둡 설치</h3>
+<p><code>spark-setup.sh</code> 쉘스크립트를 생성하고 파일 내부에 다음을 순차적으로 실행시킨다.</p>
+<ol style="list-style-type: decimal">
+<li>자바를 설치한다.</li>
+<li>스칼라를 설치한다.</li>
+<li>스파크를 설치하는 방법은 다음 두가지가 존재한다.
+<ul>
+<li>사전에 빌드가 완료된 스파크를 설치하는 방법 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></li>
+<li><a href="https://github.com/apache/spark">GitHub</a> 에서 소스파일을 받아 <code>maven</code>으로 설치하는 방법 <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></li>
+</ul></li>
+</ol>
+<pre class="shell"><code>#!/bin/sh
+
+# 1. Java Install
+sudo apt-add-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install -y oracle-java8-installer
+
+# 2. Scala Install
+
+wget http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
+sudo mkdir /usr/local/src/scala
+sudo tar xvf scala-2.11.8.tgz -C /usr/local/src/scala/
+
+echo &#39;export SCALA_HOME=/usr/local/src/scala/scala-2.11.8&#39; &gt;&gt; ~/.bashrc 
+echo &#39;export PATH=$SCALA_HOME/bin:$PATH&#39; &gt;&gt; ~/.bashrc 
+
+cd ~
+. .bashrc
+
+
+# 3. Spark Install
+
+sudo apt-get install -y git
+
+wget http://d3kbcqa49mib13.cloudfront.net/spark-1.6.1-bin-hadoop2.6.tgz
+tar xvf spark-1.6.1-bin-hadoop2.6.tgz
+
+cd spark-1.6.1-bin-hadoop2.6
+sbt/sbt assembly
+
+./bin/run-example SparkPi 10</code></pre>
+<p>마지막에 로그 사이에… <span class="math inline">\(\pi\)</span>값이 다음과 같이 보이면 정상적으로 설치가 완료된 것이다.</p>
+<pre class="output"><code>16/06/07 20:20:35 INFO DAGScheduler: Job 0 finished: reduce at SparkPi.scala:36, took 0.762281 s
+Pi is roughly 3.139584
+16/06/07 20:20:35 INFO SparkUI: Stopped Spark web UI at http://10.211.55.10:4040</code></pre>
+<h3 id="spark와-하둡을-설치한-다음-r과-rstudio에-연결시킨다.">4. Spark와 하둡을 설치한 다음 R과 RStudio에 연결시킨다.</h3>
 <ol style="list-style-type: decimal">
 <li><code>devtools</code>를 설치한다.</li>
 <li><code>devtools::install_github()</code> 명령어로 아파치스파크를 다운로드 한다.
@@ -57,22 +105,22 @@
 <li>위 명령어가 동작되지 않는 경우 <code>/home/parallels/.ivy2/jars</code> 디렉토리에서 <code>.jar</code> 파일을 복사해 넣는다.</li>
 </ul></li>
 </ol>
-<h4 id="devtools-팩키지-전-설치전-필수적으로-설치할-라이브러리">2.1. <code>devtools</code> 팩키지 전 설치전 필수적으로 설치할 라이브러리</h4>
+<h4 id="devtools-팩키지-전-설치전-필수적으로-설치할-라이브러리">4.1. <code>devtools</code> 팩키지 전 설치전 필수적으로 설치할 라이브러리</h4>
 <p><code>devtools</code> 팩키지로 GitHub에서 SparkR을 설치하기 전에 필수적으로 설치할 라이브러리를 사전에 설치시킨다.</p>
 <pre class="shell"><code>$ sudo apt-get -y install libcurl4-gnutls-dev
 $ sudo apt-get -y install libxml2-dev
 $ sudo apt-get -y install libssl-dev</code></pre>
-<h4 id="devtools와-sparkr을-설치">2.2. <code>devtools</code>와 <code>SparkR</code>을 설치</h4>
+<h4 id="devtools와-sparkr을-설치">4.2. <code>devtools</code>와 <code>SparkR</code>을 설치</h4>
 <p><code>devtools</code>와 <code>SparkR</code>을 차례로 설치한다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;devtools&quot;</span>)
 devtools::<span class="kw">install_github</span>(<span class="st">&#39;apache/spark@v1.6.1&#39;</span>, <span class="dt">subdir=</span><span class="st">&#39;R/pkg&#39;</span>)</code></pre></div>
-<h4 id="sparkr과-spark-csv-설정">2.3. SparkR과 spark-csv 설정</h4>
+<h4 id="sparkr과-spark-csv-설정">4.3. SparkR과 spark-csv 설정</h4>
 <p>SparkR과 spark-csv 설정을 다음과 같이 진행한다.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.setenv</span>(<span class="dt">SPARK_HOME =</span> <span class="st">&quot;/home/parallels/spark-1.6.1/&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.setenv</span>(<span class="dt">SPARK_HOME =</span> <span class="st">&quot;/home/parallels/spark-1.6.1-bin-hadoop2.6/&quot;</span>)
 <span class="kw">Sys.setenv</span>(<span class="dt">SPARKR_SUBMIT_ARGS=</span><span class="st">&quot;--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell&quot;</span>)
 <span class="kw">.libPaths</span>(<span class="kw">c</span>(<span class="kw">file.path</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;SPARK_HOME&quot;</span>), <span class="st">&quot;R&quot;</span>,<span class="st">&quot;lib&quot;</span>),  <span class="kw">.libPaths</span>()))
 <span class="kw">library</span>(SparkR)</code></pre></div>
-<h4 id="nycflights13.csv-sparkr로-분석">2.4. <code>nycflights13.csv</code> SparkR로 분석</h4>
+<h4 id="nycflights13.csv-sparkr로-분석">4.4. <code>nycflights13.csv</code> SparkR로 분석</h4>
 <p><code>nycflights13.csv</code> 데이터를 스파크 문법에 맞춰 분석을 시작한다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Initialize SparkContext and SQLContext</span>
 sc &lt;-<span class="st"> </span><span class="kw">sparkR.init</span>(<span class="dt">appName=</span><span class="st">&quot;SparkR-Flights-example&quot;</span>)
@@ -114,6 +162,88 @@ flights &lt;-<span class="st"> </span><span class="kw">read.df</span>(sqlContext
 4 2013     1   1      544        -1     1004       -18      B6  N804JB    725    JFK  BQN      183     1576    5     44
 5 2013     1   1      554        -6      812       -25      DL  N668DN    461    LGA  ATL      116      762    5     54
 6 2013     1   1      554        -4      740        12      UA  N39463   1696    EWR  ORD      150      719    5     54</code></pre>
+<h3 id="전체-설치-쉘스크립트와-r-스크립트">5. 전체 설치 쉘스크립트와 R 스크립트</h3>
+<h4 id="쉘스크립트">5.1. 쉘스크립트</h4>
+<pre class="shell"><code>#!/bin/sh
+
+# 1. Java Install
+sudo apt-add-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install -y oracle-java8-installer
+
+# 2. Scala Install
+
+wget http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
+sudo mkdir /usr/local/src/scala
+sudo tar xvf scala-2.11.8.tgz -C /usr/local/src/scala/
+
+echo &#39;export SCALA_HOME=/usr/local/src/scala/scala-2.11.8&#39; &gt;&gt; ~/.bashrc 
+echo &#39;export PATH=$SCALA_HOME/bin:$PATH&#39; &gt;&gt; ~/.bashrc 
+
+cd ~
+. .bashrc
+
+
+# 3. Spark Install
+sudo apt-get install -y git
+
+wget http://d3kbcqa49mib13.cloudfront.net/spark-1.6.1-bin-hadoop2.6.tgz
+tar xvf spark-1.6.1-bin-hadoop2.6.tgz
+
+cd spark-1.6.1-bin-hadoop2.6
+sbt/sbt assembly
+
+./bin/run-example SparkPi 10
+
+# 4. devtools Install
+
+sudo apt-get -y install libcurl4-gnutls-dev
+sudo apt-get -y install libxml2-dev
+sudo apt-get -y install libssl-dev
+
+# 5. R and RStudio Install
+
+codename=$(lsb_release -c -s)
+echo &quot;deb http://cran.fhcrc.org/bin/linux/ubuntu $codename/&quot; | sudo tee -a /etc/apt/sources.list &gt; /dev/null
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+sudo add-apt-repository ppa:marutter/rdev
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install -y r-base r-base-dev
+
+sudo apt-get install -y gdebi-core
+wget https://download2.rstudio.org/rstudio-server-0.99.902-amd64.deb
+sudo gdebi rstudio-server-0.99.902-amd64.deb
+
+sudo useradd -m rstudio
+sudo passwd rstudio
+
+
+# 6.  NYC  flight  data install
+
+wget https://s3-us-west-2.amazonaws.com/sparkr-data/nycflights13.csv</code></pre>
+<h4 id="r-스크립트">5.2. R 스크립트</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;devtools&quot;</span>)
+devtools::<span class="kw">install_github</span>(<span class="st">&#39;apache/spark@v1.6.1&#39;</span>, <span class="dt">subdir=</span><span class="st">&#39;R/pkg&#39;</span>)
+
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARK_HOME =</span> <span class="st">&quot;/home/parallels/spark-1.6.1-bin-hadoop2.6/&quot;</span>)
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARKR_SUBMIT_ARGS=</span><span class="st">&quot;--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell&quot;</span>)
+<span class="kw">.libPaths</span>(<span class="kw">c</span>(<span class="kw">file.path</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;SPARK_HOME&quot;</span>), <span class="st">&quot;R&quot;</span>,<span class="st">&quot;lib&quot;</span>),  <span class="kw">.libPaths</span>()))
+<span class="kw">library</span>(SparkR)
+
+<span class="co"># Initialize SparkContext and SQLContext</span>
+sc &lt;-<span class="st"> </span><span class="kw">sparkR.init</span>(<span class="dt">appName=</span><span class="st">&quot;SparkR-Flights-example&quot;</span>)
+sqlContext &lt;-<span class="st"> </span><span class="kw">sparkRSQL.init</span>(sc)
+
+flights &lt;-<span class="st"> </span><span class="kw">read.df</span>(sqlContext, <span class="st">&quot;nycflights13.csv&quot;</span>,<span class="st">&quot;com.databricks.spark.csv&quot;</span>,<span class="dt">header=</span><span class="st">&quot;true&quot;</span>)
+<span class="kw">head</span>(flights)</code></pre></div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://blog.prabeeshk.com/blog/2014/10/31/install-apache-spark-on-ubuntu-14-dot-04/">Install Apache Spark on Ubuntu-14.04</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://ryoost.tistory.com/entry/%EC%9A%B0%EB%B6%84%ED%88%AC%EC%97%90-Apache-Spark-%EC%84%A4%EC%B9%98-%EC%82%BD%EC%A7%88">우분투에 Apache Spark 설치 삽질</a><a href="#fnref2">↩</a></p></li>
+</ol>
+</div>
         </div>
       </div>
       </article>
