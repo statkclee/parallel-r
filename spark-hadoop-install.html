@@ -98,8 +98,8 @@ JAVA_HOME is not set</code></pre>
 <h4 id="스칼라-설치">2.3. 스칼라 설치</h4>
 <p>최신 <a href="http://www.scala-lang.org/download/2.11.8.html">스칼라 2.11.8</a> 버젼을 다운로드한다. <code>/usr/local/src/scala</code> 디렉토리를 생성하고 다운로드 받은 스칼라 압축파일을 푼다.</p>
 <pre class="shell"><code>$ wget http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
-$  sudo mkdir /usr/local/src/scala
-$  sudo tar xvf scala-2.11.8.tgz -C /usr/local/src/scala/</code></pre>
+$ sudo mkdir /usr/local/src/scala
+$ sudo tar xvf scala-2.11.8.tgz -C /usr/local/src/scala/</code></pre>
 <p><code>.bashrc</code> 파일을 편집하여 스칼라가 설치된 디렉토리를 경로에 추가한다.</p>
 <pre class="shell"><code>$ sudo gedit .bashrc
 $ . .bashrc</code></pre>
@@ -108,7 +108,8 @@ $ . .bashrc</code></pre>
 <h4 id="bashrc-파일-추가"><span class="glyphicon glyphicon-pushpin"></span>.bashrc 파일 추가</h4>
 </div>
 <div class="panel-body">
-<p>export SCALA_HOME=/usr/local/src/scala/scala-2.11.8 export PATH=<span class="math inline">\(SCALA_HOME/bin:\)</span>PATH</p>
+<pre class="shell"><code>export SCALA_HOME=/usr/local/src/scala/scala-2.11.8
+export PATH=$SCALA_HOME/bin:$PATH</code></pre>
 </div>
 </aside>
 <pre class="shell"><code>$ scala -version

@@ -106,8 +106,8 @@ JAVA_HOME is not set
 
 ~~~ {.shell}
 $ wget http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
-$  sudo mkdir /usr/local/src/scala
-$  sudo tar xvf scala-2.11.8.tgz -C /usr/local/src/scala/
+$ sudo mkdir /usr/local/src/scala
+$ sudo tar xvf scala-2.11.8.tgz -C /usr/local/src/scala/
 ~~~
 
 `.bashrc` 파일을 편집하여 스칼라가 설치된 디렉토리를 경로에 추가한다.
@@ -119,8 +119,10 @@ $ . .bashrc
 
 > #### .bashrc 파일 추가 {.callout}
 > 
+> ~~~ {.shell}
 > export SCALA_HOME=/usr/local/src/scala/scala-2.11.8
 > export PATH=$SCALA_HOME/bin:$PATH
+> ~~~
 
 ~~~ {.shell}
 $ scala -version
