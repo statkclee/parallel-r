@@ -38,12 +38,15 @@ title: R 병렬 프로그래밍
     - [성능 측정기준 벤치마킹](perf-benchmark.html)
 1. **빅데이터**
     - [RStudio 빅데이터 전략](big-data-strategy.html)
+    - [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
+    - [MOOC 스파크 실행환경](mooc-spark-install.html)    
     - **SparkR 설치**
         - [SparkR 설치](spark-hadoop-install.html)
         - [SparkR 헬로 월드](sparkr-hello-world.html)
         - [SparkR 도커](sparkr-docker.html)
         - [우분투 SparkR 설치](sparkr-ubuntu.html)
     - [SparkR 들어가며](sparkr-intro.html)
+
 
 
 ## 왜 R 언어인가? [^r-rank] [^r-r4stats]
