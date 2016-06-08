@@ -43,6 +43,8 @@ title: R 병렬 프로그래밍
         - [SparkR 헬로 월드](sparkr-hello-world.html)
         - [SparkR 도커](sparkr-docker.html)
         - [우분투 SparkR 설치](sparkr-ubuntu.html)
+    - [SparkR 들어가며](sparkr-intro.html)
+
 
 ## 왜 R 언어인가? [^r-rank] [^r-r4stats]
 

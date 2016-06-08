@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">SparkR 들어가며</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h3 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h3>
+</div>
+<div class="panel-body">
+<ul>
+<li>SparkR에 대해 살펴본다.</li>
+<li>R기반 전통적인 데이터분석과 차이점에 대해 이해한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="sparkr-데이터과학-프로세스">1. SparkR 데이터과학 프로세스</h3>
+<p><img src="fig/sparkr-da-process.png" alt="스파크R 데이터 과학 프로세스" width="50%"></p>
+<p>SparkR이 R 생태계 데이터과학영역에 들어오게 되면 기존 로컬컴퓨터 데이터저장소에 저장해서 분석하던 데이터양이 급격히 커지게 된다. 정말 커다란 데이터를 R을 활용하여 분석하기 위해서는 중간에 프레임워크가 필요하다.</p>
+<p>하둡으로 분산저장된 데이터를 로컬 컴퓨터에 저장시키기 위해서 이를 처리하는 다양한 하둡 맵리듀스, 하이브, 피그, 경우에 따라서는 관계형 데이터베이스가 필요하다.</p>
+<ul>
+<li>하둡같은 분산데이터 저장소에 보관된 데이터를 적재, 정제, 변환, 총합요약, 표본추출 작업이 프레임워크를 통해 일차 작업된다.</li>
+<li>R에서 탐색적 데이터분석, 시각화, 최종 스코어를 붙이기 위해서는 프레임워크에서 작업된 데이터가 R에서 작업하기 좋게 로컬 저장소로 옮겨진다.</li>
+<li>R에서 한정된 메모리용량이지만 16GB, 32GB 등도 쉽게 확장되어 저렴하게 이용할 수 있어 프레임워크와 함께 데이터 크기에 관계없이 데이터 분석 및 모형개발작업이 가능하다.</li>
+</ul>
+<h3 id="sparkr-아키텍처">2. SparkR 아키텍처</h3>
+<p>R 데이터프레임이 파이썬 데이터프레임에 영향을 주었고, 동일한 개념이 Spark 데이터프레임을 가능하게 했다. SparkR은 스파크에 대한 R 전단(Frontend)로 볼 수 있고, 결국 R 데이터프레임과 스파크 데이터프레임에 상호호환성을 보장하는 역할을 수행한다.</p>
+<p>SparkR을 사용하게 되면 대용량 분산 저장소와 R이 직접 의사소통하게 되는 구조가 된다. 이는 마치 R이 로컬 저장소에 데이터를 저장시켜서 데이터 분석, 시각화, 모형개발 작업을 수행하는 것과 일맥상통한다.</p>
+<p><img src="fig/sparkr-dataframe.png" alt="스파크R 데이터프레임" width="50%"></p>
+<h3 id="sparkr-아키텍처-1">3. SparkR 아키텍처</h3>
+<p>SparkR 아키텍터를 자세히 살펴보면, 대용량 분산 저장소에 저장된 데이터를 <code>read.df()</code> 함수로 불러오고, R에서 작업한 결과를 <code>write.df()</code> 함수로 대용량 분산 저장소에 저장시킨다. 만약, R 데이터프레임으로 불러와서 분석작업을 하려면, <code>SparkR::collect()</code> 함수로 가져와서 분석을 하고, <code>SparkR::createDataFrame()</code> 명령어로 스파크 데이터프레임을 생성시킨다.</p>
+<p><img src="fig/SparkR-arch-process-view.png" alt="스파크R 데이터프레임" width="50%"></p>
+<h3 id="sparkr-분석">4. SparkR 분석</h3>
+<h4 id="sparkrcollect-통한-데이터프레임-작업"><code>SparkR::collect()</code> 통한 데이터프레임 작업</h4>
+<ol style="list-style-type: decimal">
+<li><code>SparkR</code> 라이브러리를 불러오는 환경설정작업을 수행한다.</li>
+<li><code>SparkR</code> 초기화를 한다.</li>
+<li><code>spark-csv</code> 모듈을 통해 외부 CSV 파일을 불러온다.</li>
+<li><code>cache</code>, <code>registerTempTable</code> 통해 SQL을 통한 사전 분석을 실시한다.</li>
+<li><code>SparkR::collect</code> 명령어를 통해 R데이터프레임으로 변환하여 작업한다.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+##================================================================================
+## 00. SparkR 환경설정
+##================================================================================
+
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARK_HOME =</span> <span class="st">&quot;/home/parallels/spark-1.6.1/&quot;</span>)
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARKR_SUBMIT_ARGS=</span><span class="st">&quot;--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell&quot;</span>)
+<span class="kw">.libPaths</span>(<span class="kw">c</span>(<span class="kw">file.path</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;SPARK_HOME&quot;</span>), <span class="st">&quot;R&quot;</span>,<span class="st">&quot;lib&quot;</span>),  <span class="kw">.libPaths</span>()))
+<span class="kw">library</span>(SparkR)
+
+##================================================================================
+## 01. SparkR 초기화
+##================================================================================
+
+sc &lt;-<span class="st"> </span><span class="kw">sparkR.init</span>()
+sqlContext &lt;-<span class="st"> </span><span class="kw">sparkRSQL.init</span>(sc)
+
+##================================================================================
+## 02. 데이터 불러오기
+##================================================================================
+
+flight &lt;-<span class="st"> </span><span class="kw">read.df</span>(sqlContext, <span class="st">&quot;./nycflights13.csv&quot;</span>, <span class="st">&quot;com.databricks.spark.csv&quot;</span>, <span class="dt">header=</span><span class="st">&quot;true&quot;</span>, <span class="dt">inferSchema =</span> <span class="st">&quot;true&quot;</span>)
+
+<span class="kw">head</span>(flight)
+
+<span class="kw">printSchema</span>(flight)
+
+##================================================================================
+## 03. 탐색적 자료분석 초기 설정
+##================================================================================
+
+<span class="kw">cache</span>(flight)
+<span class="kw">nrow</span>(flight)
+
+<span class="kw">registerTempTable</span>(flight, <span class="st">&quot;flightTable&quot;</span>)
+
+t.sql &lt;-<span class="st"> </span><span class="kw">sql</span>(sqlContext, <span class="st">&quot;select * from flightTable limit 10&quot;</span>)
+<span class="kw">head</span>(t.sql)
+
+##================================================================================
+## 04. R 데이터 분석
+##================================================================================
+
+<span class="kw">library</span>(dplyr)
+
+flight.df &lt;-<span class="st"> </span>SparkR::<span class="kw">collect</span>(flight)
+
+f.delay &lt;-<span class="st"> </span>flight.df %&gt;%<span class="st"> </span><span class="kw">group_by</span>(month) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">mean.delay =</span> <span class="kw">mean</span>(<span class="kw">as.numeric</span>(dep_time), <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(month, mean.delay)
+
+<span class="kw">tail</span>(f.delay)
+
+<span class="kw">library</span>(ggplot2)
+
+<span class="kw">ggplot</span>(f.delay, <span class="kw">aes</span>(month, mean.delay)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">geom_line</span>(<span class="dt">color =</span><span class="st">&quot;blue&quot;</span>)</code></pre></div>
+<p><img src="fig/sparkr-collect-flight.png" alt="스파크R 데이터프레임 항공정보" width="50%"></p>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
