@@ -94,6 +94,22 @@
 <li><strong>동작(Action)</strong> : 동작이 실행될 때 비로소 RDD 변환이 실행된다.</li>
 </ul>
 <p>RDD를 캐쉬형태로 메모리 혹은 디스크에 넣고 작업하는 것도 가능하다.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="데이터-구조-분류"><span class="glyphicon glyphicon-pushpin"></span>데이터 구조 분류</h3>
+</div>
+<div class="panel-body">
+<ul>
+<li>선스키마를 갖는 정형데이터 : 관계형 데이터베이스</li>
+<li>후스키마를 갖는 반정형데이터 : JSON, XML, 주로 <code>printf</code>문으로 생성되는 웹로그 등.</li>
+<li>스키마가 없는 무정형 데이터 : 일반 텍스트, 미디어 파일</li>
+</ul>
+<p><img src="fig/data-structure.png" alt="데이터 구조 분류" width="70%"></p>
+</div>
+</aside>
+<h3 id="rdd-vs-데이터프레임">RDD vs 데이터프레임</h3>
+<p>RDD와 데이터프레임 성능을 비교하면, 단순히 RDD를 사용하는 것에 비해 데이터프레임을 사용한 것이 성능이 최대 파있너의 경우 나오는 것이 확인된다. R 데이터프레임도 확인이 되고 있지 않지만 유사할 것으로 판단된다.</p>
+<p><img src="fig/spark-dataframe-performance.png" alt="RDD vs. 데이터프레임 비교" width="70%"></p>
 <h4 id="변환transformation과-동작action">변환(Transformation)과 동작(Action)</h4>
 <p>스파크 RDD 변환은 기존 데이터에서 새로운 데이터를 생성시키지만, 바로 새로운 데이터가 생성되는 것이 아니다. <strong>지연연산(lazy evaluation)</strong> 을 사용해서 기초 데이터에 적용될 변환연산을 기억하고 있고 <strong>동작(Action)</strong> 이 실행될 때 한번에 실행된다. 이런 과정을 통해 스파크가 자동으로 최적화 및 장애나 느리게 작업하는 일꾼을 깔끔하게 처리한다. 어떻게 보면 최종결과값을 생성해내는 방안 혹은 음식조리하는 요리법으로 간주할 수도 있다.</p>
 <h4 id="변환transformation">변환(Transformation)</h4>
@@ -186,6 +202,22 @@
 <h3 id="rdd-동작방식">RDD 동작방식</h3>
 <p><img src="fig/rdd-work-trigger.png" alt="RDD 데이터 분할 일꾼 병렬처리" width="70%"></p>
 <p>RDD 동작방식은 최종 결과를 얻기 위해서 모으기(collect) 동작을 일으키면, 병렬화(parallelize), 여과과정(filter), 매핑(map) 작업이 원 데이터 파일 혹은 리스트에 가해져 RDD에 순차적으로 진행된다.</p>
+<h3 id="스파크-응용프로그램-생애주기">스파크 응용프로그램 생애주기</h3>
+<ol style="list-style-type: decimal">
+<li>외부 데이터에서 RDD를 생성하거나 드라이버 프로그램에 컬렉션(리스트)를 병렬화하면서 시작된다.</li>
+<li>지연연산으로 앞서 생성된 RDD를 새로운 RDD로 변환시킨다.</li>
+<li>재사용하려면 RDD를 <strong>cache()</strong> 함수를 사용한다.</li>
+<li>동작(action)을 수행해서 병렬처리 작업을 실행시키고 최종결과를 산출시킨다.</li>
+</ol>
+<p>좀더 구체적으로 살펴보면 다음과 같다.</p>
+<ol style="list-style-type: decimal">
+<li>드라이버 프로그램(개발중인 스파크 응용프로그램)이 실행된다.</li>
+<li>드라이버 프로그램은 어떤 관리자를 프로그램을 사용할지에 따라 다르지만, 응용프로그램 마스터가 YARN, Mesos, 스파크 자원관리자가 올라올 때까지 대기한다.</li>
+<li>응용프로그램 관리자가 클러스터에 작업을 분배한다. 이때 원격인지 로컬인지, CPU와 메모리 자원이 가용한 컴퓨터 노드, 자원 요구사항 등을 고려한다.</li>
+<li>일꾼이 분할된 작업을 수령한다.</li>
+<li>일꾼이 작업을 처리하고 처리결과를 파일에 저장한다.</li>
+<li>작업이 완료되면 제어권을 다시 드라이버 프로그램에 넘겨주고 다른 작업을 위해 대기한다.</li>
+</ol>
         </div>
       </div>
       </article>
