@@ -190,7 +190,9 @@ stopCluster(cl)
 mpi.quit()
 ~~~
 
-### 4. R 병렬처리 두가지 접근방법
+### 4. R 병렬처리 두가지 접근방법 [^UC-Berkeley-AMPLAB]
+
+[^UC-Berkeley-AMPLAB]: [SparkR The Past, the Present and the Future](https://www.youtube.com/watch?v=I9K3K2eVw0E)
 
 `caret`, `tm` 팩키지가 병렬컴퓨팅을 수행하는 대표적인 R 팩키지다.
 서로 독립적으로 문제를 나누어서 병렬처리가 가능한 사례를 두가지 R 기계학습에서 들 수 있다.

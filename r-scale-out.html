@@ -194,12 +194,18 @@ cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class
 <span class="kw">clusterCall</span>(cl, runif, <span class="dv">2</span>)
 <span class="kw">stopCluster</span>(cl)
 <span class="kw">mpi.quit</span>()</code></pre></div>
-<h3 id="r-병렬처리-두가지-접근방법">4. R 병렬처리 두가지 접근방법</h3>
+<h3 id="r-병렬처리-두가지-접근방법-uc-berkeley-amplab">4. R 병렬처리 두가지 접근방법 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h3>
 <p><code>caret</code>, <code>tm</code> 팩키지가 병렬컴퓨팅을 수행하는 대표적인 R 팩키지다. 서로 독립적으로 문제를 나누어서 병렬처리가 가능한 사례를 두가지 R 기계학습에서 들 수 있다. 동일한 모형내에서 최적모형을 개발할 태, 모수를 추정해야 한다. 각 변수에 대한 모수 뿐만 아니라, 능선회귀 등을 통해 정규화를 할 경우 정규화 모수 <span class="math inline">\(\lambda\)</span> 도 추정을 해서 최적모형을 찾아낸다.</p>
 <p>스파크의 힘을 빌어 SparkR로 분산처리 모형을 개발하는 방법이 하나이고, 또다른 방식을 다양한 R 병렬컴퓨팅 팩키지를 활용하여 최적모형을 찾아내는 것도 가능하다.</p>
 <p><img src="fig/parallel-parameter-tuning.png" alt="CPU 성능향상" width="50%"></p>
 <p>두번째 병렬처리 적용이 가능한 분야는 서로 다른 모형을 추정하여 결과값을 투표로 정해 조합하는 경우로 선형모형부터, 신경망, 나무모형, 확률숲 등 다양한 모형을 데이터 적합시키고 결과를 투표로 조합해서 산출해내는 방법이 있다. 위와 마찬가지로, 스파크의 힘을 빌어 SparkR로 분산처리 모형을 개발하는 방법이 하나이고, 또다른 방식을 다양한 R 병렬컴퓨팅 팩키지를 활용하여 최적모형을 찾아내는 것도 가능하다.</p>
 <p><img src="fig/parallel-model-averaging.png" alt="CPU 성능향상" width="50%"></p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://www.youtube.com/watch?v=I9K3K2eVw0E">SparkR The Past, the Present and the Future</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
         </div>
       </div>
       </article>
