@@ -39,6 +39,105 @@
 </ul>
 </div>
 </section>
+<h3 id="추천-시스템의-도래-mmds-stanford">1. 추천 시스템의 도래 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h3>
+<p><img src="fig/from-scarcity-to-abundance.png" alt="희소에서 풍요로 전환" width="50%"></p>
+<p>과거 거의 모든 분야에 자원이 희소하여 최대한의 자원을 절약하여 최대의 효과를 내는 방식으로 진화를 하였으나, 인터넷과 웹의 도래로 말미암아 <strong>긴꼬리(Long-tail)</strong> 현상이 어디서나 관측되고 있다. 따라서 과거 희소성에 근거한 접근법이 오히려 문제가 되고, 너무 많은 풍요의 시대에 추천을 통해 더 나은 방식으로 진화를 거듭해 나가고 있다.</p>
+<p>추천 방식을 다음과 같이 나눌 수도 있다.</p>
+<ul>
+<li>수작업 혹은 편집자: 편집자 추천, 여행 필수품 등</li>
+<li>합계 총합: 가장 인기 있는 상품, 히트상품 상위 10 개 품목, 신상품 등</li>
+<li>개인에 맞춤형 추천: 아마존, 넥플릭스 등</li>
+</ul>
+<h4 id="추천시스템-간략한-수식-표현">1.1. 추천시스템 간략한 수식 표현</h4>
+<p>수학적으로 추천시스템을 표현하면 다음과 같다. 수많은 고객이 수많은 제품, 서비스에 평가를 한 평가 결과로 엄청 성긴 행렬로 표현된다.</p>
+<ul>
+<li><span class="math inline">\(U_{\text{사용자}}\)</span> : 사용자 고객 집합</li>
+<li><span class="math inline">\(P_{\text{제품, 서비스}}\)</span> : 제품이나 서비스 집합</li>
+<li><p><span class="math inline">\(R_{\text{평점}}\)</span> : 고객이 제품에 만족도를 표현한 평점</p></li>
+<li><p><strong>효용함수</strong></p></li>
+</ul>
+<p><span class="math display">\[u:U_{\text{사용자}} \times P_{\text{제품, 서비스}} \Rightarrow R_{\text{평점}}\]</span></p>
+<h4 id="추천시스템-데이터-구조">1.2. 추천시스템 데이터 구조</h4>
+<p>추천시스템을 개발할 때 자료구조는 영화를 영화관람자가 1 에서 5점까지 별점을 주는 구조로 되어있고, 코딩을 어떻게 하느냐에 차이가 있지만, 0 점 혹은 <code>?</code>, 결측값을 영화를 보지 않은, 경우에 따라서는 물품,제품, 서비스를 구매하지 않은 고객으로 볼 수 있다.</p>
+<p>영화나 제품 서비스에 대한 정보는 사전에 알 수 있기 때문에, 이 정보를 이용하여 사용자가 영화를 추천할 수도 있고, 기존 영화관람객이 다양한 영화를 평가 했다면 유사한 평점을 갖는 유사도를 추정하여 영화를 추천한다.</p>
+<p><span class="math display">\[
+\begin{array}{c|cccc|cc}
+\text{영화} &amp; \text{무성} &amp; \text{광춘} &amp; \text{영숙} &amp; \text{환범} &amp; \text{영화장르}_{개그} &amp; \text{영화장르}_{폭력} \\
+\hline
+\text{곡성}       &amp; 5 &amp; 5 &amp; 1 &amp; 1 &amp; 0.9 &amp; 0 \\
+\text{왕의 남자}  &amp; 5 &amp; ? &amp; ? &amp; 1 &amp; 1 &amp; 0.01 \\
+\text{넘버3}      &amp; ? &amp; 4 &amp; 1 &amp; ? &amp; 0.99 &amp; 0 \\
+\text{돌아이}     &amp; 1 &amp; 2 &amp; 1 &amp; 4 &amp; 0.1 &amp; 1.0 \\
+\text{겨울나그네} &amp; 1 &amp; 5 &amp; 1 &amp; ? &amp; 0 &amp; 0.9 \\
+\hline
+\end{array}
+\]</span></p>
+<h3 id="추천-시스템-spark-matrix-factorization-python-matrix-approx">2. 추천 시스템 <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></h3>
+<p>다양한 추천시스템이 존재하지만 수학적으로 보면 사용자 평가 정보와 상품 평가정보를 기반으로 전체 사용자와 상품 평가정보가 포함된 행렬을 채우는 것으로 볼 수 있다. 물론 얼마나 잘 채우냐가 좋은 추천 시스템의 요건이 된다.</p>
+<p><img src="fig/low-rank-matrix-factorization.png" alt="낮은 계수 행렬 인수분해" width="50%"></p>
+<p>모든 사용자와 모든 영화를 평점을 채워 빈칸이 없도록 하는 추정하는 것으로 <span class="math inline">\(\text{사용자} \times \text{영화}\)</span> 행렬을 <strong>낮은 계수 행렬 인수분해(Low rank matrix factorization)</strong> 로 근사하는 개념으로 <strong>최소자승 교대 추정(Alternating Least Square)</strong> 방식을 사용해서 채워 넣는다.</p>
+<ol style="list-style-type: decimal">
+<li>임의 <span class="math inline">\(\text{사용자}\)</span>, <span class="math inline">\(\text{영화}\)</span> 벡터를 갖고 시작한다.</li>
+<li><span class="math inline">\(\text{영화}\)</span>를 고정시키고 <span class="math inline">\(\text{사용자}\)</span> 벡터를 최적화한다.</li>
+<li><span class="math inline">\(\text{사용자}\)</span>를 고정시키고 <span class="math inline">\(\text{영화}\)</span> 벡터를 최적화한다.</li>
+<li>수렴할 때까지 교대로 최적화 과정을 반복한다.</li>
+</ol>
+<p>수식으로 표현하면 다음과 같다.</p>
+<p><span class="math display">\[
+\min_{U, P} \lVert R_{평점} - UP  \rVert^{2}
+\]</span></p>
+<p>사용자 <span class="math inline">\(U \geq 0\)</span>, 제품 <span class="math inline">\(P \geq 0\)</span> 모두 0 보다 큰 조건이 붙는다.</p>
+<h4 id="추천-시스템-분류">2.1. 추천 시스템 분류</h4>
+<p>수학적으로 추천 시스템을 살펴봤으면, 이제 협업 필터링(Collaborative filtering)에 대해 살펴본다.</p>
+<ul>
+<li><strong>콘텐츠 기반 필터링</strong> : 사용자 프로파일 혹은 제품(영화 등) 프로파일 정보를 활용하여 추천하는 알고리즘</li>
+<li><strong>협업 필터링</strong>
+<ul>
+<li><strong>제품-제품 협업 필터링</strong> : 사용자에게 사용자가 구매한 것과 가장 유사한 제품을 추천하는 알고리즘</li>
+<li><strong>사용자-사용자 협업 필터링</strong> : 사용자에게 유사한 사용자가 구매한 것과 가장 유사한 제품을 추천하는 알고리즘</li>
+</ul></li>
+</ul>
+<h4 id="유사성-측도">2.2. 유사성 측도</h4>
+<p>유사성 측도는 유클리드, 코사인, 피어슨 상관계수가 포함된다.</p>
+<h5 id="유클리드-거리">2.2.1. 유클리드 거리</h5>
+<p>유클리드 거리는 피타고라스 공식을 적용하여 다음과 같이 구할 수 있다.</p>
+<p><span class="math display">\[\begin{align}\mathrm{d}(\mathbf{p},\mathbf{q}) = \mathrm{d}(\mathbf{q},\mathbf{p}) &amp; = \sqrt{(q_1-p_1)^2 + (q_2-p_2)^2 + \cdots + (q_n-p_n)^2} \\[8pt]
+&amp; = \sqrt{\sum_{i=1}^n (q_i-p_i)^2}.\end{align}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a &lt;-<span class="st"> </span><span class="kw">c</span>(-<span class="fl">0.012813841</span>, -<span class="fl">0.024518383</span>, -<span class="fl">0.002765056</span>,  <span class="fl">0.079496744</span>,  <span class="fl">0.063928973</span>,
+       <span class="fl">0.476156960</span>,  <span class="fl">0.122111977</span>,  <span class="fl">0.322930189</span>,  <span class="fl">0.400701256</span>,  <span class="fl">0.454048860</span>,
+       <span class="fl">0.525526219</span>)
+
+b &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.64175768</span>,  <span class="fl">0.54625694</span>,  <span class="fl">0.40728261</span>,  <span class="fl">0.24819750</span>,  <span class="fl">0.09406221</span>, 
+       <span class="fl">0.16681692</span>, -<span class="fl">0.04211932</span>, -<span class="fl">0.07130129</span>, -<span class="fl">0.08182200</span>, -<span class="fl">0.08266852</span>,
+       -<span class="fl">0.07215885</span>)
+
+euclidean_dist &lt;-<span class="st"> </span><span class="kw">dist</span>(<span class="kw">rbind</span>(a, b) ,<span class="dt">method=</span><span class="st">&quot;euclidean&quot;</span>)
+
+euclidean_dist</code></pre></div>
+<h5 id="코사인-유사도">2.2.2. 코사인 유사도</h5>
+<p>코사인 유사도는 두 내적 벡터의 유사도를 코사인 각도로 측정하여 -1에서 1 사이 값을 갖게 된다.</p>
+<p><span class="math display">\[\text{코사인 유사도} = \cos(\theta) = {\mathbf{A} \cdot \mathbf{B} \over \|\mathbf{A}\| \|\mathbf{B}\|} = \frac{ \sum\limits_{i=1}^{n}{A_i  B_i} }{ \sqrt{\sum\limits_{i=1}^{n}{A_i^2}}  \sqrt{\sum\limits_{i=1}^{n}{B_i^2}} } \]</span></p>
+<p><code>crossprod</code> 함수로 계산을 해도 되고, <code>lsa</code> 팩키지의 <code>cosine</code> 함수를 사용한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">crossprod</span>(a, b)/<span class="kw">sqrt</span>(<span class="kw">crossprod</span>(a) *<span class="st"> </span><span class="kw">crossprod</span>(b))
+
+<span class="kw">library</span>(lsa)
+<span class="kw">cosine</span>(a, b)</code></pre></div>
+<h5 id="피어슨-상관계수">2.2.3. 피어슨 상관계수</h5>
+<p>피어슨 상관계수는 두변수의 공분산을 각 변수의 표준편차로 나누어서 계산된다.</p>
+<p><span class="math display">\[ \rho_{X,Y}= \frac{\operatorname{cov}(X,Y)}{\sigma_X \sigma_Y} \]</span></p>
+<p>피어슨 상관계수는 <code>cor</code> 기본내장함수를 사용해서 계산한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a, b)
+<span class="kw">cor</span>(df, <span class="dt">method=</span><span class="st">&quot;pearson&quot;</span>)</code></pre></div>
+<h3 id="r-추천-시스템-rrecommendation-sys">3. R 추천 시스템 [r^recommendation-sys]</h3>
+<p>[r^recommendation-sys]: <a href="https://www.packtpub.com/big-data-and-business-intelligence/building-recommendation-system-r">Building a Recommendation System with R</a></p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://class.coursera.org/mmds-002">Mining Massive Datasets - Coursera, Stanford</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="https://www.youtube.com/watch?v=TukmMqw6y0s">Reza Zadeh - Spark and Matrix Factorization</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="https://www.youtube.com/watch?v=kfEWZA-b-YQ">Christian Thurau - Low-rank matrix approximations in Python</a><a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
         </div>
       </div>
       </article>
