@@ -142,8 +142,8 @@ df <- data.frame(a, b)
 cor(df, method="pearson")
 ~~~
 
-### 3. R 추천 시스템 [r^recommendation-sys]
+### 3. R 추천 시스템 [^r-recommendation-sys]
 
-[r^recommendation-sys]: [Building a Recommendation System with R](https://www.packtpub.com/big-data-and-business-intelligence/building-recommendation-system-r)
+[^r-recommendation-sys]: [Building a Recommendation System with R](https://www.packtpub.com/big-data-and-business-intelligence/building-recommendation-system-r)
 
 
