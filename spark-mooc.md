@@ -1,7 +1,7 @@
 ---
 layout: page
 title: 데이터 과학
-subtitle: PySpark MOOC
+subtitle: 스파크 이해하기
 minutes: 10
 ---
 
@@ -10,7 +10,7 @@ minutes: 10
 > * 빅데이터를 담을 그릇에 대해 살펴본다.
 > * 동질적인 컴퓨팅 자원을 분산해서 관리하는 방법을 이해한다.
 
-### PySpark 프로그래밍 기초
+### 스파크 이해하기
 
 
 <img src="fig/pyspark-app-arch.png" alt="스파크 프로그래밍 실행 아키텍처" width="30%">

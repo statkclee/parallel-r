@@ -44,13 +44,13 @@ title: R 병렬 프로그래밍
     - [RStudio 빅데이터 전략](big-data-strategy.html)
     - [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
     - [MOOC 스파크 실행환경](mooc-spark-install.html)    
+    - [스파크 이해하기](spark-mooc.html)
     - **SparkR 설치**
         - [SparkR 설치](spark-hadoop-install.html)
         - [SparkR 헬로 월드](sparkr-hello-world.html)
         - [SparkR 도커](sparkr-docker.html)
         - [우분투 SparkR 설치](sparkr-ubuntu.html)
     - [SparkR 들어가며](sparkr-intro.html)
-    - [PySpark MOOC](pyspark-mooc.html)
 
 
 
