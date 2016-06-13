@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">SparkR 추천시스템</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>MovieLens 데이터로 영화 추천시스템을 개발한다.</li>
+<li><code>recommenderlab</code> 팩키지를 통해 R코드로 구현한다.</li>
+<li>로컬 컴퓨터에서 작게 개발하고 SparkR을 통해 확장을 시도한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="movielens-데이터-다운로드">1. <code>MovieLens</code> 데이터 다운로드</h3>
+<p><a href="https://datahub.io/dataset/movielens">MovieLens</a> 데이터를 다운로드 받아 이를 정제하는 것부터 시작한다.</p>
+<pre class="shell"><code>$ wget http://files.grouplens.org/datasets/movielens/ml-100k.zip
+$ unzip ml-100k.zip
+$ cd ml-100k
+$ ls</code></pre>
+<p>아래와 같이 무비렌즈 데이터가 풀리면 모든 준비는 완료된 것이다.</p>
+<pre class="output"><code>allbut.pl*  u.data   u.item        u1.base  u2.test  u4.base  u5.test  ub.base
+mku.sh*     u.genre  u.occupation  u1.test  u3.base  u4.test  ua.base  ub.test
+README      u.info   u.user        u2.base  u3.test  u5.base  ua.test</code></pre>
+<h3 id="movielens-데이터-정제-movielens-clean">2. <code>MovieLens</code> 데이터 정제 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h3>
+<ol style="list-style-type: decimal">
+<li>평점, 사용자, 영화 장르, 영화 아이템 파일을 순차로 R 데이터프레임으로 불러와서 데이터를 정제한다.</li>
+<li>평점 데이터프레임을 중심으로 <code>left_join</code> 연산으로 결합해 나간다.</li>
+<li>꼭 필요한 변수만 남기고 아스키 파일로 내보낸다.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##===========================================================================
+## 01. 환경설정 및 데이터 가져오기
+##===========================================================================
+
+<span class="kw">setwd</span>(<span class="st">&quot;~/06-sparkR&quot;</span>)
+
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(readr)
+<span class="kw">library</span>(plyr)
+
+<span class="co"># 평점 데이터</span>
+u.df &lt;-<span class="st"> </span><span class="kw">read_delim</span>(<span class="dt">file=</span><span class="st">&quot;ml-100k/u.data&quot;</span>, <span class="dt">delim =</span> <span class="st">&quot;|&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>)
+<span class="kw">colnames</span>(u.df) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;user_id&quot;</span>, <span class="st">&quot;item_id&quot;</span>, <span class="st">&quot;rating&quot;</span>, <span class="st">&quot;timestamp&quot;</span>)
+u.df &lt;-<span class="st"> </span><span class="kw">subset</span>(u.df, <span class="dt">select =</span> -<span class="kw">c</span>(timestamp) )
+
+## 사용자 테이블
+user.df &lt;-<span class="st"> </span><span class="kw">read_delim</span>(<span class="dt">file=</span><span class="st">&quot;ml-100k/u.user&quot;</span>, <span class="dt">delim =</span> <span class="st">&quot;|&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>)
+<span class="kw">colnames</span>(user.df) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;user_id&quot;</span>, <span class="st">&quot;age&quot;</span> , <span class="st">&quot;gender&quot;</span>,<span class="st">&quot;occupation&quot;</span>, <span class="st">&quot;zip_code&quot;</span>)
+user.df &lt;-<span class="st"> </span><span class="kw">subset</span>(user.df, <span class="dt">select =</span> -<span class="kw">c</span>(zip_code) )
+
+## 영화 쟝르 테이블
+genre.df &lt;-<span class="st"> </span><span class="kw">read_delim</span>(<span class="dt">file=</span><span class="st">&quot;ml-100k/u.genre&quot;</span>, <span class="dt">delim =</span> <span class="st">&quot;|&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>)
+<span class="kw">colnames</span>(genre.df) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;genre&quot;</span>, <span class="st">&quot;code&quot;</span>)
+
+## 영화 아이템 테이블
+item.df &lt;-<span class="st"> </span><span class="kw">read_delim</span>(<span class="dt">file=</span><span class="st">&quot;ml-100k/u.item&quot;</span>, <span class="dt">delim =</span> <span class="st">&quot;|&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>)
+
+genre.v &lt;-<span class="st"> </span><span class="kw">as.vector</span>(genre.df[[<span class="st">&quot;genre&quot;</span>]])
+genre.v[genre.v %in%<span class="st"> &quot;Children</span><span class="ch">\&#39;</span><span class="st">s&quot;</span>] &lt;-<span class="st"> &quot;Childrens&quot;</span>
+<span class="kw">colnames</span>(item.df) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">c</span>(<span class="st">&quot;item_id&quot;</span>, <span class="st">&quot;movie_title&quot;</span>, <span class="st">&quot;release_date&quot;</span>, <span class="st">&quot;video_release_date&quot;</span>, 
+                         <span class="st">&quot;IMDb_URL&quot;</span>), genre.v)
+
+item.df &lt;-<span class="st"> </span><span class="kw">subset</span>(item.df, <span class="dt">select =</span> -<span class="kw">c</span>(IMDb_URL, video_release_date) )
+
+##===========================================================================
+## 02. 데이터프레임 결합
+##===========================================================================
+<span class="co"># 평점 + 영화(아이템) 합체</span>
+cf.df &lt;-<span class="st"> </span><span class="kw">left_join</span>(u.df, item.df, <span class="dt">by=</span><span class="st">&quot;item_id&quot;</span>)
+
+<span class="co"># 평점 + 영화(아이템) + 사용자 합체</span>
+cf.df &lt;-<span class="st"> </span><span class="kw">left_join</span>(cf.df, user.df, <span class="dt">by=</span><span class="st">&quot;user_id&quot;</span>)
+
+<span class="co"># 중복제거</span>
+cf.df &lt;-<span class="st"> </span><span class="kw">unique</span>(cf.df)
+
+## 장르 칼럼을 한 칼럼으로 변환하는 함수... 시간이 오래걸림
+createGenreFieldSingle &lt;-<span class="st"> </span>function(x){
+  <span class="co">#temporarally remove variables to make looping easier,</span>
+  tempDat &lt;-<span class="st"> </span><span class="kw">subset</span>(x, <span class="dt">select =</span> -<span class="kw">c</span>(user_id, rating, movie_title, 
+                                   release_date, age, gender, occupation))  
+  count &lt;-<span class="st"> </span><span class="dv">0</span>
+  genre &lt;-<span class="st"> &quot;unknown&quot;</span>
+  
+  if(<span class="kw">nrow</span>(x) &gt;<span class="st"> </span><span class="dv">1</span>){
+    tempDat &lt;-<span class="st"> </span><span class="kw">head</span>(tempDat, <span class="dt">n =</span> <span class="dv">1</span>)
+  }
+  
+  for (i in <span class="kw">names</span>(tempDat)){
+    if(tempDat[i] ==<span class="st"> </span><span class="dv">1</span>){
+      count &lt;-<span class="st"> </span>count +<span class="st"> </span><span class="dv">1</span>
+      genre &lt;-<span class="st"> </span>i
+    }
+  }
+  if(count &gt;<span class="st"> </span><span class="dv">1</span>){
+    genre &lt;-<span class="st"> &quot;multiple&quot;</span>
+  }
+  <span class="kw">names</span>(genre) &lt;-<span class="st"> &quot;genre&quot;</span>
+  <span class="kw">return</span>(genre)
+}
+
+genreDat &lt;-<span class="st"> </span><span class="kw">ddply</span>(cf.df, ~user_id +<span class="st"> </span>movie_title, createGenreFieldSingle)
+cf.df.genre &lt;-<span class="st"> </span><span class="kw">left_join</span>(cf.df, genreDat, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;user_id&quot;</span>, <span class="st">&quot;movie_title&quot;</span>))
+
+##===========================================================================
+## 03. 데이터 정리 및 내보내기
+##===========================================================================
+cf.df.cl &lt;-<span class="st"> </span><span class="kw">subset</span>(cf.df.genre, <span class="dt">select =</span> 
+                             <span class="kw">c</span>(user_id, item_id, movie_title, rating, genre,
+                               release_date, age, gender, occupation) )
+
+<span class="kw">write.csv</span>(cf.df.cl, <span class="st">&quot;movie-clean.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<h3 id="movielens-데이터-sparkr-맛보기">3. <code>MovieLens</code> 데이터 SparkR 맛보기</h3>
+<p><code>MovieLens</code> 데이터 일부를 불러와서 우분투에 설치한 SparkR이 정상 동작하는지 간을 보자.</p>
+<p>SparkR 환경설정을 하고 <code>library(SparkR)</code> 라이브러리를 불러온다. <code>sqlContext</code>를 생성하고 데이터를 불러온다. <code>cache</code> 함수를 이용해서 캐쉬기능을 사용하고, <code>registerTempTable</code> 기능을 활용하여 SQL 작업을 준비한다. 이제 <code>collect</code> 등 SparkR 기능을 활용하여 탐색적 데이터 분석 및 모형을 개발한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##================================================================================
+## 00. SparkR 환경설정
+##================================================================================
+
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARK_HOME =</span> <span class="st">&quot;/home/parallels/spark-1.6.1-bin-hadoop2.6/&quot;</span>)
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARKR_SUBMIT_ARGS=</span><span class="st">&quot;--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell&quot;</span>)
+<span class="kw">.libPaths</span>(<span class="kw">c</span>(<span class="kw">file.path</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;SPARK_HOME&quot;</span>), <span class="st">&quot;R&quot;</span>,<span class="st">&quot;lib&quot;</span>),  <span class="kw">.libPaths</span>()))
+
+## SparkR 라이브러리를 적재한다.
+<span class="kw">library</span>(SparkR)
+
+##================================================================================
+## 01. SparkR 초기화
+##================================================================================
+
+sc &lt;-<span class="st"> </span><span class="kw">sparkR.init</span>()
+sqlContext &lt;-<span class="st"> </span><span class="kw">sparkRSQL.init</span>(sc)
+
+##================================================================================
+## 02. 데이터 불러오기
+##================================================================================
+
+user_dat &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;ml-100k/u.user&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;|&quot;</span>)
+user_df &lt;-<span class="st"> </span><span class="kw">createDataFrame</span>(sqlContext, user_dat)
+<span class="kw">names</span>(user_df)&lt;-<span class="kw">c</span>(<span class="st">&quot;id&quot;</span>,<span class="st">&quot;age&quot;</span>,<span class="st">&quot;gender&quot;</span>,<span class="st">&quot;occupation&quot;</span>,<span class="st">&quot;ZIPcode&quot;</span>)
+<span class="kw">head</span>(user_df)
+
+<span class="kw">cache</span>(user_df)
+<span class="kw">nrow</span>(user_df)
+
+<span class="kw">registerTempTable</span>(user_df, <span class="st">&quot;userTable&quot;</span>)
+
+##================================================================================
+## 03. sql 테이블 작업데이터 준비
+##================================================================================
+
+male.user &lt;-<span class="st"> </span><span class="kw">sql</span>(sqlContext, <span class="st">&quot;select * from userTable where gender =&#39;M&#39;&quot;</span>)
+<span class="kw">head</span>(male.user)
+
+##================================================================================
+## 04. 기초 통계작업과 시각화
+##================================================================================
+
+male.user.ages &lt;-<span class="st"> </span><span class="kw">collect</span>(<span class="kw">summarize</span>(<span class="kw">groupBy</span>(male.user, male.user$age), <span class="dt">count =</span> <span class="kw">n</span>(male.user$age)))
+<span class="kw">head</span>(male.user.ages)
+
+<span class="kw">library</span>(ggplot2)
+<span class="kw">ggplot</span>(male.user.ages, <span class="kw">aes</span>(<span class="dt">x=</span>age,<span class="dt">y=</span>count)) +<span class="st"> </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>)</code></pre></div>
+<pre class="output"><code>  age count
+1  31    19
+2  32    23
+3  33    20
+4  34    16
+5  35    16
+6  36    14</code></pre>
+<p><img src="fig/sparkr-age-ggplot.png" alt="SparkR 연령 분포" width="50%"></p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://github.com/statkclee/STAT545A_MovieStats/blob/master/cleanMovieLensData.R">Exploratory analysis of Movie preference data set</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
