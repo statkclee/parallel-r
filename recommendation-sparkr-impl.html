@@ -197,6 +197,62 @@ male.user.ages &lt;-<span class="st"> </span><span class="kw">collect</span>(<sp
 5  35    16
 6  36    14</code></pre>
 <p><img src="fig/sparkr-age-ggplot.png" alt="SparkR 연령 분포" width="50%"></p>
+<h3 id="movielens-데이터-sparkr-추천-모형-개발">4. <code>MovieLens</code> 데이터 SparkR 추천 모형 개발</h3>
+<p>동일한 작업 흐름을 따라가지만, 차이가 가는 것은 <code>spark-csv</code> <code>jar</code> 모듈에서 만들어진 스파크 데이터프레임이 <code>recommenderlab</code> 라이브러리에서 사용하는 <code>realRatingMatrix</code> 자료형과 일치시키는 부분이 남아있는 쟁점이다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##====================================================================================
+## 01. 추천시스템: 환경설정
+##====================================================================================
+if(!<span class="st">&quot;recommenderlab&quot;</span> %in%<span class="st"> </span><span class="kw">rownames</span>(<span class="kw">installed.packages</span>())){
+  <span class="kw">install.packages</span>(<span class="st">&quot;recommenderlab&quot;</span>)}
+
+<span class="kw">library</span>(recommenderlab)
+
+##================================================================================
+## 02. SparkR 환경설정
+##================================================================================
+
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARK_HOME =</span> <span class="st">&quot;/home/parallels/spark-1.6.1-bin-hadoop2.6/&quot;</span>)
+<span class="kw">Sys.setenv</span>(<span class="dt">SPARKR_SUBMIT_ARGS=</span><span class="st">&quot;--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell&quot;</span>)
+<span class="kw">.libPaths</span>(<span class="kw">c</span>(<span class="kw">file.path</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;SPARK_HOME&quot;</span>), <span class="st">&quot;R&quot;</span>,<span class="st">&quot;lib&quot;</span>),  <span class="kw">.libPaths</span>()))
+
+## SparkR 라이브러리를 적재한다.
+<span class="kw">library</span>(SparkR)
+<span class="kw">library</span>(magrittr)
+##================================================================================
+## 03. SparkR 초기화
+##================================================================================
+
+sc &lt;-<span class="st"> </span><span class="kw">sparkR.init</span>()
+sqlContext &lt;-<span class="st"> </span><span class="kw">sparkRSQL.init</span>(sc)
+
+##====================================================================================
+## 04. 무비렌즈 데이터
+##====================================================================================
+
+<span class="co"># ml.df &lt;- read.df(sqlContext, &quot;./movie-clean.csv&quot;, &quot;com.databricks.spark.csv&quot;, header=&quot;true&quot;, inferSchema = &quot;true&quot;)</span>
+ml.df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;movie-clean.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)
+ml.cf.df &lt;-<span class="st"> </span>ml.df[,<span class="kw">c</span>(<span class="st">&quot;user_id&quot;</span>, <span class="st">&quot;movie_title&quot;</span>, <span class="st">&quot;rating&quot;</span>)]
+ml.cf.mat &lt;-<span class="st"> </span><span class="kw">as</span>(ml.cf.df, <span class="st">&quot;realRatingMatrix&quot;</span>)
+
+ml.cf.mat
+
+##====================================================================================
+## 05. Data Preprocessing
+##====================================================================================
+ratings_movies &lt;-<span class="st"> </span>ml.cf.mat[<span class="kw">rowCounts</span>(ml.cf.mat) &gt;<span class="st"> </span><span class="dv">50</span>,
+                             <span class="kw">colCounts</span>(ml.cf.mat) &gt;<span class="st"> </span><span class="dv">100</span>]
+ratings_movies
+
+recc_model &lt;-<span class="st"> </span><span class="kw">Recommender</span>(<span class="dt">data =</span> ratings_movies, <span class="dt">method =</span> <span class="st">&quot;UBCF&quot;</span>,
+                          <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">method =</span> <span class="st">&quot;pearson&quot;</span>, <span class="dt">nn=</span><span class="dv">15</span>))
+
+n_recommended &lt;-<span class="st"> </span><span class="dv">5</span>
+
+recc_predicted &lt;-<span class="st"> </span><span class="kw">predict</span>(<span class="dt">object =</span> recc_model, <span class="dt">newdata =</span> ratings_movies, <span class="dt">n =</span> n_recommended)
+
+recc_user_7 &lt;-<span class="st"> </span>recc_predicted@items[[<span class="dv">7</span>]]
+movies_user_7 &lt;-<span class="st"> </span>recc_predicted@itemLabels[recc_user_7]
+movies_user_7</code></pre></div>
 <div class="footnotes">
 <hr />
 <ol>

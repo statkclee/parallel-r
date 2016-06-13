@@ -196,3 +196,65 @@ ggplot(male.user.ages, aes(x=age,y=count)) + geom_bar(stat="identity")
 ~~~
 
 <img src="fig/sparkr-age-ggplot.png" alt="SparkR 연령 분포" width="50%">
+
+### 4. `MovieLens` 데이터 SparkR 추천 모형 개발
+
+동일한 작업 흐름을 따라가지만, 차이가 가는 것은 `spark-csv` `jar` 모듈에서 만들어진 
+스파크 데이터프레임이 `recommenderlab` 라이브러리에서 사용하는 `realRatingMatrix` 자료형과 일치시키는 부분이 남아있는 쟁점이다.
+
+~~~ {.r}
+##====================================================================================
+## 01. 추천시스템: 환경설정
+##====================================================================================
+if(!"recommenderlab" %in% rownames(installed.packages())){
+  install.packages("recommenderlab")}
+
+library(recommenderlab)
+
+##================================================================================
+## 02. SparkR 환경설정
+##================================================================================
+
+Sys.setenv(SPARK_HOME = "/home/parallels/spark-1.6.1-bin-hadoop2.6/")
+Sys.setenv(SPARKR_SUBMIT_ARGS="--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell")
+.libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R","lib"),  .libPaths()))
+
+## SparkR 라이브러리를 적재한다.
+library(SparkR)
+library(magrittr)
+##================================================================================
+## 03. SparkR 초기화
+##================================================================================
+
+sc <- sparkR.init()
+sqlContext <- sparkRSQL.init(sc)
+
+##====================================================================================
+## 04. 무비렌즈 데이터
+##====================================================================================
+
+# ml.df <- read.df(sqlContext, "./movie-clean.csv", "com.databricks.spark.csv", header="true", inferSchema = "true")
+ml.df <- read.csv("movie-clean.csv", header=TRUE)
+ml.cf.df <- ml.df[,c("user_id", "movie_title", "rating")]
+ml.cf.mat <- as(ml.cf.df, "realRatingMatrix")
+
+ml.cf.mat
+
+##====================================================================================
+## 05. Data Preprocessing
+##====================================================================================
+ratings_movies <- ml.cf.mat[rowCounts(ml.cf.mat) > 50,
+                             colCounts(ml.cf.mat) > 100]
+ratings_movies
+
+recc_model <- Recommender(data = ratings_movies, method = "UBCF",
+                          parameter = list(method = "pearson", nn=15))
+
+n_recommended <- 5
+
+recc_predicted <- predict(object = recc_model, newdata = ratings_movies, n = n_recommended)
+
+recc_user_7 <- recc_predicted@items[[7]]
+movies_user_7 <- recc_predicted@itemLabels[recc_user_7]
+movies_user_7
+~~~
