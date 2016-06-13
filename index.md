@@ -15,7 +15,8 @@ title: R 병렬 프로그래밍
 ## 학습목차 
 
 1. [데이터 과학을 위한 데이터(빅데이터)](dataset4bigdata.html)
-    - [영화 추천시스템](recommendation-sys.html)
+    - [영화 추천시스템 개요](recommendation-sys.html)
+    - [R 추천시스템](recommendation-implementation.html)
 1. [고성능 R 아키텍처](r-perf-arch.html)
     - [왜 고성능 R 아키텍처가 필요한가?](why-r-hpc.html)
     - [R 스케일-업 성능향상](r-scale-up.html)

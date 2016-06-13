@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">R 추천시스템</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>MovieLens 데이터로 영화 추천시스템을 개발한다.</li>
+<li><code>recommenderlab</code> 팩키지를 통해 R코드로 구현한다.</li>
+<li>로컬 컴퓨터에서 작게 개발하고 SparkR을 통해 확장을 시도한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="r-추천-시스템-r-recommendation-sys-recommenderlab-beer-recom-lastfm">1. R 추천 시스템 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h3>
+<p>R 추천시스템 개발 작업흐름은 다음과 같다.</p>
+<ol style="list-style-type: decimal">
+<li>데이터 수집</li>
+<li>데이터 정제 및 정규화</li>
+<li>협업 필터링 적합
+<ul>
+<li>사용자에게 상위 5개 제품 혹은 서비스 추천</li>
+</ul></li>
+<li>협업 필터링 모형 평가 및 타당성</li>
+</ol>
+<p><img src="fig/cf-arch.png" alt="협업 필터링 아키텍처" width="70%"></p>
+<h4 id="영화-추천-훈련데이터-형식-recom-kaggle">1.1. 영화 추천 훈련데이터 형식 <a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></h4>
+<p>행렬 형태의 영화와 관람객 데이터를 다음과 같이 재표현할 수 있다. 즉, 영화관람객이 평가한 영화 평가점수가 다음과 같이 주어진다. 이 정보를 바탕으로 최적의 추천함수(<span class="math inline">\(f(x)\)</span>)를 개발하는 것이 목표다. 기계학습에서 보면 이 데이터가 학습데이터(training data)가 된다. <a href="https://inclass.kaggle.com/c/predict-movie-ratings/data">캐글 훈련데이터 다운로드, train_v2</a></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ID</th>
+<th align="left">user</th>
+<th align="left">movie</th>
+<th align="left">rating</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">610739</td>
+<td align="left">3704</td>
+<td align="left">3784</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="left">324753</td>
+<td align="left">1924</td>
+<td align="left">802</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">808218</td>
+<td align="left">4837</td>
+<td align="left">1387</td>
+<td align="left">4</td>
+</tr>
+<tr class="even">
+<td align="left">133808</td>
+<td align="left">867</td>
+<td align="left">1196</td>
+<td align="left">4</td>
+</tr>
+<tr class="odd">
+<td align="left">431858</td>
+<td align="left">2631</td>
+<td align="left">3072</td>
+<td align="left">5</td>
+</tr>
+</tbody>
+</table>
+<h4 id="협업-필터링-모형">1.2. 협업 필터링 모형</h4>
+<ul>
+<li><strong>콘텐츠 기반 필터링</strong> : 사용자 프로파일 혹은 제품(영화 등) 프로파일 정보를 활용하여 추천하는 알고리즘</li>
+<li><strong>협업 필터링</strong>
+<ul>
+<li><strong>제품-제품 협업 필터링</strong> : 사용자에게 사용자가 구매한 것과 가장 유사한 제품을 추천하는 알고리즘</li>
+<li><strong>사용자-사용자 협업 필터링</strong> : 사용자에게 유사한 사용자가 구매한 것과 가장 유사한 제품을 추천하는 알고리즘</li>
+</ul></li>
+</ul>
+<p>상품추천을 위한 훈련데이터를 학습하여 다양한 모형을 적합시키고, 실제 영화추천 데이터에 결과값을 붙여 실제 운영시스템에 배포하는 것으로 요약된다.</p>
+<h4 id="실제-영화-추천-데이터">1.3. 실제 영화 추천 데이터</h4>
+<p>테스트 데이터(test data)라고 부르기도 하고, 결국 신규 혹은 기존 고객에게 제품을 추천할 제품을 정량화하는 것에 불과하다. <a href="https://inclass.kaggle.com/c/predict-movie-ratings/data">캐글 테스트 데이터 다운로드, test_v2</a></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">ID</th>
+<th align="left">user</th>
+<th align="left">movie</th>
+<th align="left"></th>
+<th align="left">모형점수</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">895537</td>
+<td align="left">5412</td>
+<td align="left">2683</td>
+<td align="left"></td>
+<td align="left">??</td>
+</tr>
+<tr class="even">
+<td align="left">899740</td>
+<td align="left">5440</td>
+<td align="left">904</td>
+<td align="left"></td>
+<td align="left">??</td>
+</tr>
+<tr class="odd">
+<td align="left">55688</td>
+<td align="left">368</td>
+<td align="left">3717</td>
+<td align="left"></td>
+<td align="left">??</td>
+</tr>
+<tr class="even">
+<td align="left">63728</td>
+<td align="left">425</td>
+<td align="left">1721</td>
+<td align="left"></td>
+<td align="left">??</td>
+</tr>
+<tr class="odd">
+<td align="left">822012</td>
+<td align="left">4942</td>
+<td align="left">3697</td>
+<td align="left"></td>
+<td align="left">??</td>
+</tr>
+<tr class="even">
+<td align="left">781895</td>
+<td align="left">4668</td>
+<td align="left">2011</td>
+<td align="left"></td>
+<td align="left">??</td>
+</tr>
+<tr class="odd">
+<td align="left">472806</td>
+<td align="left">2907</td>
+<td align="left">173</td>
+<td align="left"></td>
+<td align="left">??</td>
+</tr>
+</tbody>
+</table>
+<h3 id="무비렌즈-추천데이터-탐색적-분석-recommenderlab-cran">2. 무비렌즈 추천데이터 탐색적 분석 <a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a></h3>
+<p><code>recommenderlab</code> 협업 필터링 팩키지가 거의 표준으로 자리를 잡아가고 있다. 추천시스템이 실제 적용될 수 있는 사례를 <a href="https://mhahsler-apps.shinyapps.io/Jester/">조크 추천시스템</a>에서 찾아볼 수 있다. 물론 데이터는 <code>recommenderlab</code> 팩키지에 포함된 <strong>Jester</strong> 데이터셋을 사용했다.</p>
+<h4 id="환경설정과-데이터-가져오기">2.1. 환경설정과 데이터 가져오기</h4>
+<p><code>recommenderlab</code> 팩키지를 설치하고, <code>recommenderlab</code> 라이브러리를 적재하고 나서, <code>recommenderlab</code> 라이브러리에 내장된 <code>MovieLense</code> 데이터를 가져온다. 일반적으로 추천시스템 구축에 사용될 데이터는 엄청 성긴 행렬데이터로 어떻게 저장하느냐에 따라 저장공간을 차지하는 것부터 100배 정도 차이가 발생하는데 일반적이다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##====================================================================================
+## 1. 추천시스템: 환경설정
+##====================================================================================
+if(!<span class="st">&quot;recommenderlab&quot;</span> %in%<span class="st"> </span><span class="kw">rownames</span>(<span class="kw">installed.packages</span>())){
+  <span class="kw">install.packages</span>(<span class="st">&quot;recommenderlab&quot;</span>)}
+
+<span class="kw">library</span>(recommenderlab)
+
+##====================================================================================
+## 2. 무비렌즈 데이터
+##====================================================================================
+<span class="kw">data</span>(MovieLense)
+MovieLense
+<span class="co"># 943 x 1664 rating matrix of class ‘realRatingMatrix’ with 99392 ratings.</span>
+<span class="kw">object.size</span>(MovieLense)
+<span class="co"># 1388448 bytes</span>
+<span class="kw">object.size</span>(<span class="kw">as</span>(MovieLense, <span class="st">&quot;matrix&quot;</span>))
+<span class="co"># 12740464 bytes</span></code></pre></div>
+<p>무비렌즈 데이터는 <span class="math inline">\(943 \times 1664\)</span> 크기를 갖는 행렬로 간주할 경우 행렬 각 원소를 8 바이트(64비트, <code>numeric</code>)로 표현한다고 가정하면 12.7 MByte(12,740,464)가 필요한데 엄청 성긴 특성을 이용하여 저장하면 1.38 MByte(1,388,448)만 필요하다. 따라서, 약 <strong>9:1</strong> 저장공간 차이를 보여준다.</p>
+<p>친숙한 데이터프레임으로 변환시켜 자료구조를 살펴보자.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 친숙한 데이터프레임으로 변환</span>
+ml.df &lt;-<span class="st"> </span><span class="kw">as</span>(MovieLense, <span class="st">&quot;data.frame&quot;</span>)
+<span class="kw">head</span>(ml.df)</code></pre></div>
+<pre class="output"><code>    user                                                 item rating
+1      1                                     Toy Story (1995)      5
+453    1                                     GoldenEye (1995)      3
+584    1                                    Four Rooms (1995)      4
+674    1                                    Get Shorty (1995)      3
+883    1                                       Copycat (1995)      3
+969    1 Shanghai Triad (Yao a yao yao dao waipo qiao) (1995)      5</code></pre>
+<h4 id="평점-데이터-탐색적-분석">2.2. 평점 데이터 탐색적 분석</h4>
+<h5 id="전체-평점-분포-분석">2.2.1. 전체 평점 분포 분석</h5>
+<p><code>MovieLense@data</code> 데이터를 엄청 긴 벡터(<span class="math inline">\(943 \times 1664 = 1569152\)</span>)로 변환한다. 그리고 나서 평점 데이터 내부를 살펴본다. 0,1,2,3,4,5 값이 관측되는데 여기서 <code>0</code>은 무응답으로 추천시스템을 통해 사실 예측해서 넣어야 되는 값이기도 하다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratings_v &lt;-<span class="st"> </span><span class="kw">as.vector</span>(MovieLense@data)
+<span class="kw">unique</span>(ratings_v)</code></pre></div>
+<pre class="output"><code>[1] 5 4 0 3 1 2</code></pre>
+<p><code>table</code> 함수를 통해서 데이분포를 살펴보면, 무응답이 엄청나게 많고, 평점에 대한 빈도를 함께 살펴볼 수도 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratings_tbl &lt;-<span class="st"> </span><span class="kw">table</span>(ratings_v)
+ratings_tbl</code></pre></div>
+<pre class="ouput"><code>ratings_v
+      0       1       2       3       4       5 
+1469760    6059   11307   27002   33947   21077 </code></pre>
+<p>결측점을 제거하고, 시각화를 통해 영화 전체 평점 분포를 살펴본다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratings_v &lt;-<span class="st"> </span>vector_ratings[ratings_v !=<span class="st"> </span><span class="dv">0</span>]
+
+<span class="kw">qplot</span>(ratings_v, <span class="dt">bins=</span><span class="dv">5</span>) +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;평점 분포&quot;</span>)</code></pre></div>
+<p><img src="fig/recom_ratings.png" alt="영화 평점 분포" width="50%"></p>
+<h5 id="가장-많이-본-영화-상위-5개">2.2.2. 가장 많이 본 영화 상위 5개</h5>
+<p>전체 평점에 대한 부분을 파악했으니, 이제는 가장 인기가 많은 영화에 대해 살펴본다. <code>colCounts</code> 함수를 사용해서 영화당 얼마나 많은 사용자가 봤는지 살펴본다. 출력결과를 <code>data.frame</code> 함수를 사용해서 데이터프레임으로 변환시켜 <code>ggplot</code>으로 시각화한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+views_per_movie &lt;-<span class="st"> </span><span class="kw">colCounts</span>(MovieLense)
+
+views_tbl &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+  <span class="dt">movie =</span> <span class="kw">names</span>(views_per_movie),
+  <span class="dt">views =</span> views_per_movie
+)
+
+views_tbl &lt;-<span class="st"> </span>views_tbl[<span class="kw">order</span>(views_tbl$views, <span class="dt">decreasing =</span> <span class="ot">TRUE</span>), ]
+
+<span class="kw">head</span>(views_tbl)</code></pre></div>
+<pre class="output"><code>                                                  movie views
+Star Wars (1977)                       Star Wars (1977)   583
+Contact (1997)                           Contact (1997)   509
+Fargo (1996)                               Fargo (1996)   508
+Return of the Jedi (1983)     Return of the Jedi (1983)   507
+Liar Liar (1997)                       Liar Liar (1997)   485
+English Patient, The (1996) English Patient, The (1996)   481</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(views_tbl[<span class="dv">1</span>:<span class="dv">5</span>, ], <span class="kw">aes</span>(<span class="dt">x =</span> movie, <span class="dt">y =</span> views)) +
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>) +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">45</span>, <span class="dt">hjust =</span> <span class="dv">1</span>)) +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;가장 많이 본 영화 5 개&quot;</span>)</code></pre></div>
+<p><img src="fig/recom_hit_movie_five.png" alt="영화 평점 분포" width="50%"></p>
+<h5 id="연관성-있는-영화만-뽑아본-평점-분포">2.2.3. 연관성 있는 영화만 뽑아본 평점 분포</h5>
+<p>적어도 영화를 100명이상 본 것으로 한정하여 평점분포를 살펴본다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratings_avg &lt;-<span class="st"> </span><span class="kw">colMeans</span>(MovieLense)
+
+ratings_avg_relevant &lt;-<span class="st"> </span>ratings_avg[views_per_movie &gt;<span class="st"> </span><span class="dv">100</span>]
+
+<span class="kw">qplot</span>(ratings_avg_relevant) +<span class="st"> </span><span class="kw">stat_bin</span>(<span class="dt">binwidth =</span> <span class="fl">0.1</span>) +
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="kw">paste</span>(<span class="st">&quot;연관성이 있는 영화만 뽑아본 평점 분포&quot;</span>))</code></pre></div>
+<p><img src="fig/recom_relevant_ratings.png" alt="영화 평점 분포" width="50%"></p>
+<h4 id="데이터-전처리">2.3. 데이터 전처리</h4>
+<p>협업 필터링 추천모형에 적용될 데이터를 생성시키기 위해 관련성 높은 데이터만 선정하여 준비한다. 이를 위해 적어도 영화당 100명 이상 본 영화, 영화당 최소 50명이상 평점을 매긴 것을 기준으로 추천모형 개발에 준비할 데이터를 한정하여 준비한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratings_movies &lt;-<span class="st"> </span>MovieLense[<span class="kw">rowCounts</span>(MovieLense) &gt;<span class="st"> </span><span class="dv">50</span>,
+                             <span class="kw">colCounts</span>(MovieLense) &gt;<span class="st"> </span><span class="dv">100</span>] 
+ratings_movies</code></pre></div>
+<p>추천 행렬 크기가 상당히 줄어든 것을 확인할 수 있다.</p>
+<pre class="output"><code>560 x 332 rating matrix of class ‘realRatingMatrix’ with 55298 ratings.</code></pre>
+<h5 id="데이터-정규화">2.3.1. 데이터 정규화</h5>
+<p>상위 10%만 뽑아서 <code>image</code> 함수로 시각화를 하고 <code>normalize</code> 함수를 통해 정규화를 통해 모형 데이터를 준비한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 상위 10 %만 탐색적 분석</span>
+min_movies &lt;-<span class="st"> </span><span class="kw">quantile</span>(<span class="kw">rowCounts</span>(ratings_movies), <span class="fl">0.90</span>)
+min_users &lt;-<span class="st"> </span><span class="kw">quantile</span>(<span class="kw">colCounts</span>(ratings_movies), <span class="fl">0.90</span>)
+
+<span class="co"># 정규화</span>
+ratings_movies_norm &lt;-<span class="st"> </span><span class="kw">normalize</span>(ratings_movies)
+
+<span class="co"># visualize the normalized matrix</span>
+<span class="kw">image</span>(ratings_movies_norm[<span class="kw">rowCounts</span>(ratings_movies_norm) &gt;<span class="st"> </span>min_movies,
+                          <span class="kw">colCounts</span>(ratings_movies_norm) &gt;<span class="st"> </span>min_users], <span class="dt">main =</span> <span class="st">&quot;상위 10% 영화와 사용자 열지도(heatmap)&quot;</span>)</code></pre></div>
+<p><img src="fig/recom_heatmap.png" alt="영화 평점 분포" width="50%"></p>
+<h3 id="무비렌즈-추천모형-개발">3. 무비렌즈 추천모형 개발</h3>
+<p>탐색적 자료분석 과정을 통해서 협업필터링 모형 개발에 사용될 데이터 준비가 완료되어서 훈련데이터와 검증데이터로 나누고, 이를 실제 적용할 테스트 데이터로 준비하는 과정을 살펴본다.</p>
+<p>추천 후보모형과 모수를 설정하여 협업 필터링 모형에 적합시킬 준비를 한다. 무작위 추천을 기반으로 두고 제품과 고객 기반 추천한 것을 비교하여 최적의 모형을 선정한다. 협업 필터링에 코사인과 피어슨 상관계수도 모형에 두고 적합을 시킨다.</p>
+<ul>
+<li><strong>IBCF:</strong> 제품(아이템) 기반 협업 필터링 모형</li>
+<li><strong>UBCF:</strong> 고객(사용자) 기반 협업 필터링 모형</li>
+<li><strong>RANDOM:</strong> 무작위 추천</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="co"># 5.1. 추천 데이터 준비</span>
+<span class="co">#-------------------------------------------------------------------------------------</span>
+
+<span class="kw">library</span>(<span class="st">&quot;recommenderlab&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">data</span>(MovieLense)
+
+ratings_movies &lt;-<span class="st"> </span>MovieLense[<span class="kw">rowCounts</span>(MovieLense) &gt;<span class="st"> </span><span class="dv">50</span>,
+                             <span class="kw">colCounts</span>(MovieLense) &gt;<span class="st"> </span><span class="dv">100</span>]
+ratings_movies
+
+<span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="co"># 5.2. 추천 후보 모형 및 튜닝 설정</span>
+<span class="co">#-------------------------------------------------------------------------------------</span>
+
+percentage_training &lt;-<span class="st"> </span><span class="fl">0.8</span>
+items_to_keep &lt;-<span class="st"> </span><span class="dv">15</span>
+rating_threshold &lt;-<span class="st"> </span><span class="dv">3</span>
+n_eval &lt;-<span class="st"> </span><span class="dv">1</span>
+
+eval_scheme &lt;-<span class="st"> </span><span class="kw">evaluationScheme</span>(<span class="dt">data =</span> ratings_movies, <span class="dt">method =</span> <span class="st">&quot;split&quot;</span>,
+                                <span class="dt">train =</span> percentage_training, 
+                                <span class="dt">given =</span> items_to_keep, 
+                                <span class="dt">goodRating =</span> rating_threshold, 
+                                <span class="dt">k =</span> n_eval) 
+eval_scheme
+
+algorithms_to_evaluate &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">IBCF_cos =</span> <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;IBCF&quot;</span>, <span class="dt">param =</span> <span class="kw">list</span>(<span class="dt">method =</span><span class="st">&quot;cosine&quot;</span>)),
+  <span class="dt">IBCF_cor =</span> <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;IBCF&quot;</span>, <span class="dt">param =</span> <span class="kw">list</span>(<span class="dt">method =</span><span class="st">&quot;pearson&quot;</span>)),
+  <span class="dt">UBCF_cos =</span> <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;UBCF&quot;</span>, <span class="dt">param =</span> <span class="kw">list</span>(<span class="dt">method =</span><span class="st">&quot;cosine&quot;</span>)),
+  <span class="dt">UBCF_cor =</span> <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;UBCF&quot;</span>, <span class="dt">param =</span> <span class="kw">list</span>(<span class="dt">method =</span><span class="st">&quot;pearson&quot;</span>)),
+  <span class="dt">random =</span> <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;RANDOM&quot;</span>, <span class="dt">param =</span> <span class="ot">NULL</span>)
+)
+  
+n_recommendations &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="kw">seq</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">10</span>))</code></pre></div>
+<p>RMSE, MSE, MAE 기준으로 5개 모형을 평가하면 UBCF_cos가 가장 좋은 결과를 보여주고 있어 이를 최종 모형으로 선정한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="co"># 5.3. 최적 모형  선정</span>
+<span class="co">#-------------------------------------------------------------------------------------</span>
+
+results &lt;-<span class="st"> </span><span class="kw">evaluate</span>(eval_scheme, algorithms_to_evaluate, <span class="dt">type =</span> <span class="st">&quot;ratings&quot;</span>)
+<span class="kw">plot</span>(results)
+
+<span class="kw">sapply</span>(results, class) ==<span class="st"> &quot;evaluationResults&quot;</span>
+<span class="kw">lapply</span>(results, avg)
+
+<span class="kw">sapply</span>(results, avg)</code></pre></div>
+<pre class="output"><code>      IBCF_cos  IBCF_cor  UBCF_cos  UBCF_cor   random
+RMSE 1.1242008 1.2076277 0.9738573 0.9960761 1.316830
+MSE  1.2638274 1.4583646 0.9483981 0.9921677 1.734040
+MAE  0.8258006 0.9024703 0.7670442 0.7893166 1.033312</code></pre>
+<p><img src="fig/recom_eval_plot.png" alt="최적모형 선정" width="50%"></p>
+<p>최적모형으로 선정된 피어슨 상관을 적용한 사용자기반 협업필터링을 다른 모형과 비교하여 살펴본다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="co"># 5.4. 후보모형과 최적 모수 선정 현황 살펴보기</span>
+<span class="co">#-------------------------------------------------------------------------------------</span>
+
+recom_results &lt;-<span class="st"> </span><span class="kw">evaluate</span>(<span class="dt">x =</span> eval_scheme, <span class="dt">method =</span> algorithms_to_evaluate, <span class="dt">n =</span> n_recommendations)
+
+<span class="kw">sapply</span>(recom_results, class) ==<span class="st"> &quot;evaluationResults&quot;</span>
+avg_matrices &lt;-<span class="st"> </span><span class="kw">lapply</span>(recom_results, avg)
+
+<span class="kw">plot</span>(recom_results, <span class="dt">annotate =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>),  <span class="dt">legend =</span> <span class="st">&quot;topleft&quot;</span>) 
+<span class="kw">title</span>(<span class="st">&quot;ROC 곡선&quot;</span>)</code></pre></div>
+<p><img src="fig/recom_eval_roc_plot.png" alt="후보 모형 ROC 곡선" width="50%"></p>
+<h3 id="제품영화-추천">4. 제품(영화) 추천</h3>
+<p>최적의 모형을 확인했기 때문에 동일한 설정으로 모형을 생성시키고, 신규 데이터가 나오는 경우 이를 적합시킨다. 모형데이터와 테스트 데이터를 8:2로 준비한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="co"># 5.1. 추천 데이터 준비</span>
+<span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="kw">library</span>(<span class="st">&quot;recommenderlab&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">data</span>(MovieLense)
+
+ratings_movies &lt;-<span class="st"> </span>MovieLense[<span class="kw">rowCounts</span>(MovieLense) &gt;<span class="st"> </span><span class="dv">50</span>,
+                             <span class="kw">colCounts</span>(MovieLense) &gt;<span class="st"> </span><span class="dv">100</span>]
+ratings_movies
+
+<span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="co"># 5.2. 최적모형 데이터 준비</span>
+<span class="co">#-------------------------------------------------------------------------------------</span>
+
+train_smpl &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="ot">TRUE</span>, <span class="ot">FALSE</span>), <span class="dt">size =</span> <span class="kw">nrow</span>(ratings_movies),
+                      <span class="dt">replace =</span> <span class="ot">TRUE</span>, <span class="dt">prob =</span> <span class="kw">c</span>(<span class="fl">0.8</span>, <span class="fl">0.2</span>))
+
+recc_data_train &lt;-<span class="st"> </span>ratings_movies[train_smpl, ]
+recc_data_test &lt;-<span class="st"> </span>ratings_movies[!train_smpl, ]</code></pre></div>
+<h4 id="최적-모형-적합">4.1. 최적 모형 적합</h4>
+<p>피어슨 상관으로 유사성을 평가한 사용자 협업 필터링 알고리즘을 적용한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------------------</span>
+<span class="co"># 5.3. 최적모형 적합</span>
+<span class="co">#-------------------------------------------------------------------------------------</span>
+recommender_models &lt;-<span class="st"> </span>recommenderRegistry$<span class="kw">get_entries</span>(<span class="dt">dataType =</span><span class="st">&quot;realRatingMatrix&quot;</span>)
+recommender_models$UBCF_realRatingMatrix$parameters
+
+
+recc_model &lt;-<span class="st"> </span><span class="kw">Recommender</span>(<span class="dt">data =</span> recc_data_train, <span class="dt">method =</span> <span class="st">&quot;UBCF&quot;</span>,
+                          <span class="dt">parameter =</span> <span class="kw">list</span>(<span class="dt">method =</span> <span class="st">&quot;pearson&quot;</span>, <span class="dt">nn=</span><span class="dv">15</span>))
+<span class="kw">getModel</span>(recc_model)</code></pre></div>
+<h4 id="영화-추천">4.2. 영화 추천</h4>
+<p>테스트 데이터에 있는 7번째 사용자에게 영화를 5개 추천한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n_recommended &lt;-<span class="st"> </span><span class="dv">5</span>
+
+recc_predicted &lt;-<span class="st"> </span><span class="kw">predict</span>(<span class="dt">object =</span> recc_model, <span class="dt">newdata =</span> recc_data_test, <span class="dt">n =</span> n_recommended)
+recc_predicted
+<span class="kw">class</span>(recc_predicted)
+<span class="kw">slotNames</span>(recc_predicted)
+
+recc_user_7 &lt;-<span class="st"> </span>recc_predicted@items[[<span class="dv">7</span>]]
+movies_user_7 &lt;-<span class="st"> </span>recc_predicted@itemLabels[recc_user_7]
+movies_user_7</code></pre></div>
+<pre class="output"><code>[1] &quot;Blues Brothers, The (1980)&quot;            
+[2] &quot;This Is Spinal Tap (1984)&quot;             
+[3] &quot;Raiders of the Lost Ark (1981)&quot;        
+[4] &quot;Amadeus (1984)&quot;                        
+[5] &quot;One Flew Over the Cuckoo&#39;s Nest (1975)&quot;</code></pre>
+<p>테스트 데이터에 있는 전체 사용자에게 행렬을 추천하는 하는 코드는 다음과 같다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">recc_matrix &lt;-<span class="st"> </span><span class="kw">sapply</span>(recc_predicted@items, function(x){
+  <span class="kw">colnames</span>(ratings_movies)[x]
+})
+
+recc_matrix[, <span class="dv">1</span>:<span class="dv">3</span>]</code></pre></div>
+<pre class="output"><code>     3                                          
+[1,] &quot;Fugitive, The (1993)&quot;                     
+[2,] &quot;Star Wars (1977)&quot;                         
+[3,] &quot;Shawshank Redemption, The (1994)&quot;         
+[4,] &quot;Empire Strikes Back, The (1980)&quot;          
+[5,] &quot;Indiana Jones and the Last Crusade (1989)&quot;
+     8                                                           
+[1,] &quot;Remains of the Day, The (1993)&quot;                            
+[2,] &quot;Like Water For Chocolate (Como agua para chocolate) (1992)&quot;
+[3,] &quot;Annie Hall (1977)&quot;                                         
+[4,] &quot;Room with a View, A (1986)&quot;                                
+[5,] &quot;English Patient, The (1996)&quot;                               
+     15                                    
+[1,] &quot;Empire Strikes Back, The (1980)&quot;     
+[2,] &quot;Braveheart (1995)&quot;                   
+[3,] &quot;Casablanca (1942)&quot;                   
+[4,] &quot;Bridge on the River Kwai, The (1957)&quot;
+[5,] &quot;Psycho (1960)&quot;     </code></pre>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://www.packtpub.com/big-data-and-business-intelligence/building-recommendation-system-r">Building a Recommendation System with R</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://bigdata-doctor.com/recommender-systems-101-practical-example-in-r/">Recommender Systems 101 – a step by step practical example in R</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="http://blog.yhat.com/posts/recommender-system-in-r.html">Recommendation System in R</a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p><a href="http://www.salemmarafi.com/code/collaborative-filtering-r/">Collaborative Filtering with R</a><a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p><a href="https://ashokharnal.wordpress.com/tag/item-based-collaborative-filtering-using-r/">Using R package, recommenderlab, for predicting ratings for MovieLens data</a><a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p><a href="https://cran.r-project.org/web/packages/recommenderlab/index.html">recommenderlab - Lab for Developing and Testing Recommender Algorithms</a><a href="#fnref6">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>

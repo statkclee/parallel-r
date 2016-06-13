@@ -1,13 +1,14 @@
 ---
 layout: page
 title: 데이터 과학
-subtitle: 영화 추천시스템
+subtitle: 영화 추천시스템 개요
 ---
 
 > ## 학습 목표 {.objectives}
 >
-> * MovieLens 데이터로 영화 추천시스템을 개발한다.
-> * 로컬 컴퓨터에서 작게 개발하고 SparkR을 통해 확장을 시도한다.
+> * 추천시스템에 관한 출현배경과 이론을 이해한다.
+> * 다양한 추천시스템에 대해 분류한다.
+> * 추천시스템의 목적과 유사성 측도에 대해 이해한다.
 
 
 ### 1. 추천 시스템의 도래 [^mmds-stanford]
@@ -142,8 +143,5 @@ df <- data.frame(a, b)
 cor(df, method="pearson")
 ~~~
 
-### 3. R 추천 시스템 [^r-recommendation-sys]
-
-[^r-recommendation-sys]: [Building a Recommendation System with R](https://www.packtpub.com/big-data-and-business-intelligence/building-recommendation-system-r)
 
 

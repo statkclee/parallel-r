@@ -27,15 +27,16 @@
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
                     <a href="index.html"><h1 class="title">데이터 과학</h1></a>
-          <h2 class="subtitle">영화 추천시스템</h2>
+          <h2 class="subtitle">영화 추천시스템 개요</h2>
           <section class="objectives panel panel-warning">
 <div class="panel-heading">
 <h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
 </div>
 <div class="panel-body">
 <ul>
-<li>MovieLens 데이터로 영화 추천시스템을 개발한다.</li>
-<li>로컬 컴퓨터에서 작게 개발하고 SparkR을 통해 확장을 시도한다.</li>
+<li>추천시스템에 관한 출현배경과 이론을 이해한다.</li>
+<li>다양한 추천시스템에 대해 분류한다.</li>
+<li>추천시스템의 목적과 유사성 측도에 대해 이해한다.</li>
 </ul>
 </div>
 </section>
@@ -128,14 +129,12 @@ euclidean_dist</code></pre></div>
 <p>피어슨 상관계수는 <code>cor</code> 기본내장함수를 사용해서 계산한다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a, b)
 <span class="kw">cor</span>(df, <span class="dt">method=</span><span class="st">&quot;pearson&quot;</span>)</code></pre></div>
-<h3 id="r-추천-시스템-r-recommendation-sys">3. R 추천 시스템 <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></h3>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p><a href="https://class.coursera.org/mmds-002">Mining Massive Datasets - Coursera, Stanford</a><a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p><a href="https://www.youtube.com/watch?v=TukmMqw6y0s">Reza Zadeh - Spark and Matrix Factorization</a><a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p><a href="https://www.youtube.com/watch?v=kfEWZA-b-YQ">Christian Thurau - Low-rank matrix approximations in Python</a><a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p><a href="https://www.packtpub.com/big-data-and-business-intelligence/building-recommendation-system-r">Building a Recommendation System with R</a><a href="#fnref4">↩</a></p></li>
 </ol>
 </div>
         </div>
