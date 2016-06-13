@@ -22,7 +22,10 @@ minutes: 10
 * **백만곡 데이터** : [Million Song Dataset](http://labrosa.ee.columbia.edu/millionsong/)는 [Echo Nest](http://the.echonest.com/company/) 회사가 생성해서 제공하는 데이터로 원래 [HDF5](https://www.hdfgroup.org/about/hdf_technologies.html) 형식으로 제공되어 활용하기 까다로왔으나 다양한 사람들의 노력으로 이제 백만곡 데이터에 대한 접근성은 나아졌다. [다운로드 1%, 1.8 GB](http://static.echonest.com/millionsongsubset_full.tar.gz), [다운로드 전체, 280 GB](http://labrosa.ee.columbia.edu/millionsong/pages/getting-dataset) [UCI 노래 출시년도 예측](http://archive.ics.uci.edu/ml/datasets/YearPredictionMSD)
     * R 팩키지로 별도로 되어 있지 않아 `sqlite` 데이터베이스 형태로 다운로드 받아 R 에서 분석한다. 711.6 MB SQLite 데이터베이스 크기를 갖는다. [^million-songs-in-r]
 
-[^million-songs-in-r]: [The Million Song Dataset, part 1: What happened after the 1960s?](https://stattrekker.wordpress.com/2015/08/29/the-million-song-dataset-part-1-what-happened-after-the-1960s/)    
+[^million-songs-in-r]: [The Million Song Dataset, part 1: What happened after the 1960s?](https://stattrekker.wordpress.com/2015/08/29/the-million-song-dataset-part-1-what-happened-after-the-1960s/)
+
+
+
 ~~~ {.r}
 library(RCurl)
 library(RSQLite)

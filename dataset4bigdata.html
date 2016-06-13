@@ -55,19 +55,34 @@
 <li>R 팩키지로 별도로 되어 있지 않아 <code>sqlite</code> 데이터베이스 형태로 다운로드 받아 R 에서 분석한다. 711.6 MB SQLite 데이터베이스 크기를 갖는다. <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></li>
 </ul></li>
 </ul>
-<p>url &lt;- “http://labrosa.ee.columbia.edu/millionsong/sites/default/files/AdditionalFiles/track_metadata.db” download.file(url, “track_metadata.db”, “auto”)</p>
-<p>fetch &lt;- function(db, query, n = -1) { result &lt;- dbSendQuery(db, query) data &lt;- dbFetch(result, n) dbClearResult(result) return(as.data.table(data)) }</p>
-<p>metadata.db &lt;- dbConnect(SQLite(), dbname=‘track_metadata.db’)</p>
-<p>dbListTables(metadata.db)</p>
-<p>songs &lt;- fetch(metadata.db, “SELECT * FROM songs”) dbDisconnect(metadata.db)</p>
-<p>head(songs, n=3) <sub>~</sub></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RCurl)
+<span class="kw">library</span>(RSQLite)
+<span class="kw">library</span>(data.table)
+
+url &lt;-<span class="st"> &quot;http://labrosa.ee.columbia.edu/millionsong/sites/default/files/AdditionalFiles/track_metadata.db&quot;</span>
+<span class="kw">download.file</span>(url, <span class="st">&quot;track_metadata.db&quot;</span>, <span class="st">&quot;auto&quot;</span>)
+
+fetch  &lt;-<span class="st"> </span>function(db, query, <span class="dt">n =</span> -<span class="dv">1</span>) {
+  result &lt;-<span class="st"> </span><span class="kw">dbSendQuery</span>(db, query)
+  data &lt;-<span class="st"> </span><span class="kw">dbFetch</span>(result, n)
+  <span class="kw">dbClearResult</span>(result)
+  <span class="kw">return</span>(<span class="kw">as.data.table</span>(data))
+}
+
+metadata.db &lt;-<span class="st"> </span><span class="kw">dbConnect</span>(<span class="kw">SQLite</span>(), <span class="dt">dbname=</span><span class="st">&#39;track_metadata.db&#39;</span>)
+
+<span class="kw">dbListTables</span>(metadata.db)
+
+songs &lt;-<span class="st"> </span><span class="kw">fetch</span>(metadata.db, <span class="st">&quot;SELECT * FROM songs&quot;</span>)
+<span class="kw">dbDisconnect</span>(metadata.db)
+
+<span class="kw">head</span>(songs, <span class="dt">n=</span><span class="dv">3</span>)</code></pre></div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p><a href="http://www.inside-r.org/howto/finding-data-internet">Finding Data on the Internet</a><a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p><a href="http://www.r-bloggers.com/data-sets-for-data-science/">Data Sets for Data Science</a><a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p><a href="https://stattrekker.wordpress.com/2015/08/29/the-million-song-dataset-part-1-what-happened-after-the-1960s/">The Million Song Dataset, part 1: What happened after the 1960s?</a><br />
-<sub>~</sub> {.r} library(RCurl) library(RSQLite) library(data.table)<a href="#fnref3">↩</a></p></li>
+<li id="fn3"><p><a href="https://stattrekker.wordpress.com/2015/08/29/the-million-song-dataset-part-1-what-happened-after-the-1960s/">The Million Song Dataset, part 1: What happened after the 1960s?</a><a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
         </div>
