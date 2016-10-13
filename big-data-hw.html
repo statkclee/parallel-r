@@ -4,35 +4,35 @@
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
     <title>Software Carpentry: 데이터 과학</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
-    <link rel="stylesheet" type="text/css" href="css/swc.css" />
-    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
-    <meta charset="UTF-8" />
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-    
-      ga('create', 'UA-59802572-19', 'auto');
-      ga('send', 'pageview');
-    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-19', 'auto');
+      ga('send', 'pageview');
+    
     </script>
   </head>
   <body class="lesson">
     <div class="container card">
-      <div class="banner">
-        <a href="http://software-carpentry.org" title="Software Carpentry">
-          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
-        </a>
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
       </div>
       <article>
       <div class="row">
@@ -63,26 +63,26 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">난제영역</th>
-<th align="left">고장 통계자료</th>
+<th>난제영역</th>
+<th>고장 통계자료</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">서버 컴퓨터 고장</td>
-<td align="left">3년마다 서버컴퓨터 교체 → 10,000대 운영, 10대/일</td>
+<td>서버 컴퓨터 고장</td>
+<td>3년마다 서버컴퓨터 교체 → 10,000대 운영, 10대/일</td>
 </tr>
 <tr class="even">
-<td align="left">하드 디스크</td>
-<td align="left">1 – 5 % / 년 고장 (구글)</td>
+<td>하드 디스크</td>
+<td>1 – 5 % / 년 고장 (구글)</td>
 </tr>
 <tr class="odd">
-<td align="left">메모리(DIMM)</td>
-<td align="left">0.2 % / 년 고장 (구글)</td>
+<td>메모리(DIMM)</td>
+<td>0.2 % / 년 고장 (구글)</td>
 </tr>
 <tr class="even">
-<td align="left">네트워크 속도</td>
-<td align="left">공유메모리 &lt;&lt; 디스크 &lt;&lt; 네트워크 지연속도</td>
+<td>네트워크 속도</td>
+<td>공유메모리 &lt;&lt; 디스크 &lt;&lt; 네트워크 지연속도</td>
 </tr>
 </tbody>
 </table>
@@ -96,57 +96,57 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">구분</th>
-<th align="left">하둡 맵리듀스</th>
-<th align="left">스파크 RDD</th>
+<th>구분</th>
+<th>하둡 맵리듀스</th>
+<th>스파크 RDD</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">저장소</td>
-<td align="left">디스크</td>
-<td align="left">메모리 혹은 디스크</td>
+<td>저장소</td>
+<td>디스크</td>
+<td>메모리 혹은 디스크</td>
 </tr>
 <tr class="even">
-<td align="left">연산작업</td>
-<td align="left">맵(Map)과 리듀스(Reduce)</td>
-<td align="left">맵, 리듀스, 표본추출, 합병…</td>
+<td>연산작업</td>
+<td>맵(Map)과 리듀스(Reduce)</td>
+<td>맵, 리듀스, 표본추출, 합병…</td>
 </tr>
 <tr class="odd">
-<td align="left">실행모형</td>
-<td align="left">배치(Batch)</td>
-<td align="left">배치, 인터랙티브, 스트리밍</td>
+<td>실행모형</td>
+<td>배치(Batch)</td>
+<td>배치, 인터랙티브, 스트리밍</td>
 </tr>
 <tr class="even">
-<td align="left">프로그래밍 언어</td>
-<td align="left">자바</td>
-<td align="left">자바, R, 파이썬, 스칼라</td>
+<td>프로그래밍 언어</td>
+<td>자바</td>
+<td>자바, R, 파이썬, 스칼라</td>
 </tr>
 </tbody>
 </table>
         </div>
       </div>
       </article>
-      <div class="footer">
-        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
-        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
-        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
-        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
       </div>
     </div>
-    <!-- Javascript placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
-    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-    
-      ga('create', 'UA-37305346-2', 'auto');
-      ga('send', 'pageview');
-    
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
     </script>
   </body>
 </html>

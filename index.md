@@ -41,7 +41,6 @@ title: R 병렬 프로그래밍
     - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
     - [성능 측정기준 벤치마킹](perf-benchmark.html)
 1. **빅데이터**
-    - [RStudio 빅데이터 전략](big-data-strategy.html)
     - [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
     - [MOOC 스파크 실행환경](mooc-spark-install.html)    
     - [스파크 이해하기](spark-mooc.html)
