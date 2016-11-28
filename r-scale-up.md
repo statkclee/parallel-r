@@ -2,7 +2,15 @@
 layout: page
 title: 데이터 과학
 subtitle: R 스케일-업 성능향상
+output:
+  html_document: 
+    keep_md: yes
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
 ---
+
+
 
 > ## 학습 목표 {.objectives}
 >
@@ -37,7 +45,8 @@ GNU gcc/gfortran과 clang/gfortran은 자유롭게 사용할 수 있어 어떤 �
 
 `compiler` 팩키지를 사용하게 되면 크기가 약간 커지고, 빌드과정에 시간이 다소 소요되지만, 다소 속도가 빨라지는 장점을 갖게 된다.
 
-~~~ {.r}
+
+~~~{.r}
 library(compiler)
 f <- function(n, x) for (i in 1:n) x = (1 + x)^(-1)
 g <- cmpfun(f)
@@ -47,7 +56,8 @@ disassemble(g)
 
 `disassemble` 함수로 바이트코드 컴파일 결과를 확인할 수 있다.
 
-~~~ {.output}
+
+~~~{.r}
 list(.Code, list(8L, LDCONST.OP, 1L, GETVAR.OP, 2L, COLON.OP, 
     3L, STARTFOR.OP, 0L, 4L, 24L, LDCONST.OP, 1L, GETVAR.OP, 
     5L, ADD.OP, 6L, LDCONST.OP, 7L, EXPT.OP, 8L, SETVAR.OP, 5L, 
@@ -59,14 +69,16 @@ list(.Code, list(8L, LDCONST.OP, 1L, GETVAR.OP, 2L, COLON.OP,
 `microbenchmark`를 통해 비교를 $\frac {1}{(1-x)^n}$ 함수를 람다식으로 계산한 R코드와
 이를 바이트코드로 컴파일한 것의 성능차이를 비교한다.
 
-~~~ {.r}
+
+~~~{.r}
 library(microbenchmark)
 compare <- microbenchmark(f(1000, 1), g(1000, 1), times = 1000)
 ~~~
 
 성능이 약 10 차이가 나는 것을 확인할 수 있다. 가장 잘 성능차이가 나는 사례를 들었기 때문에 이런 차이가 나는 것이지만, 보통은 약간의 성능향상만을 자주 관측하게 된다.
 
-~~~ {.output}
+
+~~~{.r}
 Unit: microseconds
        expr     min      lq      mean  median      uq      max neval cld
  f(1000, 1) 498.567 518.473 578.14138 548.020 570.569 1833.160  1000   b
@@ -75,7 +87,8 @@ Unit: microseconds
 
 시각화 결과를 `autoplot`을 통해 도식화한다.
 
-~~~
+
+~~~{.r}
 library(ggplot2)
 autoplot(compare)
 ~~~
@@ -84,7 +97,8 @@ autoplot(compare)
 
 현실일 수도 있는 사례를 살펴본다. $n \times n$ 정방행렬을 난수를 채워 생성하고 칼럼마다 합을 구하고 그 최소값을 구하는 함수를 바이트코드로 컴파일할 경우 성능은 별차이가 없는 것으로 나온다.
 
-~~~ {.r}
+
+~~~{.r}
 g <- function(n) {
   x <- matrix(runif (n*n), nrow=n , ncol=n)
   min(colSums(x))
@@ -95,7 +109,8 @@ n <- 1000
 benchmark(g(n), g_comp(n) , columns= c("test", "replications", "elapsed", "relative"))
 ~~~
 
-~~~ {.output}
+
+~~~{.r}
        test replications elapsed relative
 1      g(n)          100   10.39    1.000
 2 g_comp(n)          100   10.41    1.002
@@ -109,7 +124,8 @@ BLAS(Basic Linear Algebra Subprograms)는 기본선형대수를 구현한 모듈
 
 표준정규분포에서 나온 표본을 $m \times n$ 행렬로 생성한 다음 `svd` 분해를 R에 기본 설치된 BLAS, OpenBLAS, ATLAS, 마이크로소프트에서 인수한 Revolution R에 포함된 BLAS 모듈로 각각 실행을 해보고 성능을 확인한다.
 
-~~~ {.r}
+
+~~~{.r}
 set.seed(1234)
 m <- 2000
 n <- 2000
@@ -144,14 +160,11 @@ BLAS 모듈에 대한 성능을 비교한 [R코드](http://r.research.att.com/be
 
 정해진 횟수 예를 들어 50,000번 $x$를 $x^2$로 제곱하여 결과를 화면에 출력하는 R코드를 자료형을 초기화한 경우, 초기화하지 않은 경우, 구문에 달콤 기능을 넣은 ply, 그리고 메모리를 많이 사용하는 벡터화를 통해 동일한 기능을 구현한다.
 
-~~~ {.r}
-##========================================================================
-## 루프, ply, 벡터화 
-##========================================================================
 
-#-------------------------------------------------------------------------
-# 1. 자료형 초기화 설정을 하지 않는 경우
-#-------------------------------------------------------------------------
+~~~{.r}
+library(rbenchmark)
+
+# 1. 자료형 초기화 설정을 하지 않는 경우-------------------------------------------------------------------------
 
 square_loop_noinit <- function(n) {
   x <- c()
@@ -163,9 +176,7 @@ square_loop_noinit <- function(n) {
 
 # square_loop_noinit(100)
 
-#-------------------------------------------------------------------------
-# 2. 자료형 초기화 설정을 한 경우
-#-------------------------------------------------------------------------
+# 2. 자료형 초기화 설정을 한 경우-------------------------------------------------------------------------
 
 square_loop_withinit <- function(n) {
   x <- integer(n)
@@ -177,50 +188,78 @@ square_loop_withinit <- function(n) {
 
 # square_loop_withinit(100)
 
-#-------------------------------------------------------------------------
-# 3. ply 기능을 활용하여 구현한 경우
-#-------------------------------------------------------------------------
+# 3. ply 기능을 활용하여 구현한 경우-------------------------------------------------------------------------
 
 square_sapply <- function(n) sapply (1:n , function(i) i^2)
 
 # square_sapply(100)
 
-#-------------------------------------------------------------------------
-# 4. 벡터화를 통해 구현한 경우
-#-------------------------------------------------------------------------
+# 4. 벡터화를 통해 구현한 경우-------------------------------------------------------------------------
 
 square_vec <- function(n) (1:n) * (1:n)
 
 # square_vec(100)
 
-#=========================================================================
-# 5. 벡터화를 통해 구현한 경우
-#=========================================================================
+# 5. 병렬화를 통한 구현=========================================================================
+library(parallel)
 
-n <- 50000
+no_cores <- detectCores() - 1
+no_cores
+~~~
+
+
+
+~~~{.output}
+[1] 7
+
+~~~
+
+
+
+~~~{.r}
+cl <- makeCluster(no_cores, type="FORK") # PSOCK
+
+square_parallel_sapply <- function(n) {
+  parSapply(cl, 1:n, function(i) i^2)
+}
+
+n <- 10000
 
 benchmark(square_loop_noinit(n), square_loop_withinit(n) ,
-          square_sapply(n), square_vec(n), 
-          columns= c("test", "replications", "elapsed", "relative"))          
+          square_sapply(n), square_vec(n), square_parallel_sapply(n), 
+          columns= c("test", "replications", "elapsed", "relative"))     
 ~~~
 
-구현된 결과를 보면, 벡터화를 통한 것이 가장 좋은 성능을 보이고 있고, ply와 데이터 초기화를 한 경우
-성능이 비슷하게 나오고, 전혀 초기화 설정을 하지 않는 것이 가장 성능이 낮은 것을 알 수 있다.
 
-~~~ {.output}
-                     test replications elapsed  relative
-1   square_loop_noinit(n)          100  167.47    8373.5
-2 square_loop_withinit(n)          100    3.56     178.0
-3        square_sapply(n)          100    4.61     230.5
-4           square_vec(n)          100    0.02       1.0
+
+~~~{.output}
+                       test replications elapsed relative
+1     square_loop_noinit(n)          100  16.786   3357.2
+2   square_loop_withinit(n)          100   0.580    116.0
+5 square_parallel_sapply(n)          100   0.858    171.6
+3          square_sapply(n)          100   0.535    107.0
+4             square_vec(n)          100   0.005      1.0
+
 ~~~
+
+
+
+~~~{.r}
+stopCluster(cl)
+~~~
+
+구현된 결과를 보면, 벡터화를 통한 것이 가장 좋은 성능을 보이고 있고, `ply`와 데이터 초기화를 한 경우
+성능이 비슷하게 나오고, 병렬처리를 한 것도 중간정도 성능이 나오는 것으로 확인이 되고, 
+전혀 초기화 설정을 하지 않는 것이 가장 성능이 낮은 것을 알 수 있다.
+
 
 > #### 고성능 R코드 작성 연습문제 {.callout}
 > 
 > 1에서 100,000 사이 자연수 중에서 5, 17, 5와 17 모두로 나눠지는 자연수 갯수를 계산하시요.
 > *힌트:* `sapply()` 함수, 벡터화를 통해 구현하시오. `sum(c(TRUE, TRUE, FALSE))`는 2를 반환시킨다.
 > 
-> ~~~ {.r}
+> 
+> ~~~{.r}
 > # sapply 적용한 경우
 > div_by_5_or_17 <- function(n){
 >   if(n %% 5 ==0 || n %% 17 ==0){
@@ -244,9 +283,10 @@ benchmark(square_loop_noinit(n), square_loop_withinit(n) ,
 > library(rbenchmark)
 > n <- 100000
 > benchmark(sapply=div_sapply(n), vec=div_vec(n))
-> ~~~ 
+> ~~~
 > 
-> ~~~ {.output}
+> 
+> ~~~{.r}
 >     test replications elapsed relative user.self sys.self
 > 1 sapply          100   25.80   33.077     25.62     0.01
 > 2    vec          100    0.78    1.000      0.77     0.00
@@ -288,7 +328,8 @@ $\pi$를 계산하는 $[0,1] \times [0,1]$ 정사각형에 균등분포 관측�
 
 $$ \pi \approx 4 \times \left( \frac{\mbox{원 내부}}{\mbox{전체}} \right) $$
 
-~~~ {.r}
+
+~~~{.r}
 ##========================================================================
 ## Rcpp 원주율 계산
 ##========================================================================
@@ -347,7 +388,8 @@ sourceCpp(code = code)
 
 $\pi$ 원주율을 for 루프를 사용해서 구현한 방법과 메모리를 희생하더라도 일단 쭉 메모리에 데이터를 깔고 원주율을 계산하는 벡터화 방법, `Rcpp`를 사용해서 구현한 세가지 코딩방법에 대한 기준성능을 벤치마킹하여 비교한다.
 
-~~~ {.r}
+
+~~~{.r}
 #-------------------------------------------------------------------------
 # 4. 알고리듬 비교
 #-------------------------------------------------------------------------
@@ -362,7 +404,8 @@ benchmark(R.loop = pi_loop_r(n),
 
 `benchmark` 성능비교 결과 `Rcpp`로 구현한 C++ 코드가 벡터화보다 3.8배, 루프를 돌린 것과 비교하여 204배 성능이 좋은 것이 확인된다.
 
-~~~ {.output}
+
+~~~{.r}
 test replications elapsed relative
  1 R.loop          100  54.526  204.217
  2  R.vec          100   1.016    3.805
@@ -371,7 +414,8 @@ test replications elapsed relative
 
 `microbenchmark`를 사용해서 시각화를 해도 확연한 성능차이를 시각화를 통해 확인된다.
 
-~~~ {.r}
+
+~~~{.r}
 #-------------------------------------------------------------------------
 # 5. 시각화
 #-------------------------------------------------------------------------

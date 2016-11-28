@@ -197,33 +197,26 @@ square_vec <- function(n) (1:n) * (1:n)
 library(parallel)
 
 no_cores <- detectCores() - 1
-cl <- makeCluster(no_cores, type="PSOCK") # FORK
+no_cores
+cl <- makeCluster(no_cores, type="FORK") # PSOCK
 
 square_parallel_sapply <- function(n) {
   parSapply(cl, 1:n, function(i) i^2)
 }
 
-stopCluster(cl)
-
-
-n <- 30000
+n <- 10000
 
 benchmark(square_loop_noinit(n), square_loop_withinit(n) ,
           square_sapply(n), square_vec(n), square_parallel_sapply(n), 
           columns= c("test", "replications", "elapsed", "relative"))     
+
+stopCluster(cl)
 ```
 
-구현된 결과를 보면, 벡터화를 통한 것이 가장 좋은 성능을 보이고 있고, ply와 데이터 초기화를 한 경우
-성능이 비슷하게 나오고, 전혀 초기화 설정을 하지 않는 것이 가장 성능이 낮은 것을 알 수 있다.
+구현된 결과를 보면, 벡터화를 통한 것이 가장 좋은 성능을 보이고 있고, `ply`와 데이터 초기화를 한 경우
+성능이 비슷하게 나오고, 병렬처리를 한 것도 중간정도 성능이 나오는 것으로 확인이 되고, 
+전혀 초기화 설정을 하지 않는 것이 가장 성능이 낮은 것을 알 수 있다.
 
-``` {r eval=FALSE}
-                       test replications elapsed relative
-1     square_loop_noinit(n)          100  177.15    17715
-2   square_loop_withinit(n)          100    2.94      294
-5 square_parallel_sapply(n)          100    3.62      362
-3          square_sapply(n)          100    2.75      275
-4             square_vec(n)          100    0.01        1
-```
 
 > #### 고성능 R코드 작성 연습문제 {.callout}
 > 
