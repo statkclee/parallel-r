@@ -28,14 +28,14 @@ options(warn=-1)
 뉴튼-랩슨 알고리즘으로도 알려진 뉴튼(Newton Method) 방법은 
 컴퓨터를 사용해서 수치해석 방법으로 실함수의 근을 찾아내는 방법이다. 
 
-특정 함수 $f$ 의 근을 찾을 경우, 함수 미분값 $f\textprime$, 초기값 $x_0$가 주어지면 
+특정 함수 $f$ 의 근을 찾을 경우, 함수 미분값 $f'$, 초기값 $x_0$가 주어지면 
 근사적 근에 가까운 값은 다음과 같이 정의된다.
 
-$$x_{1} = x_0 - \frac{f(x_0)}{f\textprime(x_0)}$$
+$$x_{1} = x_0 - \frac{f(x_0)}{f'(x_0)}$$
 
 이 과정을 반복하게 되면 오차가 매우 적게 근의 값에 도달하게 된다.
 
-$$x_{n+1} = x_n - \frac{f(x_n)}{f\textprime(x_n)}$$
+$$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
 
 기하적으로 보면, 파란 선은 함수 $f$ 이고, 
 빨간 선은 뉴턴방법을 활용하여 근을 구해가는 과정을 시각적으로 보여주고 있다.
@@ -90,4 +90,4 @@ find_root_recur(612, 10)
 > 
 > 객체(object)가 함수를 갖는 데이터라면, 클러져는 데이터를 갖는 함수다.
 > 
-> "An object is data with functions. A closure is a function with data." -- John D. Cook
+> > "An object is data with functions. A closure is a function with data." -- John D. Cook
