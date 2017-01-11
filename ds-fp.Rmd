@@ -195,7 +195,7 @@ sapply(numbers_z, find_root_recur, init=1, eps=10^(-10))
 `Reduce` 함수도 삶을 편안하게 할 수 있는, 루프를 회피하는 또다른 방법이다.
 이름에서 알 수 있듯이 `numbers_z` 벡터 원소 각각에 대해 해당 연산작업 `+`, `%%`
 
-``` {r fp-apply-family, message=FALSE}
+``` {r fp-reduce, message=FALSE}
 # Reduce ----------------------------------------------
 numbers_z
 Reduce(`+`, numbers_z)
