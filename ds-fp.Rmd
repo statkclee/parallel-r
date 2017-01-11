@@ -123,7 +123,7 @@ find_root_recur(612, 10)
 
 따라서... 데이터 분석에는 함수형 프로그래밍 패러다임을 활용하고, 툴/패키지 개발에는 객체지향 프로그래밍 패러다임 사용이 권장된다.
 
-<img src="fig/fp-data-analysis-choice.png" alt="데이터 분석에는 함수형 프로그래밍" width="77%" />
+<img src="fig/fp-data-analysis-choice.png" alt="데이터 분석에는 함수형 프로그래밍" width="57%" />
 
 
 
