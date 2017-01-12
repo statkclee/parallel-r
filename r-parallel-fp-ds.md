@@ -11,10 +11,7 @@ mainfont: NanumGothic
 ---
 
 
-```{r, include=FALSE}
-source("tools/chunk-options.R")
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-```
+
 
 > ## 학습 목표 {.objectives}
 >
@@ -41,15 +38,59 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
     - 부동소수점형(double)
     - 문자형(character)
 
-``` {r fp-data-struct-vector}
+
+~~~{.r}
 (v_log <- c(TRUE, FALSE, FALSE, TRUE))
+~~~
+
+
+
+~~~{.output}
+#> [1]  TRUE FALSE FALSE  TRUE
+
+~~~
+
+
+
+~~~{.r}
 
 (v_int <- 1:4)
+~~~
+
+
+
+~~~{.output}
+#> [1] 1 2 3 4
+
+~~~
+
+
+
+~~~{.r}
 
 (v_doub <- 1:4 * 1.2)
+~~~
+
+
+
+~~~{.output}
+#> [1] 1.2 2.4 3.6 4.8
+
+~~~
+
+
+
+~~~{.r}
 
 (v_char <- letters[1:4])
-```
+~~~
+
+
+
+~~~{.output}
+#> [1] "a" "b" "c" "d"
+
+~~~
 
 ### 1.2. 벡터 색인(Indexing, 인텍싱)
 
@@ -63,15 +104,59 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
     - 음수 정수 벡터:  벡터 색인 숫자에 해당되는 벡터만 제거.
 - 문자벡터 : 문자벡터 명칭에 해당되는 원소만 추출.
 
-``` {r fp-data-struct-index}
+
+~~~{.r}
 v_char[c(FALSE, FALSE, TRUE, TRUE)]
+~~~
+
+
+
+~~~{.output}
+#> [1] "c" "d"
+
+~~~
+
+
+
+~~~{.r}
 
 v_char[v_log]
+~~~
+
+
+
+~~~{.output}
+#> [1] "a" "d"
+
+~~~
+
+
+
+~~~{.r}
 
 v_doub[2:3]
+~~~
+
+
+
+~~~{.output}
+#> [1] 2.4 3.6
+
+~~~
+
+
+
+~~~{.r}
 
 v_char[-4]
-```
+~~~
+
+
+
+~~~{.output}
+#> [1] "a" "b" "c"
+
+~~~
 
 ### 1.3. 자료형 강제변환(coersion)
 
@@ -87,33 +172,133 @@ v_char[-4]
 - 부동소수점형(double)
 - 문자형(character)
 
-``` {r fp-data-struct-coercion}
+
+~~~{.r}
 v_log
+~~~
+
+
+
+~~~{.output}
+#> [1]  TRUE FALSE FALSE  TRUE
+
+~~~
+
+
+
+~~~{.r}
 
 as.integer(v_log)
+~~~
+
+
+
+~~~{.output}
+#> [1] 1 0 0 1
+
+~~~
+
+
+
+~~~{.r}
 
 v_int
+~~~
+
+
+
+~~~{.output}
+#> [1] 1 2 3 4
+
+~~~
+
+
+
+~~~{.r}
 
 as.numeric(v_int)
+~~~
+
+
+
+~~~{.output}
+#> [1] 1 2 3 4
+
+~~~
+
+
+
+~~~{.r}
 
 v_doub
+~~~
+
+
+
+~~~{.output}
+#> [1] 1.2 2.4 3.6 4.8
+
+~~~
+
+
+
+~~~{.r}
 
 as.character(v_doub)
+~~~
+
+
+
+~~~{.output}
+#> [1] "1.2" "2.4" "3.6" "4.8"
+
+~~~
+
+
+
+~~~{.r}
 
 as.character(as.numeric(as.integer(v_log)))
-```
+~~~
+
+
+
+~~~{.output}
+#> [1] "1" "0" "0" "1"
+
+~~~
 
 자료형 강제변환 위계에 대한 사례로 부동소수점과 문자형이 동일한 벡터에 입력되면,
 동일한 자료형을 갖춰야 되는 벡터 입장에서 자료변환 위계구조에 따라 모두 문자형으로 변환이 된다.
 
 
-``` {r fp-data-struct-coercion-hierarchy}
+
+~~~{.r}
 v_doub_copy <- v_doub
 str(v_doub_copy)
+~~~
+
+
+
+~~~{.output}
+#>  num [1:4] 1.2 2.4 3.6 4.8
+
+~~~
+
+
+
+~~~{.r}
 
 v_doub_copy[3] <- "uhoh"
 str(v_doub_copy)
-```
+~~~
+
+
+
+~~~{.output}
+#>  chr [1:4] "1.2" "2.4" "uhoh" "4.8"
+
+~~~
 
 ### 1.2. 리스트(list) 
 

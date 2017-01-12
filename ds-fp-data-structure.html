@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-19', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">R 함수형 프로그래밍</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>함수형 프로그래밍이 필요한 이유를 살펴본다.</li>
+<li>함수도 인자라는 것을 이해한다.</li>
+<li><code>purrr</code> 함수형 프로그래밍 기본을 이해한다.</li>
+</ul>
+</div>
+</section>
+<h3 id="for-루프-대안이-필요한-이유">1. <code>for</code> 루프 대안이 필요한 이유</h3>
+<p><code>for</code> 루프는 객체와 구현 패턴을 강조하다보니 동작을 숨기게 된다. 반면에 함수형 프로그래밍은 명사와 마찬가지로 동사도 강조하고, 구현에 대한 상세한 내용은 추상화하여 감추어 버린다. 이런 점에서 함수형 프로그래밍으로 코드를 작성하게 되면 간결하고 유지보수성이 좋아진다.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h4 id="함수형-프로그램-작성-순서"><span class="glyphicon glyphicon-pushpin"></span>함수형 프로그램 작성 순서</h4>
+</div>
+<div class="panel-body">
+<ol style="list-style-type: decimal">
+<li>전문영역지식을 활용하여 작성내용을 체계화한다.</li>
+<li>변수를 사용하여 정리한다.</li>
+<li>공통되는 코드를 뽑아낸다.</li>
+</ol>
+</div>
+</aside>
+<p>R 함수형 프로그램 작성에 Hadley Wickham이 사용하는 서양식 작은 케익(cupcake) 제작 요리법을 살펴본다. 바닐라 케이크와 쵸코 케이크 요리재료와 요리법은 거의 유사하다. 차이점이 있다면 밀가루(flour)와 코코아(cocoa)가 큰 차이가 나고 나머지 요리법의 절차는 거의 유사하다.</p>
+<p><img src="fig/fp-cupcake.png" alt="컵케이크 요리법" width="70%" /></p>
+<p>바닐라 케이크와 쵸코 케이크 조리법이 두 페이지에 걸쳐 있는데 이를 한 페이지로 줄이면 다음과 같다. 즉, 요리재료를 표준화해서 공통 요소를 뽑아내면 밀가루(flour)와 코코아(cocoa)를 바꿔 넣으면 되고, 요리법의 경우 먼저 요리법을 체계화해서 1단계 예열, 2단계 재료 섞기, 3단계 굽기로 나누고 2단계를 좀더 상세하게 마른 재료와 젖은 재료를 섞어 혼합하는 과정으로 체계화한다.</p>
+<p><img src="fig/fp-cupcake-fp.png" alt="컵케이크 요리법 함수형 프로그래밍으로 전환" width="70%" /></p>
+<p><code>mtcars</code> 데이터셋 각변수에 대한 평균과 중위수를 계산하는 것을 살펴본다. <code>for</code> 루프를 사용하는 경우 객체와 구현 패턴에 중점을 두게 되어 <code>mean</code>, <code>median</code> 함수명만 차이나는 <code>for</code> 루프가 두개 생성되었다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 각 변수 평균을 계산</span>
+
+out1 &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;double&quot;</span>, <span class="kw">ncol</span>(mtcars))
+
+for(i in <span class="kw">seq_along</span>(mtcars)) {
+    out1[[i]] &lt;-<span class="st"> </span><span class="kw">mean</span>(mtcars[[i]], <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+}
+
+<span class="co"># 각 변수 중위수를 계산</span>
+out2 &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;double&quot;</span>, <span class="kw">ncol</span>(mtcars))
+
+for(i in <span class="kw">seq_along</span>(mtcars)) {
+    out2[[i]] &lt;-<span class="st"> </span><span class="kw">median</span>(mtcars[[i]], <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+}</code></pre></div>
+<p>이를 <code>purrr</code> 팩키지를 사용해서 함수형 프로그램으로 작성하면 다음과 같다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(purrr)
+
+means &lt;-<span class="st"> </span><span class="kw">map_dbl</span>(mtcars, mean)
+medians &lt;-<span class="st"> </span><span class="kw">map_dbl</span>(mtcars, median)</code></pre></div>
+<h3 id="함수도-인자다.">2. 함수도 인자다.</h3>
+<p>함수도 인자로 넣어 처리할 수 있다는 점이 처음에 이상할 수도 있지만, 함수를 인자로 처리할 경우 코드 중복을 상당히 줄일 수 있다. <span class="math inline">\(L_1\)</span>, <span class="math inline">\(L_2\)</span>, <span class="math inline">\(L_3\)</span> 값을 구하는 함수를 다음과 같이 작성해야 한다. 숫자 1,2,3 만 차이날 뿐 함수 중복이 심하다.</p>
+<ul>
+<li>1단계: 중복이 심한 함수, 기능 구현에 초점을 맞춤</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f1 &lt;-<span class="st"> </span>function(x) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span><span class="dv">1</span>
+f2 &lt;-<span class="st"> </span>function(x) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span><span class="dv">2</span>
+f3 &lt;-<span class="st"> </span>function(x) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span><span class="dv">3</span></code></pre></div>
+<ul>
+<li>2단계: 임시 변수로 처리할 수 있는 부분을 식별하고 적절한 인자명(<code>power</code>)을 부여한다.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f1 &lt;-<span class="st"> </span>function(x) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span>power
+f2 &lt;-<span class="st"> </span>function(x) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span>power
+f3 &lt;-<span class="st"> </span>function(x) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span>power</code></pre></div>
+<ul>
+<li>3단계: 식별된 변수명을 함수 인자로 변환한다.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f1 &lt;-<span class="st"> </span>function(x, power) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span>power
+f2 &lt;-<span class="st"> </span>function(x, power) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span>power
+f3 &lt;-<span class="st"> </span>function(x, power) <span class="kw">abs</span>(x -<span class="st"> </span><span class="kw">mean</span>(x)) ^<span class="st"> </span>power</code></pre></div>
+<h4 id="기초통계-사례">2.1. 기초통계 사례</h4>
+<p>특정 변수의 중위수, 평균, 표준편차를 계산하는 함수를 작성하는 경우를 상정한다.</p>
+<ul>
+<li>1 단계: 각 기능을 구현하는 기능 구현에 초점을 맞춤</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">col_median &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">median</span>(df[[i]])
+        }
+        output
+    }
+
+col_mean &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">mean</span>(df[[i]])
+        }
+        output
+    }
+
+col_sd &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">sd</span>(df[[i]])
+        }
+        output
+    }</code></pre></div>
+<ul>
+<li>2 단계: <code>median</code>, <code>mean</code>, <code>sd</code>를 함수 인자 <code>fun</code> 으로 함수명을 통일.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">col_median &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">fun</span>(df[[i]])
+        }
+        output
+    }
+
+col_mean &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">fun</span>(df[[i]])
+        }
+        output
+    }
+
+col_sd &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">fun</span>(df[[i]])
+        }
+        output
+    }</code></pre></div>
+<ul>
+<li>3 단계: 함수 인자 <code>fun</code> 을 넣어 중복을 제거.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">col_median &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df, fun) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">fun</span>(df[[i]])
+        }
+        output
+    }
+
+col_mean &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df, fun) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">fun</span>(df[[i]])
+        }
+        output
+    }
+
+col_sd &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df, fun) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">fun</span>(df[[i]])
+        }
+        output
+    }</code></pre></div>
+<ul>
+<li>4 단계: 함수를 인자로 갖는 요약통계 함수를 최종적으로 정리하고, 테스트 사례를 통해 검증.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">col_summary &lt;-<span class="st"> </span>
+<span class="st">    </span>function(df, fun) {
+        output &lt;-<span class="st"> </span><span class="kw">numeric</span>(<span class="kw">length</span>(df))
+        for (i in <span class="kw">seq_along</span>(df)) {
+            output[i] &lt;-<span class="st"> </span><span class="kw">fun</span>(df[[i]])
+        }
+        output
+    }
+<span class="kw">col_summary</span>(df, <span class="dt">fun =</span> median)</code></pre></div>
+<pre class="output"><code>[1]  3 30  6  5
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">col_summary</span>(df, <span class="dt">fun =</span> mean)</code></pre></div>
+<pre class="output"><code>[1]  3.0 30.0  5.0  4.4
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">col_summary</span>(df, <span class="dt">fun =</span> sd)</code></pre></div>
+<pre class="output"><code>[1]  1.581139 15.811388  2.915476  1.516575
+</code></pre>
+<h3 id="함수형-프로그래밍-라이브러리-purrr">3. 함수형 프로그래밍 라이브러리 <code>purrr</code></h3>
+<p>함수를 인자로 넘기는 방법이 하나만 있는 것은 아니다. <code>sapply</code>, <code>lapply</code> 함수를 사용하는 방법이 많이 사용되고 있으며, 위에서 처럼 직접 함수를 작성해도 되지만, <code>purrr</code> 팩키지를 사용하여 기능을 동일한 기능 구현을 통일하는 것도 가능하다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sapply</span>(df, mean)</code></pre></div>
+<pre class="output"><code>   a    b    c    d 
+ 3.0 30.0  5.0  4.4 
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">col_summary</span>(df, mean)</code></pre></div>
+<pre class="output"><code>[1]  3.0 30.0  5.0  4.4
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(purrr)
+<span class="kw">map_dbl</span>(df, mean)</code></pre></div>
+<pre class="output"><code>   a    b    c    d 
+ 3.0 30.0  5.0  4.4 
+</code></pre>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h4 id="purrr-팩키지-map-함수를-사용할-경우-장점"><span class="glyphicon glyphicon-pushpin"></span><code>purrr</code> 팩키지 <code>map</code> 함수를 사용할 경우 장점</h4>
+</div>
+<div class="panel-body">
+<p><code>map_dbl(.x, .f, ...)</code> 작업을 실행시키면 특정 벡터(<code>.x</code>)에 대한 연산작업(<code>.f</code>)을 반복해서 실행</p>
+<ul>
+<li><code>.x</code> 벡터에 대해 반복 연산작업을 수행</li>
+<li>원소 각각에 대해서 <code>.f</code> 함수 연산 작업을 수행</li>
+<li>결과를 반환</li>
+</ul>
+</div>
+</aside>
+<p><code>map</code> 함수는 반환되는 자료형에 따라 차이가 나지만 기본적인 작동방식은 동일하다.</p>
+<ul>
+<li><code>map()</code> : 리스트를 반환</li>
+<li><code>map_dbl()</code> : double 숫자벡터를 반환</li>
+<li><code>map_lgl()</code> : 부울 논리 벡터를 반환</li>
+<li><code>map_int()</code> : 정수형 벡터를 반환</li>
+<li><code>map_chr()</code> : 문자형 벡터를 반환</li>
+</ul>
+<h4 id="purrr-map-함수-.f-지정방법">3.1. <code>purrr</code> <code>map</code> 함수 <code>.f</code> 지정방법</h4>
+<p><code>.f</code> 함수를 지정하는 다양한 방법을 살펴보면 다음과 같다.</p>
+<ul>
+<li>기존 함수를 사용 : <code>map(df, summary)</code></li>
+<li>사용자 정의 함수를 사용 : <code>map(df, rescale)</code></li>
+<li>익명 함수를 사용 : <code>map(df, function(x) sum(is.na(x)))</code></li>
+<li>공식 단축키 함수를 사용 : <code>map(df, ~ sum(is.na(x)))</code></li>
+</ul>
+<p><code>.f</code> 함수를 <code>[[</code>으로 원소 혹은 하위집합을 뽑아내는 경우를 살펴보자.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">list_of_results &lt;-<span class="st"> </span><span class="kw">list</span>(
+    <span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="st">&quot;A&quot;</span>),
+    <span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">2</span>, <span class="dt">b =</span> <span class="st">&quot;C&quot;</span>),
+    <span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">3</span>, <span class="dt">b =</span> <span class="st">&quot;D&quot;</span>))
+
+<span class="kw">map_dbl</span>(list_of_results, function(x) x[[<span class="st">&quot;a&quot;</span>]])</code></pre></div>
+<pre class="output"><code>[1] 1 2 3
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map_dbl</span>(list_of_results, <span class="st">&quot;a&quot;</span>)</code></pre></div>
+<pre class="output"><code>[1] 1 2 3
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map_dbl</span>(list_of_results, <span class="dv">1</span>)</code></pre></div>
+<pre class="output"><code>[1] 1 2 3
+</code></pre>
+<p><code>map_dbl(list_of_results, function(x) x[[&quot;a&quot;]])</code> 첫번째 경우 익명함수를 사용해서 리스트명을 기준으로 뽑아낸다. 두번째 <code>map_dbl(list_of_results, &quot;a&quot;)</code>는 문자열 명칭을 사용해서 하위집합 뽑아내기를 통해 단축키를 사용해서 뽑아낸다. 마지막, <code>map_dbl(list_of_results, 1)</code>은 정수 숫자위치를 기준으로 하위집합 뽑아내는 단축키 활용법을 보여주고 있다.</p>
+<p>함수형 프로그래밍은 패턴을 일반화하여 추상화해서, 개발자가 데이터와 동작에 집중하게도록 한다. 이를 통해 반복문제를 좀더 쉽게 풀 수 있도록 하고, 더 이해하기 좋은 코드를 만들게 돕는다.</p>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
