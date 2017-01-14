@@ -31,6 +31,7 @@ title: R 병렬 프로그래밍
     - [분석결과 내보내기](r-parallel-local-export.html)
 1. [**함수형 프로그래밍(Functional Programming)**](ds-fp.html)
     - [FP 자료구조](r-parallel-fp-ds.html)
+        - [리스트 자료형 살펴보기](r-parallel-fp-view-list.html)
     - [R 함수 작성](ds-fp-write-fn.html)
     - [R 함수형 프로그래밍](ds-fp-purrr.html)
 1. [재현가능한 과학연구를 위한 도커](http://statkclee.github.io/r-docker/) 

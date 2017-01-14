@@ -1,0 +1,105 @@
+---
+layout: page
+title: 데이터 과학
+subtitle: 리스트 자료형 살펴보기
+output:
+  html_document: 
+    keep_md: yes
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
+---
+
+
+```{r, include=FALSE}
+source("tools/chunk-options.R")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+> ## 학습 목표 {.objectives}
+>
+> * 리스트 자료형 내부를 샅샅이 살펴본다.
+> * `str` 함수로 리스트 자료형을 훑어보는 기법을 살펴본다.
+> * 도구 `listviewer` 팩키지를 통해 리스트 자료형을 탐색한다.
+
+
+## 1. 리스트 살펴보기 [^jennybc-purrr-listviewer]
+
+[^jennybc-purrr-listviewer]: [Explore the example lists: Wes Anderson, Game of Thrones, GitHub](https://jennybc.github.io/purrr-tutorial/ls00_inspect-explore.html)
+
+함수형 프로그래밍을 통해 다양한 `*apply` 계열 혹은 `map` 계열 함수를 적용시키기 전에
+데이터가 리스트인 경우 리스트를 살펴보는 것이 필요하다.
+
+- 리스트 길이가 얼마나 되는지?
+- 리스트 내부 벡터는 동일한 자료형인가? 다르면 각 벡터는 어떤 자료형인가?
+- 리스트 자체 뿐만 아니라, 리스트 내부 벡터 길이, 벡터명, 자료형은 각각 어떻게 되는지 파악해야 된다.
+
+이런 문제에 봉착하는 것은 당연하다. 예를 들어 회귀분석 결과 산출되는 
+`lm()` 함수 산출물 내부를 이런 관점으로 본적이 있는가? 혹은 API가 대충 되어 있는 
+웹사이트에서 데이터를 긁어 온 경우, 추가 데이터 분석을 위해 
+데이터 내부를 까보고 이를 바탕으로 자료분석이 가능한 형태로 변형해야 된다.
+
+### 1.1. `str()` 함수
+
+`str()` 함수가 언제가 가장 먼저 생각할 수 있는 것인데,
+리스트 객체를 넣어 데이터구조를 파악하는 것이 데이터프레임을 넣는 경우와 비교해도 
+그다지 결과물 해석이 쉽지 않다. 예를 들어 공간정보 데이터 `.shp` 파일을 
+R로 불러들일 경우 이를 `str` 명령어로 들여다 보면 그 이유를 알 수 있다.
+
+이런 문제점에 대한 해법으로 `max.level`, `list.len` 인자를 `str()` 함수에 넣어 
+구조를 살펴보고, 필요한 내용을 찾아내서 `[`, `[[` 꺾쇠괄호를 사용해서 뽑아내는 
+방식이 동원된다: `str(..., list.len = x, max.level = y)[[1]]`
+
+### 1.2. 리스트 데이터
+
+`repurrrsive` 팩키지에 예제 리스트 데이터가 담겨있다.
+
+- wesanderson : 색상 팔레트 데이터 (리스트 자료형)
+- Game of Thrones : 왕좌의 게임 캐릭터 데이터 (리스트 자료형)
+- GitHub: GitHub 사용자와 저장소 데이터 (리스트 자료형)
+
+## 2. `listviewer` 팩키지 활용 살펴보기
+
+인터랙티브 위젯을 활용하여 리스트 자료형을 살펴보면 도움이 많이 된다.
+`listviewer::jsonedit(got_chars, mode = "view")` 와 같이 명령어를 넣어
+리스트 자료형을 갖는 왕좌의 게임에 등장하는 캐릭터를 살펴볼 수 있다.
+
+### 2.1. 환경설정
+
+리스트 예제 데이터는 `devtools::install_github("jennybc/repurrrsive")` 명령어를 통해 왕좌의 게임을 포함한 데이터를 불러들인다.
+인터랙티브 위젯기능을 활용하여 리스트 데이터를 살펴보기 위해서 `listviewer` 팩키지를 설치해야만 되는데,
+`reactR` 팩키지가 사전에 설치되어야 하는 의존성이 있어 함께 설치한다.
+
+``` {r fp-inpsect-list-pkg}
+library(purrr)
+library(repurrrsive) # devtools::install_github("jennybc/repurrrsive")
+library(listviewer) # devtools::install_github('timelyportfolio/reactR')
+```
+
+### 2.2. 리스트 자료형 살펴보기
+
+리스트형으로 된 색상 팔레트 데이터 (`wesanderson`), 왕좌의 게임 캐릭터 데이터 (`Game of Thrones`),
+GitHub 사용자와 저장소 데이터 (`gh_users`) 각각을 전통적인 `str` 명령어와 `listviewer` 팩키지 `jsonedit`
+명령어와 함께 살펴본다.
+
+``` {r fp-inpsect-list-datatype}
+# 1. 리스트 살펴보기 ----------------------------------------------------
+# 1.1. wesanderson 리스트 뷰어
+
+str(wesanderson)
+jsonedit(wesanderson, mode = "view", elementId = "wesanderson")
+
+# 1.2. Game of Thrones 캐릭터 리스트 뷰어
+str(got_chars, list.len = 3)
+str(got_chars[[1]], list.len = 8)
+
+jsonedit(number_unnamed(got_chars), mode = "view", elementId = "got_chars")
+
+# 1.3. GitHub 사용자 리스트 뷰어
+str(gh_users, max.level = 1)
+jsonedit(number_unnamed(gh_users), mode = "view", elementId = "gh_users")
+```
+
+
+
+
