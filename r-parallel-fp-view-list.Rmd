@@ -12,7 +12,7 @@ mainfont: NanumGothic
 
 
 ```{r, include=FALSE}
-source("tools/chunk-options.R")
+source("tools/chunk-options.R")  
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
