@@ -73,7 +73,7 @@ map(c(9, 16, 25), sqrt)
 ### 1.3. 명칭 혹은 위치로 리스트원소 추출
 
 왕좌의 게임 미드에 등장하는 캐릭터는 누굴까? 라는 질문에 `map` 함수에 
-명칭 "name"을 지정해서 추출해보자.
+명칭 "name"을 지정해서 추출해보자. 위치를 통해 동일한 결과를 얻을 수 있다.
 
 <div class = "row">
 <div class = "col-md-6">
@@ -90,3 +90,96 @@ map(got_chars[1:4], 3)
 </div>
 </div>
 
+즉, `map()` 함수 내부에 "명칭" 텍스트를 넣어 리스트 내부 원소를 추출
+- function(x) x[["TEXT"]]
+`map()` 함수 내부에 "위치"지정 숫자를 넣어 리스트 내부 `i`번째 원소를 추출
+- function(x) x[[i]]
+
+파이프 `%>%` 연산자를 `map()` 함수와 함께 흔히 사용한다.
+
+``` {r fp-list-extract-element-pipeline, eval=FALSE}
+got_chars %>% 
+  map("name")
+got_chars %>% 
+  map(3)
+```
+
+### 1.4. 자료형 고려한 `map`
+
+`map()` 함수만 사용하면 리스트가 반환되는데, 흔히 특정 자료형에 맞춘 작업결과를 원하는 경우가 많다.
+이런 경우 `객체:원자벡터` 형태를 원하는 경우가 많다.
+
+리스트를 반환받아 리스트를 해당 원자벡터형태로 변환하는 방식보다 한번에 `map_자료형` 형태를 
+반환받는 것이 더 효율적이고, 데이터분석 전문가가 자료를 분석할 때 자료형이 맞지 않는 것도 
+사전에 확인하여 조치를 취할 수 있는 장점도 있다. 
+
+``` {r fp-list-extract-element-datatype}
+map_chr(got_chars[9:12], "name")
+map_chr(got_chars[9:12], 3)
+```
+
+`map_자료형` 함수는 다음과 같은 네가지 형태가 있다.
+
+- map_chr()
+- map_lgl()
+- map_int()
+- map_dbl()
+
+### 1.5. 다수 리스트 원소 추출
+
+지금까지 리스트에서 한 원소만 추출하였는데, 다수 원소를 추출하려면 어떻게 하면 될까?
+전총적인 방식은 `[[` 연산자로 해당 리스트 원소를 뽑아내고, 명칭을 벡터로 넣어 추출하는 방식이다.
+아무래도 구문이 직관적이 않고 괄호가 많아 복잡하다는 느낌이 강하다.
+
+``` {r fp-list-extract-elements-old}
+got_chars[[3]][c("name", "culture", "gender", "born")]
+```
+
+위와 동일한 기능을 `map` 함수를 활용해 코드를 작성하면 다음과 같다.
+
+`map(.x, .f, ...)` 구문을 사용하는데 `[`이 함수위치에 들어갔다. 하지만 놀랄 것도 없는 것이...
+John Chambers가 [“everything that happens in R is a function call”](http://adv-r.had.co.nz/Functions.html#all-calls) 명언을 남겼다. 즉,
+존재하는 모든 것은 객체고, 모든 사건은 함수호출을 통해 발생한다.
+
+``` {r fp-list-extract-elements-mapway}
+x <- map(got_chars, `[`, c("name", "culture", "gender", "born"))
+str(x[16:17])
+```
+
+`[` 처리방법이 이상하다고 생각하시는 분은 `magrittr` 팩키지 `extract` 함수를 사용하면 동일한 결과를 얻을 수 있다.
+
+``` {r fp-list-extract-elements-magrittr}
+x <- map(got_chars, extract, c("name", "culture", "gender", "born"))
+str(x[18:19])
+```
+
+### 1.6. 데이터프레임 출력
+
+지금까지 map() 함수에 `[` 연산을 활용하여 원하는 리스트 내부 원소를 뽑아내는 것을 살펴봤는데,
+리스트 내부 원소를 뽑아내는 구문을 간결하게 작성하는 방법은 터특했지만, 여전히 반환결과는 리스트다.
+반환된 리스트를 추가작업을 통해 데이터프레임으로 변환하는 것도 가능하지만, 
+한방에 다음 데이터분석작업까지 일관되게 처리하는 방법은 무엇일까? 
+
+`map_df()`를 사용하면 이 문제가 일거에 해결된다.
+
+``` {r fp-list-extract-elements-to-dataframe}
+map_df(got_chars, extract, c("name", "culture", "gender", "id", "born", "alive"))
+```
+
+데이터프레임으로 불러와서 작업을 할 때 항상 자료형과 변수명에 대해서 사전에 충분한 작업을 수행하는 것이 필요하다.
+기억할 점은 `.` 은 파이프 연산에 앞선 입력값으로 `got_chars`가 되고, `{` 괄호는 `tibble` 자료형에 `got_chars` 객체가
+데이터프레임 첫번째 변수로 `list-column` 형태로 저장되는 것을 방지한다.
+
+``` {r fp-list-extract-elements-to-tibble}
+library(tibble)
+got_chars %>% {
+  tibble(
+       name = map_chr(., "name"),
+    culture = map_chr(., "culture"),
+     gender = map_chr(., "gender"),       
+         id = map_int(., "id"),
+       born = map_chr(., "born"),
+      alive = map_lgl(., "alive")
+  )
+}
+```
