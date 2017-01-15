@@ -33,6 +33,7 @@ title: R 병렬 프로그래밍
     - [FP 자료구조](r-parallel-fp-ds.html)
         - [리스트 자료형 살펴보기](r-parallel-fp-view-list.html)
         - [리스트 자료 원소 추출하기](r-parallel-fp-extract-list.html)
+        - [리스트 칼럼(list-column) 자료형](r-parallel-fp-list-column.html)
     - [R 함수 작성](ds-fp-write-fn.html)
     - [R 함수형 프로그래밍](ds-fp-purrr.html)
 1. [재현가능한 과학연구를 위한 도커](http://statkclee.github.io/r-docker/) 
