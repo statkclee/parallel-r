@@ -11,14 +11,7 @@ mainfont: NanumGothic
 ---
 
 
-```{r, include=FALSE}
-source("tools/chunk-options.R")  
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(purrr)
-library(repurrrsive) # devtools::install_github("jennybc/repurrrsive")
-library(listviewer) # devtools::install_github('timelyportfolio/reactR')
-library(magrittr)
-```
+
 
 > ## 학습 목표 {.objectives}
 >
