@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-19', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">리스트 자료 원소 추출하기</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>리스트 자료 내부 원소를 추출한다.</li>
+<li>리스트 자료를 데이터프레임으로 변환한다.</li>
+<li><code>magrittr</code>과 파이프 연산자를 활용하여 깔끔하게 코드화 한다.</li>
+</ul>
+</div>
+</section>
+<h2 id="map-함수-소개---원소-추출-jennybc-purrr-extract">1. <code>map()</code> 함수 소개 - 원소 추출 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h2>
+<h3 id="환경설정">1.1. 환경설정</h3>
+<p>함수형 프로그래밍의 핵심 팩키지 <code>purrr</code>을 적재한다. 예제 리스트 데이터를 담고 있는 <code>repurrrsive</code> 팩키지를 불러오고, 리스트 데이터를 살펴보는데 <code>listviewer</code> 팩키지를 활용하고, 함수형 프로그래밍 코드를 깔끔하게 만드는데 <code>magrittr</code> 팩키지를 사용한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 0. 환경설정 ----------------------------------------------------</span>
+<span class="kw">library</span>(purrr)
+<span class="kw">library</span>(repurrrsive) <span class="co"># devtools::install_github(&quot;jennybc/repurrrsive&quot;)</span>
+<span class="kw">library</span>(listviewer) <span class="co"># devtools::install_github(&#39;timelyportfolio/reactR&#39;)</span>
+<span class="kw">library</span>(magrittr)</code></pre></div>
+<h3 id="벡터화vectorized-연산과-리스트화list-ized-연산">1.2. 벡터화(vectorized) 연산과 리스트화(“list-ized”) 연산</h3>
+<p>각 원소마다 특정 연산작업을 수행하려면 R에서 벡터화 연산기능을 활용하면 루프를 사용해서 각 벡터에서 원소를 하나씩 꺼내서 연산을 가하고 이를 돌려 저장하는 작업을 코드 한줄로 간단하게 처리할 수 있다.</p>
+<p>리스트에서도 동일한 작업을 수행하고자 하는데 과거 <code>lapply()</code> 함수가 작업을 잘 수행했는데, 이를 일반화해서 일관된 문법을 가지고 작업을 수행하고자 한다. 이때 필요한 것이 <code>purrr</code> 팩키지 <code>purrr::map</code> 함수다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(<span class="dv">3</span>:<span class="dv">5</span>) ^<span class="st"> </span><span class="dv">2</span></code></pre></div>
+<pre class="output"><code>#&gt; [1]  9 16 25
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sqrt</span>(<span class="kw">c</span>(<span class="dv">9</span>, <span class="dv">16</span>, <span class="dv">25</span>))</code></pre></div>
+<pre class="output"><code>#&gt; [1] 3 4 5
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="kw">map</span>(<span class="kw">c</span>(<span class="dv">9</span>, <span class="dv">16</span>, <span class="dv">25</span>), sqrt)</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] 3
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] 4
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 5
+</code></pre>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="map-함수-사용법"><span class="glyphicon glyphicon-pushpin"></span><code>map()</code> 함수 사용법</h3>
+</div>
+<div class="panel-body">
+<p><code>map(자료형이 리스트, 적용할 함수)</code></p>
+<ul>
+<li><code>적용할 함수</code>를 통해 명칭 혹은 위치를 지정해서 리스트 원소를 추출한다.</li>
+<li><code>map_chr()</code>, <code>map_lgl()</code>, <span class="math inline">\(\cdots\)</span> 함수를 통해 반환결과 자료형을 지정한다.</li>
+</ul>
+</div>
+</aside>
+<h3 id="명칭-혹은-위치로-리스트원소-추출">1.3. 명칭 혹은 위치로 리스트원소 추출</h3>
+<p>왕좌의 게임 미드에 등장하는 캐릭터는 누굴까? 라는 질문에 <code>map</code> 함수에 명칭 “name”을 지정해서 추출해보자. 위치를 통해 동일한 결과를 얻을 수 있다.</p>
+<div class="row">
+<div class="col-md-6">
+<p><strong>명칭</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map</span>(got_chars[<span class="dv">1</span>:<span class="dv">4</span>], <span class="st">&quot;name&quot;</span>)</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] &quot;Theon Greyjoy&quot;
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] &quot;Tyrion Lannister&quot;
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] &quot;Victarion Greyjoy&quot;
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] &quot;Will&quot;
+</code></pre>
+</div>
+<div class="col-md-6">
+<p><strong>위치</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map</span>(got_chars[<span class="dv">1</span>:<span class="dv">4</span>], <span class="dv">3</span>)</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] &quot;Theon Greyjoy&quot;
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] &quot;Tyrion Lannister&quot;
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] &quot;Victarion Greyjoy&quot;
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] &quot;Will&quot;
+</code></pre>
+</div>
+</div>
+<p>즉, <code>map()</code> 함수 내부에 “명칭” 텍스트를 넣어 리스트 내부 원소를 추출 - function(x) x[[“TEXT”]] <code>map()</code> 함수 내부에 “위치”지정 숫자를 넣어 리스트 내부 <code>i</code>번째 원소를 추출 - function(x) x[[i]]</p>
+<p>파이프 <code>%&gt;%</code> 연산자를 <code>map()</code> 함수와 함께 흔히 사용한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">got_chars %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">map</span>(<span class="st">&quot;name&quot;</span>)
+got_chars %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">map</span>(<span class="dv">3</span>)</code></pre></div>
+<h3 id="자료형-고려한-map">1.4. 자료형 고려한 <code>map</code></h3>
+<p><code>map()</code> 함수만 사용하면 리스트가 반환되는데, 흔히 특정 자료형에 맞춘 작업결과를 원하는 경우가 많다. 이런 경우 <code>객체:원자벡터</code> 형태를 원하는 경우가 많다.</p>
+<p>리스트를 반환받아 리스트를 해당 원자벡터형태로 변환하는 방식보다 한번에 <code>map_자료형</code> 형태를 반환받는 것이 더 효율적이고, 데이터분석 전문가가 자료를 분석할 때 자료형이 맞지 않는 것도 사전에 확인하여 조치를 취할 수 있는 장점도 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map_chr</span>(got_chars[<span class="dv">9</span>:<span class="dv">12</span>], <span class="st">&quot;name&quot;</span>)</code></pre></div>
+<pre class="output"><code>#&gt; [1] &quot;Daenerys Targaryen&quot; &quot;Davos Seaworth&quot;     &quot;Arya Stark&quot;        
+#&gt; [4] &quot;Arys Oakheart&quot;
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map_chr</span>(got_chars[<span class="dv">9</span>:<span class="dv">12</span>], <span class="dv">3</span>)</code></pre></div>
+<pre class="output"><code>#&gt; [1] &quot;Daenerys Targaryen&quot; &quot;Davos Seaworth&quot;     &quot;Arya Stark&quot;        
+#&gt; [4] &quot;Arys Oakheart&quot;
+</code></pre>
+<p><code>map_자료형</code> 함수는 다음과 같은 네가지 형태가 있다.</p>
+<ul>
+<li>map_chr()</li>
+<li>map_lgl()</li>
+<li>map_int()</li>
+<li>map_dbl()</li>
+</ul>
+<h3 id="다수-리스트-원소-추출">1.5. 다수 리스트 원소 추출</h3>
+<p>지금까지 리스트에서 한 원소만 추출하였는데, 다수 원소를 추출하려면 어떻게 하면 될까? 전총적인 방식은 <code>[[</code> 연산자로 해당 리스트 원소를 뽑아내고, 명칭을 벡터로 넣어 추출하는 방식이다. 아무래도 구문이 직관적이 않고 괄호가 많아 복잡하다는 느낌이 강하다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">got_chars[[<span class="dv">3</span>]][<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;culture&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;born&quot;</span>)]</code></pre></div>
+<pre class="output"><code>#&gt; $name
+#&gt; [1] &quot;Victarion Greyjoy&quot;
+#&gt; 
+#&gt; $culture
+#&gt; [1] &quot;Ironborn&quot;
+#&gt; 
+#&gt; $gender
+#&gt; [1] &quot;Male&quot;
+#&gt; 
+#&gt; $born
+#&gt; [1] &quot;In 268 AC or before, at Pyke&quot;
+</code></pre>
+<p>위와 동일한 기능을 <code>map</code> 함수를 활용해 코드를 작성하면 다음과 같다.</p>
+<p><code>map(.x, .f, ...)</code> 구문을 사용하는데 <code>[</code>이 함수위치에 들어갔다. 하지만 놀랄 것도 없는 것이… John Chambers가 <a href="http://adv-r.had.co.nz/Functions.html#all-calls">“everything that happens in R is a function call”</a> 명언을 남겼다. 즉, 존재하는 모든 것은 객체고, 모든 사건은 함수호출을 통해 발생한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">map</span>(got_chars, <span class="st">`</span><span class="dt">[</span><span class="st">`</span>, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;culture&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;born&quot;</span>))
+<span class="kw">str</span>(x[<span class="dv">16</span>:<span class="dv">17</span>])</code></pre></div>
+<pre class="output"><code>#&gt; List of 2
+#&gt;  $ :List of 4
+#&gt;   ..$ name   : chr &quot;Brandon Stark&quot;
+#&gt;   ..$ culture: chr &quot;Northmen&quot;
+#&gt;   ..$ gender : chr &quot;Male&quot;
+#&gt;   ..$ born   : chr &quot;In 290 AC, at Winterfell&quot;
+#&gt;  $ :List of 4
+#&gt;   ..$ name   : chr &quot;Brienne of Tarth&quot;
+#&gt;   ..$ culture: chr &quot;&quot;
+#&gt;   ..$ gender : chr &quot;Female&quot;
+#&gt;   ..$ born   : chr &quot;In 280 AC&quot;
+</code></pre>
+<p><code>[</code> 처리방법이 이상하다고 생각하시는 분은 <code>magrittr</code> 팩키지 <code>extract</code> 함수를 사용하면 동일한 결과를 얻을 수 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">map</span>(got_chars, extract, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;culture&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;born&quot;</span>))
+<span class="kw">str</span>(x[<span class="dv">16</span>:<span class="dv">17</span>])</code></pre></div>
+<pre class="output"><code>#&gt; List of 2
+#&gt;  $ :List of 4
+#&gt;   ..$ name   : chr &quot;Brandon Stark&quot;
+#&gt;   ..$ culture: chr &quot;Northmen&quot;
+#&gt;   ..$ gender : chr &quot;Male&quot;
+#&gt;   ..$ born   : chr &quot;In 290 AC, at Winterfell&quot;
+#&gt;  $ :List of 4
+#&gt;   ..$ name   : chr &quot;Brienne of Tarth&quot;
+#&gt;   ..$ culture: chr &quot;&quot;
+#&gt;   ..$ gender : chr &quot;Female&quot;
+#&gt;   ..$ born   : chr &quot;In 280 AC&quot;
+</code></pre>
+<h3 id="데이터프레임-출력">1.6. 데이터프레임 출력</h3>
+<p>지금까지 map() 함수에 <code>[</code> 연산을 활용하여 원하는 리스트 내부 원소를 뽑아내는 것을 살펴봤는데, 리스트 내부 원소를 뽑아내는 구문을 간결하게 작성하는 방법은 터특했지만, 여전히 반환결과는 리스트다. 반환된 리스트를 추가작업을 통해 데이터프레임으로 변환하는 것도 가능하지만, 한방에 다음 데이터분석작업까지 일관되게 처리하는 방법은 무엇일까?</p>
+<p><code>map_df()</code>를 사용하면 이 문제가 일거에 해결된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map_df</span>(got_chars, extract, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;culture&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;id&quot;</span>, <span class="st">&quot;born&quot;</span>, <span class="st">&quot;alive&quot;</span>))</code></pre></div>
+<pre class="output"><code>#&gt; # A tibble: 29 × 6
+#&gt;                  name  culture gender    id
+#&gt;                 &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt; &lt;int&gt;
+#&gt; 1       Theon Greyjoy Ironborn   Male  1022
+#&gt; 2    Tyrion Lannister            Male  1052
+#&gt; 3   Victarion Greyjoy Ironborn   Male  1074
+#&gt; 4                Will            Male  1109
+#&gt; 5          Areo Hotah Norvoshi   Male  1166
+#&gt; 6               Chett            Male  1267
+#&gt; 7             Cressen            Male  1295
+#&gt; 8     Arianne Martell  Dornish Female   130
+#&gt; 9  Daenerys Targaryen Valyrian Female  1303
+#&gt; 10     Davos Seaworth Westeros   Male  1319
+#&gt; # ... with 19 more rows, and 2 more variables: born &lt;chr&gt;, alive &lt;lgl&gt;
+</code></pre>
+<p>데이터프레임으로 불러와서 작업을 할 때 항상 자료형과 변수명에 대해서 사전에 충분한 작업을 수행하는 것이 필요하다. 기억할 점은 <code>.</code> 은 파이프 연산에 앞선 입력값으로 <code>got_chars</code>가 되고, <code>{</code> 괄호는 <code>tibble</code> 자료형에 <code>got_chars</code> 객체가 데이터프레임 첫번째 변수로 <code>list-column</code> 형태로 저장되는 것을 방지한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tibble)
+got_chars %&gt;%<span class="st"> </span>{
+  <span class="kw">tibble</span>(
+       <span class="dt">name =</span> <span class="kw">map_chr</span>(., <span class="st">&quot;name&quot;</span>),
+    <span class="dt">culture =</span> <span class="kw">map_chr</span>(., <span class="st">&quot;culture&quot;</span>),
+     <span class="dt">gender =</span> <span class="kw">map_chr</span>(., <span class="st">&quot;gender&quot;</span>),       
+         <span class="dt">id =</span> <span class="kw">map_int</span>(., <span class="st">&quot;id&quot;</span>),
+       <span class="dt">born =</span> <span class="kw">map_chr</span>(., <span class="st">&quot;born&quot;</span>),
+      <span class="dt">alive =</span> <span class="kw">map_lgl</span>(., <span class="st">&quot;alive&quot;</span>)
+  )
+} </code></pre></div>
+<pre class="output"><code>#&gt; # A tibble: 29 × 6
+#&gt;                  name  culture gender    id
+#&gt;                 &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt; &lt;int&gt;
+#&gt; 1       Theon Greyjoy Ironborn   Male  1022
+#&gt; 2    Tyrion Lannister            Male  1052
+#&gt; 3   Victarion Greyjoy Ironborn   Male  1074
+#&gt; 4                Will            Male  1109
+#&gt; 5          Areo Hotah Norvoshi   Male  1166
+#&gt; 6               Chett            Male  1267
+#&gt; 7             Cressen            Male  1295
+#&gt; 8     Arianne Martell  Dornish Female   130
+#&gt; 9  Daenerys Targaryen Valyrian Female  1303
+#&gt; 10     Davos Seaworth Westeros   Male  1319
+#&gt; # ... with 19 more rows, and 2 more variables: born &lt;chr&gt;, alive &lt;lgl&gt;
+</code></pre>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://jennybc.github.io/purrr-tutorial/ls01_map-name-position-shortcuts.html">Introduction to map() - extract elements</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>

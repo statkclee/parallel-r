@@ -11,14 +11,7 @@ mainfont: NanumGothic
 ---
 
 
-```{r, include=FALSE}
-source("tools/chunk-options.R")  
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(purrr)
-library(repurrrsive) # devtools::install_github("jennybc/repurrrsive")
-library(listviewer) # devtools::install_github('timelyportfolio/reactR')
-library(magrittr)
-```
+
 
 > ## 학습 목표 {.objectives}
 >
@@ -38,13 +31,14 @@ library(magrittr)
 리스트 데이터를 살펴보는데 `listviewer` 팩키지를 활용하고,
 함수형 프로그래밍 코드를 깔끔하게 만드는데 `magrittr` 팩키지를 사용한다.
 
-``` {r fp-list-extract-element-setup, eval=FALSE}
+
+~~~{.r}
 # 0. 환경설정 ----------------------------------------------------
 library(purrr)
 library(repurrrsive) # devtools::install_github("jennybc/repurrrsive")
 library(listviewer) # devtools::install_github('timelyportfolio/reactR')
 library(magrittr)
-```
+~~~
 
 ### 1.2. 벡터화(vectorized) 연산과 리스트화("list-ized") 연산
 
@@ -56,12 +50,51 @@ library(magrittr)
 이를 일반화해서 일관된 문법을 가지고 작업을 수행하고자 한다. 이때 필요한 것이 `purrr` 팩키지 `purrr::map` 함수다.
 
 
-``` {r fp-list-extract-element-vectorized}
+
+~~~{.r}
 (3:5) ^ 2
+~~~
+
+
+
+~~~{.output}
+#> [1]  9 16 25
+
+~~~
+
+
+
+~~~{.r}
 sqrt(c(9, 16, 25))
+~~~
+
+
+
+~~~{.output}
+#> [1] 3 4 5
+
+~~~
+
+
+
+~~~{.r}
 
 map(c(9, 16, 25), sqrt)
-```
+~~~
+
+
+
+~~~{.output}
+#> [[1]]
+#> [1] 3
+#> 
+#> [[2]]
+#> [1] 4
+#> 
+#> [[3]]
+#> [1] 5
+
+~~~
 
 > ### `map()` 함수 사용법 {.callout}
 > 
@@ -78,15 +111,51 @@ map(c(9, 16, 25), sqrt)
 <div class = "row">
 <div class = "col-md-6">
 **명칭**
-```{r}
+
+~~~{.r}
 map(got_chars[1:4], "name")
-```
+~~~
+
+
+
+~~~{.output}
+#> [[1]]
+#> [1] "Theon Greyjoy"
+#> 
+#> [[2]]
+#> [1] "Tyrion Lannister"
+#> 
+#> [[3]]
+#> [1] "Victarion Greyjoy"
+#> 
+#> [[4]]
+#> [1] "Will"
+
+~~~
 </div>
 <div class = "col-md-6">
 **위치**
-```{r}
+
+~~~{.r}
 map(got_chars[1:4], 3)
-```
+~~~
+
+
+
+~~~{.output}
+#> [[1]]
+#> [1] "Theon Greyjoy"
+#> 
+#> [[2]]
+#> [1] "Tyrion Lannister"
+#> 
+#> [[3]]
+#> [1] "Victarion Greyjoy"
+#> 
+#> [[4]]
+#> [1] "Will"
+
+~~~
 </div>
 </div>
 
@@ -97,12 +166,13 @@ map(got_chars[1:4], 3)
 
 파이프 `%>%` 연산자를 `map()` 함수와 함께 흔히 사용한다.
 
-``` {r fp-list-extract-element-pipeline, eval=FALSE}
+
+~~~{.r}
 got_chars %>% 
   map("name")
 got_chars %>% 
   map(3)
-```
+~~~
 
 ### 1.4. 자료형 고려한 `map`
 
@@ -113,10 +183,32 @@ got_chars %>%
 반환받는 것이 더 효율적이고, 데이터분석 전문가가 자료를 분석할 때 자료형이 맞지 않는 것도 
 사전에 확인하여 조치를 취할 수 있는 장점도 있다. 
 
-``` {r fp-list-extract-element-datatype}
+
+~~~{.r}
 map_chr(got_chars[9:12], "name")
+~~~
+
+
+
+~~~{.output}
+#> [1] "Daenerys Targaryen" "Davos Seaworth"     "Arya Stark"        
+#> [4] "Arys Oakheart"
+
+~~~
+
+
+
+~~~{.r}
 map_chr(got_chars[9:12], 3)
-```
+~~~
+
+
+
+~~~{.output}
+#> [1] "Daenerys Targaryen" "Davos Seaworth"     "Arya Stark"        
+#> [4] "Arys Oakheart"
+
+~~~
 
 `map_자료형` 함수는 다음과 같은 네가지 형태가 있다.
 
@@ -131,9 +223,27 @@ map_chr(got_chars[9:12], 3)
 전총적인 방식은 `[[` 연산자로 해당 리스트 원소를 뽑아내고, 명칭을 벡터로 넣어 추출하는 방식이다.
 아무래도 구문이 직관적이 않고 괄호가 많아 복잡하다는 느낌이 강하다.
 
-``` {r fp-list-extract-elements-old}
+
+~~~{.r}
 got_chars[[3]][c("name", "culture", "gender", "born")]
-```
+~~~
+
+
+
+~~~{.output}
+#> $name
+#> [1] "Victarion Greyjoy"
+#> 
+#> $culture
+#> [1] "Ironborn"
+#> 
+#> $gender
+#> [1] "Male"
+#> 
+#> $born
+#> [1] "In 268 AC or before, at Pyke"
+
+~~~
 
 위와 동일한 기능을 `map` 함수를 활용해 코드를 작성하면 다음과 같다.
 
@@ -141,17 +251,53 @@ got_chars[[3]][c("name", "culture", "gender", "born")]
 John Chambers가 [“everything that happens in R is a function call”](http://adv-r.had.co.nz/Functions.html#all-calls) 명언을 남겼다. 즉,
 존재하는 모든 것은 객체고, 모든 사건은 함수호출을 통해 발생한다.
 
-``` {r fp-list-extract-elements-mapway}
+
+~~~{.r}
 x <- map(got_chars, `[`, c("name", "culture", "gender", "born"))
 str(x[16:17])
-```
+~~~
+
+
+
+~~~{.output}
+#> List of 2
+#>  $ :List of 4
+#>   ..$ name   : chr "Brandon Stark"
+#>   ..$ culture: chr "Northmen"
+#>   ..$ gender : chr "Male"
+#>   ..$ born   : chr "In 290 AC, at Winterfell"
+#>  $ :List of 4
+#>   ..$ name   : chr "Brienne of Tarth"
+#>   ..$ culture: chr ""
+#>   ..$ gender : chr "Female"
+#>   ..$ born   : chr "In 280 AC"
+
+~~~
 
 `[` 처리방법이 이상하다고 생각하시는 분은 `magrittr` 팩키지 `extract` 함수를 사용하면 동일한 결과를 얻을 수 있다.
 
-``` {r fp-list-extract-elements-magrittr}
+
+~~~{.r}
 x <- map(got_chars, extract, c("name", "culture", "gender", "born"))
 str(x[16:17])
-```
+~~~
+
+
+
+~~~{.output}
+#> List of 2
+#>  $ :List of 4
+#>   ..$ name   : chr "Brandon Stark"
+#>   ..$ culture: chr "Northmen"
+#>   ..$ gender : chr "Male"
+#>   ..$ born   : chr "In 290 AC, at Winterfell"
+#>  $ :List of 4
+#>   ..$ name   : chr "Brienne of Tarth"
+#>   ..$ culture: chr ""
+#>   ..$ gender : chr "Female"
+#>   ..$ born   : chr "In 280 AC"
+
+~~~
 
 ### 1.6. 데이터프레임 출력
 
@@ -162,15 +308,37 @@ str(x[16:17])
 
 `map_df()`를 사용하면 이 문제가 일거에 해결된다.
 
-``` {r fp-list-extract-elements-to-dataframe}
+
+~~~{.r}
 map_df(got_chars, extract, c("name", "culture", "gender", "id", "born", "alive"))
-```
+~~~
+
+
+
+~~~{.output}
+#> # A tibble: 29 × 6
+#>                  name  culture gender    id
+#>                 <chr>    <chr>  <chr> <int>
+#> 1       Theon Greyjoy Ironborn   Male  1022
+#> 2    Tyrion Lannister            Male  1052
+#> 3   Victarion Greyjoy Ironborn   Male  1074
+#> 4                Will            Male  1109
+#> 5          Areo Hotah Norvoshi   Male  1166
+#> 6               Chett            Male  1267
+#> 7             Cressen            Male  1295
+#> 8     Arianne Martell  Dornish Female   130
+#> 9  Daenerys Targaryen Valyrian Female  1303
+#> 10     Davos Seaworth Westeros   Male  1319
+#> # ... with 19 more rows, and 2 more variables: born <chr>, alive <lgl>
+
+~~~
 
 데이터프레임으로 불러와서 작업을 할 때 항상 자료형과 변수명에 대해서 사전에 충분한 작업을 수행하는 것이 필요하다.
 기억할 점은 `.` 은 파이프 연산에 앞선 입력값으로 `got_chars`가 되고, `{` 괄호는 `tibble` 자료형에 `got_chars` 객체가
 데이터프레임 첫번째 변수로 `list-column` 형태로 저장되는 것을 방지한다.
 
-``` {r fp-list-extract-elements-to-tibble}
+
+~~~{.r}
 library(tibble)
 got_chars %>% {
   tibble(
@@ -182,4 +350,24 @@ got_chars %>% {
       alive = map_lgl(., "alive")
   )
 } 
-```
+~~~
+
+
+
+~~~{.output}
+#> # A tibble: 29 × 6
+#>                  name  culture gender    id
+#>                 <chr>    <chr>  <chr> <int>
+#> 1       Theon Greyjoy Ironborn   Male  1022
+#> 2    Tyrion Lannister            Male  1052
+#> 3   Victarion Greyjoy Ironborn   Male  1074
+#> 4                Will            Male  1109
+#> 5          Areo Hotah Norvoshi   Male  1166
+#> 6               Chett            Male  1267
+#> 7             Cressen            Male  1295
+#> 8     Arianne Martell  Dornish Female   130
+#> 9  Daenerys Targaryen Valyrian Female  1303
+#> 10     Davos Seaworth Westeros   Male  1319
+#> # ... with 19 more rows, and 2 more variables: born <chr>, alive <lgl>
+
+~~~
