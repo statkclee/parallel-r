@@ -1,0 +1,92 @@
+---
+layout: page
+title: 데이터 과학
+subtitle: 리스트 자료 원소 추출하기
+output:
+  html_document: 
+    keep_md: yes
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
+---
+
+
+```{r, include=FALSE}
+source("tools/chunk-options.R")  
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(purrr)
+library(repurrrsive) # devtools::install_github("jennybc/repurrrsive")
+library(listviewer) # devtools::install_github('timelyportfolio/reactR')
+library(magrittr)
+```
+
+> ## 학습 목표 {.objectives}
+>
+> * 리스트 자료 내부 원소를 추출한다.
+> * 리스트 자료를 데이터프레임으로 변환한다.
+> * `magrittr`과 파이프 연산자를 활용하여 깔끔하게 코드화 한다.
+
+
+## 1. `map()` 함수 소개 - 원소 추출 [^jennybc-purrr-extract]
+
+[^jennybc-purrr-extract]: [Introduction to map() - extract elements](https://jennybc.github.io/purrr-tutorial/ls01_map-name-position-shortcuts.html)
+
+### 1.1. 환경설정
+
+함수형 프로그래밍의 핵심 팩키지 `purrr`을 적재한다.
+예제 리스트 데이터를 담고 있는 `repurrrsive` 팩키지를 불러오고, 
+리스트 데이터를 살펴보는데 `listviewer` 팩키지를 활용하고,
+함수형 프로그래밍 코드를 깔끔하게 만드는데 `magrittr` 팩키지를 사용한다.
+
+``` {r fp-list-extract-element-setup, eval=FALSE}
+# 0. 환경설정 ----------------------------------------------------
+library(purrr)
+library(repurrrsive) # devtools::install_github("jennybc/repurrrsive")
+library(listviewer) # devtools::install_github('timelyportfolio/reactR')
+library(magrittr)
+```
+
+### 1.2. 벡터화(vectorized) 연산과 리스트화("list-ized") 연산
+
+각 원소마다 특정 연산작업을 수행하려면 R에서 벡터화 연산기능을 활용하면
+루프를 사용해서 각 벡터에서 원소를 하나씩 꺼내서 연산을 가하고 이를 돌려 저장하는 작업을 코드 한줄로 
+간단하게 처리할 수 있다. 
+
+리스트에서도 동일한 작업을 수행하고자 하는데 과거 `lapply()` 함수가 작업을 잘 수행했는데, 
+이를 일반화해서 일관된 문법을 가지고 작업을 수행하고자 한다. 이때 필요한 것이 `purrr` 팩키지 `purrr::map` 함수다.
+
+
+``` {r fp-list-extract-element-vectorized}
+(3:5) ^ 2
+sqrt(c(9, 16, 25))
+
+map(c(9, 16, 25), sqrt)
+```
+
+> ### `map()` 함수 사용법 {.callout}
+> 
+> `map(자료형이 리스트, 적용할 함수)`
+>
+> - `적용할 함수`를 통해 명칭 혹은 위치를 지정해서 리스트 원소를 추출한다.
+> - `map_chr()`, `map_lgl()`, $\cdots$ 함수를 통해 반환결과 자료형을 지정한다.
+
+### 1.3. 명칭 혹은 위치로 리스트원소 추출
+
+왕좌의 게임 미드에 등장하는 캐릭터는 누굴까? 라는 질문에 `map` 함수에 
+명칭 "name"을 지정해서 추출해보자.
+
+<div class = "row">
+<div class = "col-md-6">
+**명칭**
+```{r}
+map(got_chars[1:4], "name")
+```
+</div>
+<div class = "col-md-6">
+**위치**
+```{r}
+map(got_chars[1:4], 3)
+```
+</div>
+</div>
+
