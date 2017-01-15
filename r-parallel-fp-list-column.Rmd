@@ -56,3 +56,7 @@ R에서 정수형과 부동소수점은 그다지 크게 구분을 하지 않는
 - **연산(Compute)**: 리스트-칼럼에 연산 작업을 수행해서 또다른 벡터나 리스트-칼럼을 생성.
 - **간략화(Simplify)**: 리스트-칼럼을 익숙한 데이터프레임으로 변환.
 
+> ### R 자료구조 {.callout}
+>
+> <iframe src="https://player.vimeo.com/video/130411487?title=0&byline=0&portrait=0" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+<p><a href="https://vimeo.com/130411487">R Data Structures (1)</a> from <a href="https://vimeo.com/user28751565">DataCamp</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
