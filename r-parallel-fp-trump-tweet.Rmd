@@ -1,0 +1,135 @@
+---
+layout: page
+title: 데이터 과학
+subtitle: 트럼프 트윗
+output:
+  html_document: 
+    keep_md: yes
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
+---
+
+
+```{r, include=FALSE}
+source("tools/chunk-options.R")  
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(purrr)
+library(repurrrsive) # devtools::install_github("jennybc/repurrrsive")
+library(lubridate)
+library(listviewer) # devtools::install_github('timelyportfolio/reactR')
+library(dplyr)
+library(tibble)
+```
+
+> ## 학습 목표 {.objectives}
+>
+> * 트럼프 트위터 트윗을 통해 지금까지 학습 내용을 적용한다.
+
+
+## 1. 트럼프 트위터 트윗 [^jennybc-purrr-trump-tweet]  [^trump-tweets]
+
+[broom](https://cran.r-project.org/web/packages/broom/index.html) 팩키지 저자로 유명한 [David Robinson](http://varianceexplained.org/)의 트럼프 트위터 분석을 통해 
+지금까지 학습한 사항을 실무에 적용해 본다. 
+
+
+[^jennybc-purrr-trump-tweet]: [Trump Android words](https://jennybc.github.io/purrr-tutorial/ls08_trump-tweets.html)
+[^trump-tweets]: [Text analysis of Trump tweets confirms he writes only the (angrier) Android half](http://varianceexplained.org/r/trump-tweets/)
+
+트럼프 트윗 중에서 특정 단어가 들어간 트윗에서 단어를 추출하는 것이다. 즉, `regex <- "badly|crazy|weak|spent|strong|dumb|joke|guns|funny|dead"` 정규표현식에 패턴으로 단어를 등록해 넣고 이를 트윗에서 추출한다.
+
+<img src="fig/purrr-slides-trump-tweets.png" alt="트럼프 트윗 단어 추출" width="77%" />
+
+## 2. 함수형 프로그래밍을 활용하여 트윗 단어 추출
+
+### 2.1. 환경 설정
+
+함수형 프로그래밍 `purrr`, 데이터 조작 `dplyr`, 데이터프레임 `tibble` 팩키지를 불러온다.
+
+``` {r trump-tweet-setup, eval=FALSE}
+# 0. 환경설정 ----------------------------------------------------
+library(purrr)
+library(dplyr)
+library(tibble)
+```
+
+### 2.2. 트럼프 트윗 데이터 가져오기
+
+웹사이트에 공개된 [http://varianceexplained.org/files/trump_tweets_df.rda](http://varianceexplained.org/files/trump_tweets_df.rda)
+트럼프 트윗 데이터를 불러와서 일별한다. `strtrim()` 함수는 인자로 넣은 `70` 글자수에 맞춰 트윗을 끊어주는 역할을 한다.
+
+``` {r trump-tweet-data-import}
+# 1. 데이터 가져오기 ----------------------------------------------------
+
+# load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
+load("trump_tweets_df.rda")
+glimpse(trump_tweets_df)
+
+tweets <- trump_tweets_df$text
+tweets %>% head() %>% strtrim(70)
+```
+
+### 2.3. 트럼프 트윗 데이터 표본 추출 : 트윗 7개만
+
+트럼프 트윗 전체를 분석하기 전에 특정 트윗 일부, 7개만 추출한다.
+
+
+``` {r trump-tweet-data-sampling}
+# 2. 트럼프 안드로이드 단어 ----------------------------------------------------
+regex <- "badly|crazy|weak|spent|strong|dumb|joke|guns|funny|dead"
+
+tweets <- tweets[c(1, 2, 5, 6, 198, 347, 919)]
+tweets %>% strtrim(70)
+```
+
+### 2.4. 정규표현식을 활용한 단어 추출
+
+`regmatches` 함수를 사용하면 트럼프 트윗에서 단어를 추출할 수 있다. 
+
+``` {r trump-tweet-regex}
+# 3. gregexpr() 정규표현식 사용 ----------------------------------------------------
+regmatches(tweets, gregexpr(regex, tweets)) 
+```
+
+### 2.5. 함수형 프로그래밍을 활용한 트윗 단어 추출
+
+`pmap` 함수에 인자로 넘기기 위해서 사전에 준비작업을 수행하고 나서, `pmap` 함수에 넣어 트럼프 트윗에서 
+매칭되는 단어를 추출한다.
+
+``` {r trump-tweet-pmap}
+# 4. substring() 함수 미리 살펴보기 ------------------------------------------------
+(match_first <- map(matches, as.vector))
+(match_last <- map2(match_first, match_length, ~ .x + .y - 1))
+
+tibble(
+    naive_length = lengths(matches),
+    n_words = map_int(matches, ~ sum(.x > 0))
+)
+
+pmap(list(text = tweets, first = match_first, last = match_last), substring)
+
+mdf <- tibble(
+    text = tweets,
+    first = match_first,
+    last = match_last
+)
+pmap(mdf, substring)
+```
+
+## 3. 매칭 리스트를 불러오는 세가지 방법
+
+매칭 리스트를 불러오는 방법은 세가지가 존재한다.
+
+- 사용자 정의 함수를 사전에 정의하고 호출
+- 무명함수 사용
+- 내장함수를 활용하는데 인자를 넘기는 방법
+
+``` {r trump-tweet-three-ways}
+# 5.1. 함수 정의 후 호출
+ml <- function(x) attr(x, which = "match.length")
+map(matches, ml)
+# 5.2. 무명함수 
+(map(matches, ~ attr(.x, which = "match.length")))
+# 5.3. 내장함수 활용 후 인자 넘기는 방법
+(match_length <- map(matches, attr, which = "match.length"))
+```
