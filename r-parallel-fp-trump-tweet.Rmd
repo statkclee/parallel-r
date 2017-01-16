@@ -36,7 +36,9 @@ library(tibble)
 [^jennybc-purrr-trump-tweet]: [Trump Android words](https://jennybc.github.io/purrr-tutorial/ls08_trump-tweets.html)
 [^trump-tweets]: [Text analysis of Trump tweets confirms he writes only the (angrier) Android half](http://varianceexplained.org/r/trump-tweets/)
 
-트럼프 트윗 중에서 특정 단어가 들어간 트윗에서 단어를 추출하는 것이다. 즉, `regex <- "badly|crazy|weak|spent|strong|dumb|joke|guns|funny|dead"` 정규표현식에 패턴으로 단어를 등록해 넣고 이를 트윗에서 추출한다.
+트럼프 트윗 중에서 특정 단어가 들어간 트윗에서 단어를 추출하는 것이다. 
+
+즉, `regex <- "badly|crazy|weak|spent|strong|dumb|joke|guns|funny|dead"` 정규표현식에 패턴으로 단어를 등록해 넣고 이를 트윗에서 추출한다.
 
 <img src="fig/purrr-slides-trump-tweets.png" alt="트럼프 트윗 단어 추출" width="77%" />
 
@@ -61,8 +63,8 @@ library(tibble)
 ``` {r trump-tweet-data-import}
 # 1. 데이터 가져오기 ----------------------------------------------------
 
-# load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
-load("trump_tweets_df.rda")
+load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
+# load("trump_tweets_df.rda")
 glimpse(trump_tweets_df)
 
 tweets <- trump_tweets_df$text
@@ -98,7 +100,10 @@ regmatches(tweets, gregexpr(regex, tweets))
 
 ``` {r trump-tweet-pmap}
 # 4. substring() 함수 미리 살펴보기 ------------------------------------------------
+matches <- gregexpr(regex, tweets)
+
 (match_first <- map(matches, as.vector))
+(match_length <- map(matches, attr, which = "match.length"))
 (match_last <- map2(match_first, match_length, ~ .x + .y - 1))
 
 tibble(

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 데이터 과학</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-19', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
+          <h2 class="subtitle">트럼프 트윗</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>트럼프 트위터 트윗을 통해 지금까지 학습 내용을 적용한다.</li>
+</ul>
+</div>
+</section>
+<h2 id="트럼프-트위터-트윗-jennybc-purrr-trump-tweet-trump-tweets">1. 트럼프 트위터 트윗 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></h2>
+<p><a href="https://cran.r-project.org/web/packages/broom/index.html">broom</a> 팩키지 저자로 유명한 <a href="http://varianceexplained.org/">David Robinson</a>의 트럼프 트위터 분석을 통해 지금까지 학습한 사항을 실무에 적용해 본다.</p>
+<p>트럼프 트윗 중에서 특정 단어가 들어간 트윗에서 단어를 추출하는 것이다.</p>
+<p>즉, <code>regex &lt;- &quot;badly|crazy|weak|spent|strong|dumb|joke|guns|funny|dead&quot;</code> 정규표현식에 패턴으로 단어를 등록해 넣고 이를 트윗에서 추출한다.</p>
+<p><img src="fig/purrr-slides-trump-tweets.png" alt="트럼프 트윗 단어 추출" width="77%" /></p>
+<h2 id="함수형-프로그래밍을-활용하여-트윗-단어-추출">2. 함수형 프로그래밍을 활용하여 트윗 단어 추출</h2>
+<h3 id="환경-설정">2.1. 환경 설정</h3>
+<p>함수형 프로그래밍 <code>purrr</code>, 데이터 조작 <code>dplyr</code>, 데이터프레임 <code>tibble</code> 팩키지를 불러온다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 0. 환경설정 ----------------------------------------------------</span>
+<span class="kw">library</span>(purrr)
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(tibble)</code></pre></div>
+<h3 id="트럼프-트윗-데이터-가져오기">2.2. 트럼프 트윗 데이터 가져오기</h3>
+<p>웹사이트에 공개된 <a href="http://varianceexplained.org/files/trump_tweets_df.rda" class="uri">http://varianceexplained.org/files/trump_tweets_df.rda</a> 트럼프 트윗 데이터를 불러와서 일별한다. <code>strtrim()</code> 함수는 인자로 넣은 <code>70</code> 글자수에 맞춰 트윗을 끊어주는 역할을 한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1. 데이터 가져오기 ----------------------------------------------------</span>
+
+<span class="kw">load</span>(<span class="kw">url</span>(<span class="st">&quot;http://varianceexplained.org/files/trump_tweets_df.rda&quot;</span>))
+<span class="co"># load(&quot;trump_tweets_df.rda&quot;)</span>
+<span class="kw">glimpse</span>(trump_tweets_df)</code></pre></div>
+<pre class="output"><code>#&gt; Observations: 1,512
+#&gt; Variables: 16
+#&gt; $ text          &lt;chr&gt; &quot;My economic policy speech will be carried live ...
+#&gt; $ favorited     &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,...
+#&gt; $ favoriteCount &lt;dbl&gt; 9214, 6981, 15724, 19837, 34051, 29831, 19223, 1...
+#&gt; $ replyToSN     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+#&gt; $ created       &lt;dttm&gt; 2016-08-08 15:20:44, 2016-08-08 13:28:20, 2016-...
+#&gt; $ truncated     &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,...
+#&gt; $ replyToSID    &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+#&gt; $ id            &lt;chr&gt; &quot;762669882571980801&quot;, &quot;762641595439190016&quot;, &quot;762...
+#&gt; $ replyToUID    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+#&gt; $ statusSource  &lt;chr&gt; &quot;&lt;a href=\&quot;http://twitter.com/download/android\&quot;...
+#&gt; $ screenName    &lt;chr&gt; &quot;realDonaldTrump&quot;, &quot;realDonaldTrump&quot;, &quot;realDonal...
+#&gt; $ retweetCount  &lt;dbl&gt; 3107, 2390, 6691, 6402, 11717, 9892, 5784, 7930,...
+#&gt; $ isRetweet     &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,...
+#&gt; $ retweeted     &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,...
+#&gt; $ longitude     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+#&gt; $ latitude      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+tweets &lt;-<span class="st"> </span>trump_tweets_df$text
+tweets %&gt;%<span class="st"> </span><span class="kw">head</span>() %&gt;%<span class="st"> </span><span class="kw">strtrim</span>(<span class="dv">70</span>)</code></pre></div>
+<pre class="output"><code>#&gt; [1] &quot;My economic policy speech will be carried live at 12:15 P.M. Enjoy!&quot;   
+#&gt; [2] &quot;Join me in Fayetteville, North Carolina tomorrow evening at 6pm. Ticke&quot;
+#&gt; [3] &quot;#ICYMI: \&quot;Will Media Apologize to Trump?\&quot; https://t.co/ia7rKBmioA&quot;    
+#&gt; [4] &quot;Michael Morell, the lightweight former Acting Director of C.I.A., and &quot;
+#&gt; [5] &quot;The media is going crazy. They totally distort so many things on purpo&quot;
+#&gt; [6] &quot;I see where Mayor Stephanie Rawlings-Blake of Baltimore is pushing Cro&quot;
+</code></pre>
+<h3 id="트럼프-트윗-데이터-표본-추출-트윗-7개만">2.3. 트럼프 트윗 데이터 표본 추출 : 트윗 7개만</h3>
+<p>트럼프 트윗 전체를 분석하기 전에 특정 트윗 일부, 7개만 추출한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 2. 트럼프 안드로이드 단어 ----------------------------------------------------</span>
+regex &lt;-<span class="st"> &quot;badly|crazy|weak|spent|strong|dumb|joke|guns|funny|dead&quot;</span>
+
+tweets &lt;-<span class="st"> </span>tweets[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">198</span>, <span class="dv">347</span>, <span class="dv">919</span>)]
+tweets %&gt;%<span class="st"> </span><span class="kw">strtrim</span>(<span class="dv">70</span>)</code></pre></div>
+<pre class="output"><code>#&gt; [1] &quot;My economic policy speech will be carried live at 12:15 P.M. Enjoy!&quot;   
+#&gt; [2] &quot;Join me in Fayetteville, North Carolina tomorrow evening at 6pm. Ticke&quot;
+#&gt; [3] &quot;The media is going crazy. They totally distort so many things on purpo&quot;
+#&gt; [4] &quot;I see where Mayor Stephanie Rawlings-Blake of Baltimore is pushing Cro&quot;
+#&gt; [5] &quot;Bernie Sanders started off strong, but with the selection of Kaine for&quot;
+#&gt; [6] &quot;Crooked Hillary Clinton is unfit to serve as President of the U.S. Her&quot;
+#&gt; [7] &quot;The Cruz-Kasich pact is under great strain. This joke of a deal is fal&quot;
+</code></pre>
+<h3 id="정규표현식을-활용한-단어-추출">2.4. 정규표현식을 활용한 단어 추출</h3>
+<p><code>regmatches</code> 함수를 사용하면 트럼프 트윗에서 단어를 추출할 수 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 3. gregexpr() 정규표현식 사용 ----------------------------------------------------</span>
+<span class="kw">regmatches</span>(tweets, <span class="kw">gregexpr</span>(regex, tweets)) </code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; character(0)
+#&gt; 
+#&gt; [[2]]
+#&gt; character(0)
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] &quot;crazy&quot;
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] &quot;joke&quot;
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] &quot;strong&quot; &quot;weak&quot;  
+#&gt; 
+#&gt; [[6]]
+#&gt; [1] &quot;weak&quot;   &quot;strong&quot;
+#&gt; 
+#&gt; [[7]]
+#&gt; [1] &quot;joke&quot; &quot;dead&quot; &quot;dumb&quot;
+</code></pre>
+<h3 id="함수형-프로그래밍을-활용한-트윗-단어-추출">2.5. 함수형 프로그래밍을 활용한 트윗 단어 추출</h3>
+<p><code>pmap</code> 함수에 인자로 넘기기 위해서 사전에 준비작업을 수행하고 나서, <code>pmap</code> 함수에 넣어 트럼프 트윗에서 매칭되는 단어를 추출한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 4. substring() 함수 미리 살펴보기 ------------------------------------------------</span>
+matches &lt;-<span class="st"> </span><span class="kw">gregexpr</span>(regex, tweets)
+
+(match_first &lt;-<span class="st"> </span><span class="kw">map</span>(matches, as.vector))</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 20
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] 134
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] 28 95
+#&gt; 
+#&gt; [[6]]
+#&gt; [1]  87 114
+#&gt; 
+#&gt; [[7]]
+#&gt; [1]  50 112 123
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(match_length &lt;-<span class="st"> </span><span class="kw">map</span>(matches, attr, <span class="dt">which =</span> <span class="st">&quot;match.length&quot;</span>))</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 5
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] 4
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] 6 4
+#&gt; 
+#&gt; [[6]]
+#&gt; [1] 4 6
+#&gt; 
+#&gt; [[7]]
+#&gt; [1] 4 4 4
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(match_last &lt;-<span class="st"> </span><span class="kw">map2</span>(match_first, match_length, ~<span class="st"> </span>.x +<span class="st"> </span>.y -<span class="st"> </span><span class="dv">1</span>))</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] -3
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] -3
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 24
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] 137
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] 33 98
+#&gt; 
+#&gt; [[6]]
+#&gt; [1]  90 119
+#&gt; 
+#&gt; [[7]]
+#&gt; [1]  53 115 126
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="kw">tibble</span>(
+    <span class="dt">naive_length =</span> <span class="kw">lengths</span>(matches),
+    <span class="dt">n_words =</span> <span class="kw">map_int</span>(matches, ~<span class="st"> </span><span class="kw">sum</span>(.x &gt;<span class="st"> </span><span class="dv">0</span>))
+)</code></pre></div>
+<pre class="output"><code>#&gt; # A tibble: 7 × 2
+#&gt;   naive_length n_words
+#&gt;          &lt;int&gt;   &lt;int&gt;
+#&gt; 1            1       0
+#&gt; 2            1       0
+#&gt; 3            1       1
+#&gt; 4            1       1
+#&gt; 5            2       2
+#&gt; 6            2       2
+#&gt; 7            3       3
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+<span class="kw">pmap</span>(<span class="kw">list</span>(<span class="dt">text =</span> tweets, <span class="dt">first =</span> match_first, <span class="dt">last =</span> match_last), substring)</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] &quot;&quot;
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] &quot;&quot;
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] &quot;crazy&quot;
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] &quot;joke&quot;
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] &quot;strong&quot; &quot;weak&quot;  
+#&gt; 
+#&gt; [[6]]
+#&gt; [1] &quot;weak&quot;   &quot;strong&quot;
+#&gt; 
+#&gt; [[7]]
+#&gt; [1] &quot;joke&quot; &quot;dead&quot; &quot;dumb&quot;
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+mdf &lt;-<span class="st"> </span><span class="kw">tibble</span>(
+    <span class="dt">text =</span> tweets,
+    <span class="dt">first =</span> match_first,
+    <span class="dt">last =</span> match_last
+)
+<span class="kw">pmap</span>(mdf, substring)</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] &quot;&quot;
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] &quot;&quot;
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] &quot;crazy&quot;
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] &quot;joke&quot;
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] &quot;strong&quot; &quot;weak&quot;  
+#&gt; 
+#&gt; [[6]]
+#&gt; [1] &quot;weak&quot;   &quot;strong&quot;
+#&gt; 
+#&gt; [[7]]
+#&gt; [1] &quot;joke&quot; &quot;dead&quot; &quot;dumb&quot;
+</code></pre>
+<h2 id="매칭-리스트를-불러오는-세가지-방법">3. 매칭 리스트를 불러오는 세가지 방법</h2>
+<p>매칭 리스트를 불러오는 방법은 세가지가 존재한다.</p>
+<ul>
+<li>사용자 정의 함수를 사전에 정의하고 호출</li>
+<li>무명함수 사용</li>
+<li>내장함수를 활용하는데 인자를 넘기는 방법</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 5.1. 함수 정의 후 호출</span>
+ml &lt;-<span class="st"> </span>function(x) <span class="kw">attr</span>(x, <span class="dt">which =</span> <span class="st">&quot;match.length&quot;</span>)
+<span class="kw">map</span>(matches, ml)</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 5
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] 4
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] 6 4
+#&gt; 
+#&gt; [[6]]
+#&gt; [1] 4 6
+#&gt; 
+#&gt; [[7]]
+#&gt; [1] 4 4 4
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 5.2. 무명함수 </span>
+(<span class="kw">map</span>(matches, ~<span class="st"> </span><span class="kw">attr</span>(.x, <span class="dt">which =</span> <span class="st">&quot;match.length&quot;</span>)))</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 5
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] 4
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] 6 4
+#&gt; 
+#&gt; [[6]]
+#&gt; [1] 4 6
+#&gt; 
+#&gt; [[7]]
+#&gt; [1] 4 4 4
+</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 5.3. 내장함수 활용 후 인자 넘기는 방법</span>
+(match_length &lt;-<span class="st"> </span><span class="kw">map</span>(matches, attr, <span class="dt">which =</span> <span class="st">&quot;match.length&quot;</span>))</code></pre></div>
+<pre class="output"><code>#&gt; [[1]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] -1
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 5
+#&gt; 
+#&gt; [[4]]
+#&gt; [1] 4
+#&gt; 
+#&gt; [[5]]
+#&gt; [1] 6 4
+#&gt; 
+#&gt; [[6]]
+#&gt; [1] 4 6
+#&gt; 
+#&gt; [[7]]
+#&gt; [1] 4 4 4
+</code></pre>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://jennybc.github.io/purrr-tutorial/ls08_trump-tweets.html">Trump Android words</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://varianceexplained.org/r/trump-tweets/">Text analysis of Trump tweets confirms he writes only the (angrier) Android half</a><a href="#fnref2">↩</a></p></li>
+</ol>
+</div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+  </body>
+</html>
