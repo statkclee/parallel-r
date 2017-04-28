@@ -29,6 +29,7 @@ title: R 병렬 프로그래밍
 1. [R 자동화(Make)](r-makefile.html)
     - [소프트웨어 카펜트리 자동화 Make(소프트웨어)](http://statkclee.github.io/make-novice/index-kr.html)
     - [R과 Make(소프트웨어+R) - TV 토론 효과](r-make-software.html)
+    - [STAT545 자동화 - Make](r-stat545-make.html)
     - Drake Make(데이터)
 1. [고성능 R 아키텍처](r-perf-arch.html)
     - [왜 고성능 R 아키텍처가 필요한가?](why-r-hpc.html)
