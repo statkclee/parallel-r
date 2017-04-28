@@ -1,19 +1,7 @@
----
-layout: page
-title: 데이터 과학
-subtitle: STAT545 자동화 - Make
-output:
-  html_document: 
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
----
+# 데이터 과학
 
 
-```{r, include=FALSE}
-source("tools/chunk-options.R")
-```
+
 
 > ## 학습 목표 {.objectives}
 >
@@ -66,7 +54,8 @@ source("tools/chunk-options.R")
 
 `words.txt` 파일을 수취하는 것이 목표로 인터넷 웹주소에서 `words.txt` 데이터를 가져와서 `data/` 디렉토리 밑에 이동저장시킨다.
 
-``` {r make-step1, eval=FALSE}
+
+~~~{.r}
 # 1단계 Make ----------------------------------------------------
 all: words.txt
 
@@ -77,25 +66,27 @@ words.txt:
     Rscript -e 'download.file("https://raw.githubusercontent.com/STAT545-UBC/make-activity/master/words.txt", destfile = "words.txt", quiet = TRUE)'
     Rscript -e 'dir.create("data", showWarnings = FALSE)'
     mv words.txt data/
-```
+~~~
 
 ### 3.2. 데이터 정제
 
 `words.txt` 파일을 히스토그램 작업을 위해 전처리 과정을 수행한다. 이때 `histogram.r` 파일에 데이터 전처리에 대한 기능을 모두 담아 넣는다.
 
-``` {r make-step2-histogram, eval=FALSE}
+
+~~~{.r}
 # histogram.r
 words <- readLines("data/words.txt")
 Length <- nchar(words)
 hist_dat <- table(Length)
 write.table(hist_dat, "processed/histogram.tsv",
 						sep = "\t", row.names = FALSE, quote = FALSE)
-```
+~~~
 
 `words.txt` 파일을 읽어와서 단어 문자수를 계산하고(`nchar`), 단어 길이별 빈도수를 `table` 함수로 계산하고 나서 `hisgram.tsv` 중간처리된 파일로 저장한다.
 
 
-``` {r make-step2, eval=FALSE}
+
+~~~{.r}
 # 2단계 Make: Munging ----------------------------------------------------
 all: processed/histogram.tsv
     
@@ -109,14 +100,15 @@ all: processed/histogram.tsv
         
     processed/histogram.tsv: code/histogram.r data/words.txt
     Rscript $<
-```
+~~~
 
 ### 3.3. 시각화
 
 원데이터에 대한 정제과정이 끝났으면, 다음으로 시각화한다. 시각화하는 모듈을 별도 제작하여 앞선 히스토그램용 데이터 전처리처럼 준비해도 되고,
 다음과 같이 짧은 코드이 경우 쭉 한줄로 작성해서 `make`에 넘겨도 좋다.
 
-``` {r make-step3, eval=FALSE}
+
+~~~{.r}
 # 3단계 Make: Visualization ----------------------------------------------------
 all: fig/histogram.png
     
@@ -134,13 +126,14 @@ all: fig/histogram.png
     fig/histogram.png: processed/histogram.tsv
         Rscript -e 'library(ggplot2); qplot(Length, Freq, data=read.delim("$<")); ggsave("$@")'
         rm Rplot.pdf
-```
+~~~
 
 ### 3.4. 보고서 작성
 
 `.Rmd` 마크다운 파일에 분석결과에 대한 주석을 달아 보고서로 작성한다.
 
-``` {r make-step4, eval=FALSE}
+
+~~~{.r}
 # 4단계 Make: Report ----------------------------------------------------
 all: report/report.html
         
@@ -161,14 +154,15 @@ all: report/report.html
     
     report/report.html: report/report.rmd fig/histogram.png processed/histogram.tsv data/words.txt
     	Rscript -e 'rmarkdown::render("$<")'                
-```
+~~~
 
 ### 3.5. 보고서 작성
 
 `.PHONY:` 설정을 하고, `.DELETE_ON_ERROR:` 잡스러운 파일이 중간에 생성되는 것을 방지하고, `.SECONDARY:` 을 지정하여
 `.Rmd` 파일이 `.md` 파일을 거쳐 `.html` 파일로 넘어갈 때 중간에 삭제되는 것을 방지하는 마지막 설정을 한다.
 
-``` {r make-step5, eval=FALSE}
+
+~~~{.r}
 # 5단계 Make: Final ----------------------------------------------------
 all: report/report.html
 
@@ -193,7 +187,7 @@ all: report/report.html
     
     report/report.html: report/report.rmd fig/histogram.png processed/histogram.tsv data/words.txt
     	Rscript -e 'rmarkdown::render("$<")'                    
-```
+~~~
 
 ## 4. 보고서 생성 자동화
 
@@ -201,17 +195,19 @@ all: report/report.html
 
 `make clean` 명령어를 통해 작업환경을 깔끔하게 정리한다.
 
-``` {r make-clean, eval=FALSE}
+
+~~~{.r}
 make-stat545 $ make clean
 rm -f data/words.txt processed/histogram.tsv report/report.html
-```
+~~~
 
 ### 4.2. 보고서 작업 자동화
 
 `make all` 명령어를 실행하면 최종 보고서 `report.html` 파일을 생성시키기 위한 모든 중간과정을 자동으로 실행하여 
 중간 처리파일, 그래프, 보고서를 순차적으로 생성시키게 된다.
 
-``` {r make-all, eval=FALSE}
+
+~~~{.r}
 make-stat545 $ make all
 Rscript -e 'download.file("https://raw.githubusercontent.com/STAT545-UBC/make-activity/master/words.txt", destfile = "words.txt", quiet = TRUE)'
 Rscript -e 'dir.create("data", showWarnings = FALSE)'
@@ -241,4 +237,4 @@ output file: report.knit.md
 /usr/local/bin/pandoc +RTS -K512m -RTS report.utf8.md --to html --from markdown+autolink_bare_uris+ascii_identifiers+tex_math_single_backslash --output report.html --smart --email-obfuscation none --self-contained --standalone --section-divs --template /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable 'theme:bootstrap' --include-in-header /var/folders/g3/97168ry52ll6zfyl6ykyk3br0000gn/T//Rtmp8F2Cc4/rmarkdown-str99ca8af49d.html --mathjax --variable 'mathjax-url:https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' 
 
 Output created: report.html
-```
+~~~
