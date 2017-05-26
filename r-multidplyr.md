@@ -1,30 +1,7 @@
----
-layout: page
-title: 데이터 과학
-subtitle: 병렬 데이터 처리 - multidplyr
-output:
-  html_document: 
-    toc: yes
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
----
+# 데이터 과학
 
 
-```{r, include=FALSE}
-source("tools/chunk-options.R")
 
-library(tidyverse)
-library(rvest)
-library(dplyr)
-library(multidplyr)
-library(magrittr)
-library(lubridate)
-library(parallel)
-library(quantmod)
-
-```
 
 
 ## 1. 왜 병렬 데이터 처리인가?
@@ -58,7 +35,8 @@ library(quantmod)
 두가지 처리과정 모두 동일한 결과가 산출되지만, `multidplyr`을 적용한 경우는 순서가 다를 수 있다. 왜냐하면 각 코어마다 작업을 나눠 처리하는 과정에서
 빨리 작업을 처리한 코어가 가장 먼저 결과를 반환하고 해서 `collect()` 단계에서 차이가 날 수 있기 때문이다.
 
-``` {r dplyr-multidplyr-hello, warning=FALSE, message=FALSE}
+
+~~~{.r}
 library(dplyr)  
 library(multidplyr)
 
@@ -68,13 +46,45 @@ library(multidplyr)
 airquality %>% 
     group_by(Month) %>% 
     summarize(cnt = n())
+~~~
 
+
+
+~~~{.output}
+# A tibble: 5 x 2
+  Month   cnt
+  <int> <int>
+1     5    31
+2     6    30
+3     7    31
+4     8    31
+5     9    30
+
+~~~
+
+
+
+~~~{.r}
 ## 1.2. multidplyr
 airquality %>% 
     partition(Month) %>% 
     summarize(cnt = n()) %>% 
     collect()  
-```
+~~~
+
+
+
+~~~{.output}
+# A tibble: 5 x 2
+  Month   cnt
+  <int> <int>
+1     9    30
+2     6    30
+3     5    31
+4     7    31
+5     8    31
+
+~~~
 
 ### 2.2. 클러스터 생성
 
@@ -85,7 +95,8 @@ airquality %>%
 `cluster_assign_value` 함수를 통해 등록을 해줘야 클러스터에서 사용할 수 있다.
 
 
-``` {r dplyr-multidplyr-create-cluster, warning=FALSE, message=FALSE}
+
+~~~{.r}
 # 2. 클러스터 관리 -------------------------------------
 ## 2.1. 클러스터 생성
 cluster <- create_cluster(3)
@@ -94,14 +105,50 @@ airquality %>%
     partition(Month, cluster = cluster) %>% 
     summarize(cnt = n()) %>% 
     collect()
+~~~
 
+
+
+~~~{.output}
+# A tibble: 5 x 2
+  Month   cnt
+  <int> <int>
+1     5    31
+2     7    31
+3     8    31
+4     6    30
+5     9    30
+
+~~~
+
+
+
+~~~{.r}
 # 디폴트 클러스터 설정
 set_default_cluster(cluster)  
 airquality %>% 
     partition(Month) %>% 
     summarize(cnt = n()) %>% 
     collect()  
+~~~
 
+
+
+~~~{.output}
+# A tibble: 5 x 2
+  Month   cnt
+  <int> <int>
+1     9    30
+2     6    30
+3     7    31
+4     5    31
+5     8    31
+
+~~~
+
+
+
+~~~{.r}
 # 3. 사용자 정의 함수 -------------------------------------
 four <- function(x) {  
     return(data.frame(a = 4))
@@ -114,10 +161,46 @@ cluster_assign_value(cluster, 'four', four)
 cluster_assign_value(cluster, 'one', one)  
 
 cluster_get(cluster, 'one')  
+~~~
+
+
+
+~~~{.output}
+[[1]]
+[1] 1
+
+[[2]]
+[1] 1
+
+[[3]]
+[1] 1
+
+~~~
+
+
+
+~~~{.r}
 cluster_rm(cluster, c('four', 'one'))  
 
 cluster %>% cluster_ls()  
-```
+~~~
+
+
+
+~~~{.output}
+[[1]]
+[1] "bcopkcxenm"    "exhpaecgcx"    "kizovxrwcc"    "lavfxmhdeu"   
+[5] "theme_gogamza"
+
+[[2]]
+[1] "bcopkcxenm"    "exhpaecgcx"    "kizovxrwcc"    "lavfxmhdeu"   
+[5] "theme_gogamza"
+
+[[3]]
+[1] "bcopkcxenm"    "exhpaecgcx"    "kizovxrwcc"    "lavfxmhdeu"   
+[5] "theme_gogamza"
+
+~~~
 
 ## 3. 코스피 200 주식데이터 가져오기 [^multidplyr-sp-500]
 
@@ -131,7 +214,8 @@ S&P500 주식을 `rvest`와 `multiplyr` 팩키지를 활용한 사례를 참조�
 코스피 200에 해당되는 기업정보도 [나무위키](https://namu.wiki/w/KOSPI200)에서 긁어온다.
 그리고 나서 코스피 200에 포함된 기업정보는 161개로 확인된다.
 
-``` {r kospi-200, warning=FALSE, message=FALSE}
+
+~~~{.r}
 # 0. 환경설정 --------------------------------------
 
 # library(tidyverse)
@@ -170,15 +254,15 @@ kospi_200 <- kospi_lst[[1]] %>% as_tibble() %>%
 
 kospi_200_df <- inner_join(kospi, kospi_200, by="company") %>% 
     mutate(symbol = paste0(symbol, ":KOSPI"))
-```
+~~~
 
 ### 3.2. 주식데이터 가져오는 함수
 
 최근에 [야후 금융](https://finance.yahoo.com/)에서 데이터를 가져오는 것이 문제가 있어, `src="google"`로 지정한다.
 `quantmod` 팩키지 `getSymbols()` 함수의 기본 반환값은 `xts` 자료형이라 이를 `tibble`로 변환한다.
 
-``` {r kospi-200-crawling-function, warning=FALSE, message=FALSE}
 
+~~~{.r}
 # 2. 주식가격 가져오는 함수 ---------------------------------------------------------
 
 get_stock_prices <- function(symbol, return_format = "tibble", from=from, to=to) {
@@ -206,14 +290,35 @@ from <- "2017-05-01"
 to   <- today()
 
 getSymbols(Symbols = kospi_200_df[1,]$symbol, auto.assign = FALSE, src = "google",  from=from, to=to) %>% head()
-```
+~~~
+
+
+
+~~~{.output}
+           000120:KOSPI.Open 000120:KOSPI.High 000120:KOSPI.Low
+2017-05-02           2213.61           2229.74          2212.87
+2017-05-04           2224.91           2241.24          2224.91
+2017-05-08           2245.61           2292.76          2244.23
+2017-05-10           2294.10           2323.22          2264.31
+2017-05-11           2278.47           2297.67          2271.66
+2017-05-12           2296.06           2296.51          2283.38
+           000120:KOSPI.Close 000120:KOSPI.Volume
+2017-05-02            2219.67           295139000
+2017-05-04            2241.24           261918000
+2017-05-08            2292.76           281761000
+2017-05-10            2270.12           422888000
+2017-05-11            2296.37           463460000
+2017-05-12            2286.02           335337000
+
+~~~
 
 ### 3.3. 순차처리 방식으로 주식데이터 가져오기
 
 순차처리방식으로 데이터를 가져오는 경우 내부에 `map`함수를 통해 함수형 프로그래밍 기법을 적용하여 데이터를 구글 금융에서
 받아오지만 순차적으로 쭉 받아오게 된다.
 
-``` {r kospi-200-sequential, warning=FALSE, message=FALSE}
+
+~~~{.r}
 # 3. 순차 처리 방식 ---------------------------------------------------------
 
 get_stock_prices_from_google <- function(kospi_200_input, from, to){ 
@@ -230,7 +335,17 @@ get_stock_prices_from_google <- function(kospi_200_input, from, to){
 }
 
 get_stock_prices_from_google(kospi_200_df[1,], from, to)
-```
+~~~
+
+
+
+~~~{.output}
+# A tibble: 1 x 4
+        symbol    company  type      stock.prices
+         <chr>      <chr> <chr>            <list>
+1 000120:KOSPI CJ대한통운 KOSPI <tibble [15 x 6]>
+
+~~~
 
 ### 3.4. 병렬처리 방식으로 주식데이터 가져오기
 
@@ -244,7 +359,8 @@ get_stock_prices_from_google(kospi_200_df[1,], from, to)
 
 `cluster_eval` 함수를 통해 클러스터에 설정된 상황을 확인할 수 있다.
 
-``` {r kospi-200-parallel, warning=FALSE, message=FALSE}
+
+~~~{.r}
 # 4. 병렬 처리 방식 ---------------------------------------------------------
 ## 4.1. 클러스터 생성 -------------------------------------------------------
 cl <- detectCores() -1
@@ -271,8 +387,58 @@ by_group %>%
 
 # 첫번째 클러스터 설정상황 확인
 cluster_eval(by_group, search())[[1]]
-cluster_get(by_group, "get_stock_prices")[[1]]
+~~~
 
+
+
+~~~{.output}
+ [1] ".GlobalEnv"        "package:quantmod"  "package:TTR"      
+ [4] "package:xts"       "package:zoo"       "package:lubridate"
+ [7] "package:stringr"   "package:dplyr"     "package:purrr"    
+[10] "package:readr"     "package:tidyr"     "package:tibble"   
+[13] "package:tidyverse" "package:stats"     "package:graphics" 
+[16] "package:grDevices" "package:utils"     "package:datasets" 
+[19] "KoreaEnv"          "package:extrafont" "package:ggthemes" 
+[22] "package:ggplot2"   "package:methods"   "Autoloads"        
+[25] "package:base"     
+
+~~~
+
+
+
+~~~{.r}
+cluster_get(by_group, "get_stock_prices")[[1]]
+~~~
+
+
+
+~~~{.output}
+function(symbol, return_format = "tibble", from=from, to=to) {
+    # 구글에서 주식데이터 가져오기
+    stock_prices <- tryCatch({
+        getSymbols(Symbols = symbol, auto.assign = FALSE, src = "google",  from=from, to=to)
+    }, error = function(e) {
+        return(NA)
+    })
+    if (!is.na(stock_prices[[1]])) {
+        # 변수명 재설정
+        names(stock_prices) <- c("시가", "고가", "저가", "종가", "거래량")
+        # 기본설정은 xts 파일형식을 tibble로 변환
+        if (return_format == "tibble") {
+            stock_prices <- stock_prices %>%
+                as_tibble() %>%
+                rownames_to_column(var = "Date") %>%
+                mutate(Date = ymd(Date))
+        }
+        return(stock_prices)
+    }
+}
+
+~~~
+
+
+
+~~~{.r}
 ## 4.4. 병렬처리 클러스터 확인 ---------------------------------------------------------
 
 get_stock_prices_from_google <- function(kospi_200_input, from, to){ 
@@ -290,7 +456,7 @@ get_stock_prices_from_google <- function(kospi_200_input, from, to){
         as_tibble() 
     return(kospi_200_parallel_df)
 }
-```
+~~~
 
 ### 3.5. 순차처리와 병렬처리 성능 비교
 
@@ -298,13 +464,40 @@ get_stock_prices_from_google <- function(kospi_200_input, from, to){
 저자 PC는 코어가 4개, 노트북은 코어가 8개가 된다.
 성능이 코어숫자에 비례하여 증가하지만 코어 상호간에 커뮤니케이션 비용으로 인해 코어가 증가해도 100%로 성능향상으로 이어지는 것은 아니다.
 
-``` {r kospi-200-compare-performance, warning=FALSE, message=FALSE}
+
+~~~{.r}
 system.time(get_stock_prices_from_google(kospi_200_df, from, to))
+~~~
+
+
+
+~~~{.output}
+   user  system elapsed 
+  2.017   0.217  76.995 
+
+~~~
+
+
+
+~~~{.r}
 # 사용자  시스템 elapsed 
 # 16.29    1.36   97.34 
 
 system.time(get_stock_prices_from_google(by_group, from, to))
+~~~
+
+
+
+~~~{.output}
+   user  system elapsed 
+  0.007   0.001  10.644 
+
+~~~
+
+
+
+~~~{.r}
 # 사용자  시스템 elapsed 
 # 0.11    0.03   35.83 
-```
+~~~
 
