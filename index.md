@@ -36,6 +36,7 @@ title: R 병렬 프로그래밍
     - [R 스케일-업 성능향상](r-scale-up.html)
     - [R 스케일-아웃 성능향상](r-scale-out.html)     
         - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html) 
+    - [병렬 데이터 처리 - multidplyr](r-multidplyr.html)     
 1. **R코드 자동화**
     - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
     - [`.R` 스크립트 실행](r-parallel-rscript-exec.html)
