@@ -3,60 +3,85 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>Software Carpentry: 데이터 과학</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
-    <link rel="stylesheet" type="text/css" href="css/swc.css" />
-    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
-    <meta charset="UTF-8" />
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-    
-      ga('create', 'UA-59802572-19', 'auto');
-      ga('send', 'pageview');
-    
+    <title>Software Carpentry: R 병렬 프로그래밍</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-19', 'auto');
+      ga('send', 'pageview');
+    
     </script>
   </head>
   <body class="lesson">
     <div class="container card">
-      <div class="banner">
-        <a href="http://software-carpentry.org" title="Software Carpentry">
-          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
-        </a>
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
       </div>
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">데이터 과학</h1></a>
-          <h2 class="subtitle">성능 측정기준 벤치마킹</h2>
+                    <a href="index.html"><h1 class="title">R 병렬 프로그래밍</h1></a>
+          <h2 class="subtitle">R 코드 성능 측정기준 - 벤치마킹</h2>
           <section class="objectives panel panel-warning">
 <div class="panel-heading">
 <h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
 </div>
 <div class="panel-body">
 <ul>
-<li>R 스크립트, 함수 성능 측정기준을 설정한다.</li>
-<li><code>rbenchmark</code> 팩키지를 활용한다.</li>
+<li>R 스크립트, 함수 성능 측정기준 방법을 살펴본다.</li>
+<li><code>tictoc</code>, <code>microbenchmark</code>, <code>rbenchmark</code> 팩키지를 실습한다.</li>
 </ul>
 </div>
 </section>
-<h3 id="rbenchmark-기준성능-평가-팩키지">1. <code>rbenchmark</code> 기준성능 평가 팩키지</h3>
-<p><code>rbenchmark</code> 팩키지는 펄(Perl) 벤치마크 모듈에 영감을 받아 제작되었다. <code>system.time</code>을 감싼 함수 하나로 구성된 팩키지다.</p>
-<p>사용법은 <code>benchmark</code> 함수에 기준성능을 평가할 함수를 넣어주고, <code>columns= c(&quot;test&quot;, &quot;replications&quot;, &quot;elapsed&quot;, &quot;relative&quot;)</code> 출력하려고 하는 인자를 넣어준다.</p>
-<h3 id="피보나치-예제">2. 피보나치 예제</h3>
-<p>피보나치 순열을 재귀를 사용해서 구현한 R코드와 Rcpp코드의 성능을 비교한다. Rcpp 저자인 Dirk Eddelbuettel 박사가 EARL 2015에서 스택오버플로우 예제를 참조하여 작성한 예제다. <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<h2 id="r-코드-기준성능-평가-팩키지-r-benchmark">1. R 코드 기준성능 평가 팩키지 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h2>
+<p>본인이 작성한 코드의 성능을 알고자 하는 것은 어찌 생각하면 당연할수도 있다. 실제 코드를 다시 들여다 볼 때는 아마도 작성한 코드가 너무 느리게 실행될 때다. 하지만, R 코드 성능을 측정하는 관련된 방법이 너무 다양하게 존재하여 실제 현업에 적용할 때 어려운 점이 생긴다.</p>
+<ul>
+<li><code>Sys.time</code></li>
+<li><code>tictoc</code></li>
+<li><code>system.time</code></li>
+<li><code>rbenchmark</code></li>
+<li><code>microbenchmark</code></li>
+</ul>
+<h2 id="sys.time-system.time">2. <code>Sys.time()</code>, <code>system.time()</code></h2>
+<p>기본적인 사용법은 <code>Sys.time()</code>으로 현재 시간을 찍고 나서, 코드를 실행하고 나서, 종료시점에 다시 <code>Sys.time()</code>을 찍고 두 시간 차이를 구하는 방식이다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">start_time &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
+<span class="kw">Sys.sleep</span>(<span class="dv">5</span>) <span class="co"># 5초 동안 쿨쿨 ~~~</span>
+end_time &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
+
+end_time -<span class="st"> </span>start_time</code></pre></div>
+<pre><code>## Time difference of 5.086929 secs</code></pre>
+<p>또다른 방식은 <code>system.time()</code>을 활용하는 것인데 앞선 <code>Sys.time()</code>을 사용하는 것과 비교하여 어느 지점에서 시간이 더 많이 사용되는지 개발자가 알 수 있게 추가적인 정보를 제공한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(<span class="kw">Sys.sleep</span>(<span class="dv">5</span>))</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.000   0.000   5.003</code></pre>
+<p>사용자, 시스템, elapsed로 전체 시간을 나누어서 실행시간에 대한 정보를 제공하고 있다. <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<ul>
+<li><code>사용자</code> 혹은 <code>user</code>: <strong>User CPU time</strong>은 현재 R 세션에서 사용한 CPU 시간.</li>
+<li><code>시스템</code> 혹은 <code>system</code>: <strong>System CPU time</strong>은 커널(운영체제)에서 사용한 CPU 시간. 운영체제에서 사용한 시간은 프로세스 기동, 입출력 작업 등 많은 프로세스가 공통적으로 수행하는 작업이 포함된다. 따라서 운영체제가 다르면 수행시간도 차이가 나는 것도 명약관화하다.</li>
+<li><code>elapsed</code>: R작업과 운영체제 시스템 총 작업경과 시간.</li>
+</ul>
+<h2 id="tictoc-microbenchmark-rbenchmark-팩키지-비교-rcpp">3. <code>tictoc</code>, <code>microbenchmark</code>, <code>rbenchmark</code> 팩키지 비교 <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></h2>
+<p><code>tictoc</code>, <code>microbenchmark</code>, <code>rbenchmark</code> 팩키지는 R코드 속도를 측정하고자하는 목적으로 개발된 것이다. 목적은 동일하지만 다소 차이가 있다.</p>
+<p>피보나치 순열을 재귀를 사용해서 구현한 R코드와 Rcpp코드의 성능을 비교한다. Rcpp 저자인 Dirk Eddelbuettel 박사가 EARL 2015에서 스택오버플로우 예제를 참조하여 작성한 예제다.</p>
 <p><span class="math display">\[ f(n) = \begin{cases} n, &amp; n &lt; 2 \mbox{  일 때}\\ f(n-1) + f(n-2), &amp; n \geq 2 \mbox{  일 때} \end{cases}\]</span></p>
-<h4 id="순수-r-코드-구현">2.1. 순수 R 코드 구현</h4>
+<p>피보나치 수열을 R코드로 구현한 후 <code>sapply</code> 함수로 0 에서 10까지 숫자를 피보나치 함수 <code>f</code>에 넣어 계산한다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
 <span class="co"># 1. 순수한 R 코드</span>
 <span class="co">#-------------------------------------------------------------------------</span>
@@ -67,19 +92,67 @@ f &lt;-<span class="st"> </span>function(n) {
 }
 
 <span class="kw">sapply</span>(<span class="dv">0</span>:<span class="dv">10</span>, f)</code></pre></div>
-<p>피보나치 수열을 R코드로 구현한 후 <code>sapply</code> 함수로 0 에서 10까지 숫자를 피보나치 함수 <code>f</code>에 넣어 계산한다.</p>
-<pre class="output"><code>[1]  0  1  1  2  3  5  8 13 21 34 55</code></pre>
+<pre><code>##  [1]  0  1  1  2  3  5  8 13 21 34 55</code></pre>
+<h3 id="tictoc-팩키지로-속도-측정">3.1. <code>tictoc</code> 팩키지로 속도 측정</h3>
+<p><code>tic</code> 함수와 <code>tok</code> 함수를 통해 <code>tic</code>과 <code>toc</code> 사이 소요되는 시간을 측정한다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># devtools::install_github(&quot;collectivemedia/tictoc&quot;)</span>
+<span class="kw">library</span>(tictoc)
+
+<span class="kw">tic</span>(<span class="st">&quot;전체시간&quot;</span>)
+
+<span class="kw">tic</span>(<span class="st">&quot;피보나치 10&quot;</span>)
+<span class="kw">f</span>(<span class="dv">10</span>)</code></pre></div>
+<pre><code>## [1] 55</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">toc</span>()</code></pre></div>
+<pre><code>## 피보나치 10: 0.002 sec elapsed</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tic</span>(<span class="st">&quot;피보나치 15&quot;</span>)
+<span class="kw">f</span>(<span class="dv">15</span>)</code></pre></div>
+<pre><code>## [1] 610</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">toc</span>()</code></pre></div>
+<pre><code>## 피보나치 15: 0.01 sec elapsed</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tic</span>(<span class="st">&quot;피보나치 20&quot;</span>)
+<span class="kw">f</span>(<span class="dv">20</span>)</code></pre></div>
+<pre><code>## [1] 6765</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">toc</span>()</code></pre></div>
+<pre><code>## 피보나치 20: 0.009 sec elapsed</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">toc</span>()</code></pre></div>
+<pre><code>## 전체시간: 0.025 sec elapsed</code></pre>
+<h3 id="rbenchmark-팩키지로-속도-측정">3.2. <code>rbenchmark</code> 팩키지로 속도 측정</h3>
+<p><code>rbenchmark</code> 팩키지는 펄(Perl) 벤치마크 모듈에 영감을 받아 제작되었다. <code>system.time</code>을 감싼 함수 하나로 구성된 팩키지다. <code>system.time</code>과 비교하여 반복수와 명시적으로 <code>user.self</code>, <code>sys.self</code>로 명칭을 명확히 했고, <code>relative</code>를 통해 상대적인 시간도 명기했다.</p>
+<p>사용법은 <code>benchmark</code> 함수에 기준성능을 평가할 함수를 넣어주고, <code>columns= c(&quot;test&quot;, &quot;replications&quot;, &quot;elapsed&quot;, &quot;relative&quot;)</code> 출력하려고 하는 인자를 넣어준다.</p>
 <p><code>rbenchmark</code> 팩키지를 사용해서 <code>10</code>, <code>15</code>, <code>20</code>일 경우를 기준성능을 상호비교한다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages(&quot;rbenchmark&quot;)</span>
 <span class="kw">library</span>(rbenchmark)
 
 <span class="kw">benchmark</span>(<span class="kw">f</span>(<span class="dv">10</span>), <span class="kw">f</span>(<span class="dv">15</span>), <span class="kw">f</span>(<span class="dv">20</span>), <span class="dt">columns=</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))</code></pre></div>
+<pre><code>##    test replications elapsed relative
+## 1 f(10)          100   0.005      1.0
+## 2 f(15)          100   0.058     11.6
+## 3 f(20)          100   0.712    142.4</code></pre>
 <p>피보나치 순열 10일 때 보다 20일 때, 상대적으로 131배나 많은 시간이 소요된 것이 확인된다. 이제 C/C++ 즉, <code>Rcpp</code>로 구현한 성능을 살펴본다.</p>
-<pre class="output"><code>   test replications elapsed relative
-1 f(10)          100    0.03    1.000
-2 f(15)          100    0.33   11.000
-3 f(20)          100    3.95  131.667</code></pre>
-<h4 id="rcpp-코드-구현">2.2. Rcpp 코드 구현</h4>
+<h3 id="microbenchmark-팩키지로-속도-측정">3.3. <code>microbenchmark</code> 팩키지로 속도 측정</h3>
+<p><code>rbenchmark</code> 팩키지 <code>benchmark()</code> 함수와 유사하지만, <code>microbenchmark()</code>함수는 <code>ggplot</code>의 <code>autoplot</code>과 함께 사용하면 정말 편리하다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#devtools::install_github(&quot;olafmersmann/microbenchmarkCore&quot;)</span>
+<span class="co">#devtools::install_github(&quot;olafmersmann/microbenchmark&quot;)</span>
+<span class="kw">library</span>(microbenchmark)
+
+mb_fibo &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<span class="st">&quot;f10&quot;</span> =<span class="st"> </span>{ <span class="kw">f</span>(<span class="dv">10</span>) },
+                      <span class="st">&quot;f15&quot;</span> =<span class="st"> </span>{ <span class="kw">f</span>(<span class="dv">15</span>) },
+                      <span class="st">&quot;f20&quot;</span> =<span class="st"> </span>{ <span class="kw">f</span>(<span class="dv">20</span>) }
+)
+
+mb_fibo</code></pre></div>
+<pre><code>## Unit: microseconds
+##  expr      min        lq       mean   median       uq       max neval cld
+##   f10   49.496   51.7725   55.71161   53.958   58.128    72.506   100 a  
+##   f15  552.234  572.4105  646.95594  585.319  615.456  2303.291   100  b 
+##   f20 6260.690 6428.2490 6951.17843 6595.788 7480.900 10378.166   100   c</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">autoplot</span>(mb_fibo)</code></pre></div>
+<div class="figure">
+<img src="figure/benchmark-microbenchamrk-1.png" alt="plot of chunk benchmark-microbenchamrk" />
+<p class="caption">plot of chunk benchmark-microbenchamrk</p>
+</div>
+<h2 id="rcpp-코드-구현">4. Rcpp 코드 구현</h2>
 <p>피보나치 구현하는 코드를 C/C++로 구현한 후에 <code>Rcpp::cppFunction</code> 내부에 C/C++코드를 넣어주고 실행시키면 된다. 전통적으로 재귀를 사용한 피보나치 순열 구현은 성능이 좋지 않은 것으로 유명한데, C/C++로 구현하여 <code>Rcpp</code> 팩키지로 실행한 것을 보면 450배 순수 R코드에 비해 성능이 월등한 것을 알 수 있다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
 
@@ -89,10 +162,23 @@ Rcpp::<span class="kw">cppFunction</span>(
 <span class="st">      return(g(n-1)+g(n-2));</span>
 <span class="st">  }&quot;</span>)
 
-<span class="kw">benchmark</span>(<span class="kw">f</span>(<span class="dv">25</span>), <span class="kw">g</span>(<span class="dv">25</span>), <span class="dt">columns=</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;replications&quot;</span>, <span class="st">&quot;elapsed&quot;</span>, <span class="st">&quot;relative&quot;</span>))</code></pre></div>
-<pre class="output"><code>test replications elapsed relative
-1 f(25)          100  17.404  446.256
-2 g(25)          100   0.039    1.000</code></pre>
+Rcpp_fibo &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<span class="st">&quot;Rcpp&quot;</span>  =<span class="st"> </span>{ <span class="kw">g</span>(<span class="dv">25</span>) },
+                            <span class="st">&quot;RCode&quot;</span> =<span class="st"> </span>{ <span class="kw">f</span>(<span class="dv">25</span>) }
+)
+
+Rcpp_fibo</code></pre></div>
+<pre><code>## Unit: microseconds
+##   expr       min         lq       mean     median        uq        max
+##   Rcpp   355.829   356.6645   373.7537   363.2585   367.904   1213.485
+##  RCode 71320.196 72628.8620 75387.5437 73688.5975 75104.710 177875.862
+##  neval cld
+##    100  a 
+##    100   b</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">autoplot</span>(Rcpp_fibo)</code></pre></div>
+<div class="figure">
+<img src="figure/benchmark-rcpp-1.png" alt="plot of chunk benchmark-rcpp" />
+<p class="caption">plot of chunk benchmark-rcpp</p>
+</div>
 <aside class="callout panel panel-info">
 <div class="panel-heading">
 <h3 id="윈도우즈-rcpp-설치"><span class="glyphicon glyphicon-pushpin"></span>윈도우즈 Rcpp 설치</h3>
@@ -105,46 +191,39 @@ C:\Rtools\gcc-4.6.3\bin
 C:\Rtools\bin</code></pre>
 </div>
 </aside>
-<h3 id="기준정보-벤치마크-시각화">3. 기준정보 벤치마크 시각화</h3>
-<p><code>microbenchmark</code> 팩키지에 시각화하는 기능이 내장되어 있다. <code>boxplot</code> 등 기본 그래픽 기능을 활용하여 상대적인 비교를 시각적으로 수행한다.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#-------------------------------------------------------------------------</span>
-<span class="co"># 3. 시각화</span>
-<span class="co">#-------------------------------------------------------------------------</span>
-<span class="co"># install.packages(&quot;microbenchmark&quot;)</span>
-<span class="kw">library</span>(microbenchmark)
-bm_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(<span class="kw">f</span>(<span class="dv">10</span>), <span class="kw">f</span>(<span class="dv">15</span>), <span class="kw">f</span>(<span class="dv">20</span>), <span class="dt">unit=</span><span class="st">&quot;s&quot;</span>)
-
-<span class="kw">boxplot</span>(bm_res)</code></pre></div>
-<p><img src="fig/perf-boxplot.png" alt="기준정보 벤치마킹 결과 시각화" width="50%"></p>
+<h2 id="기준정보-벤치마크-시각화">4. 기준정보 벤치마크 시각화</h2>
+<p><code>microbenchmark</code> 팩키지에 시각화하는 기능이 내장되어 있다. <code>boxplot</code> 등 기본 그래픽 기능을 활용하여 상대적인 비교를 시각적으로 식별하는데 도움을 주고 있다. 또한, ggplot2의 <code>autoplot()</code> 함수를 활용하면 상자그림이 갖고 있는 단점도 상당부분 보완할 수 있다.</p>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="https://www.youtube.com/watch?v=qXuLNQSPmCA">EARL 2015 - Day 2 Keynote - Making R Applications go Faster and Further - Dirk Eddelbuettel</a><a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p><a href="http://www.alexejgossmann.com/benchmarking_r/">5 ways to measure running time of R code</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://r.789695.n4.nabble.com/Meaning-of-proc-time-td2303263.html#a2306691">r mailing list - Meaning of proc.time()</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="https://www.youtube.com/watch?v=qXuLNQSPmCA">EARL 2015 - Day 2 Keynote - Making R Applications go Faster and Further - Dirk Eddelbuettel</a><a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
         </div>
       </div>
       </article>
-      <div class="footer">
-        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
-        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
-        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
-        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
       </div>
     </div>
-    <!-- Javascript placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
-    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-    
-      ga('create', 'UA-37305346-2', 'auto');
-      ga('send', 'pageview');
-    
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
     </script>
   </body>
 </html>
