@@ -50,6 +50,8 @@ title: R 병렬 프로그래밍
     - [도커허브(Dockerhub)](http://statkclee.github.io/r-docker/04-Dockerhub.html)
     - [도커파일(Dockerfiles)](http://statkclee.github.io/r-docker/05-dockerfiles.html)
     - [분석결과 공유](http://statkclee.github.io/r-docker/06-Sharing-all-your-analysis.html)
+1. **R 실운영환경(R in Production)**
+    - [웹에서 운영되는 R(plumber)](r-in-production-plumber.html)
 1. **성능 측정과 비교**
     - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
     - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
