@@ -149,6 +149,10 @@ JSON 형태 데이터를 전달하면 `/predict` 인터페이스를 통해 신�
 산출된 로직을 통해 신용위험을 평가하여 확률값을 계산하여 이를 전달한다.
 
 ``` {r german-credit-provice-service-test, eval=FALSE}
-$ curl -X POST -d '{"Status.of.existing.checking.account": "A11", "Duration.in.month": 24, "Credit.history": "A32", "Savings.account.bonds": "A63"}' -H 'Content-Type: application/json' localhost:8000/predict
+$ curl -X POST \
+       -d '{"Status.of.existing.checking.account": "A11", "Duration.in.month": 24, "
+Credit.history": "A32", "Savings.account.bonds": "A63"}' \
+       -H 'Content-Type: application/json' \
+       localhost:8000/predict
 {"default_probability":0.6224}
 ```

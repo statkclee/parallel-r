@@ -223,7 +223,11 @@ Running the swagger UI at http://127.0.0.1:8000/__swagger__/</code></pre>
 <div id="--" class="section level2">
 <h2>5. 신용위험 서비스 테스트</h2>
 <p>신용위험을 예측하는 서비스가 준비되어서 서비스로 제공되고 있다. 이에, 직접 서비스를 호출하여 결과를 받아보자. JSON 형태 데이터를 전달하면 <code>/predict</code> 인터페이스를 통해 신용위험 예측 서비스를 제공하는 서버가 이를 받아들어 개발된 예측모형에서 미리 산출된 로직을 통해 신용위험을 평가하여 확률값을 계산하여 이를 전달한다.</p>
-<pre class="r"><code>$ curl -X POST -d '{&quot;Status.of.existing.checking.account&quot;: &quot;A11&quot;, &quot;Duration.in.month&quot;: 24, &quot;Credit.history&quot;: &quot;A32&quot;, &quot;Savings.account.bonds&quot;: &quot;A63&quot;}' -H 'Content-Type: application/json' localhost:8000/predict
+<pre class="r"><code>$ curl -X POST \
+       -d '{&quot;Status.of.existing.checking.account&quot;: &quot;A11&quot;, &quot;Duration.in.month&quot;: 24, &quot;
+Credit.history&quot;: &quot;A32&quot;, &quot;Savings.account.bonds&quot;: &quot;A63&quot;}' \
+       -H 'Content-Type: application/json' \
+       localhost:8000/predict
 {&quot;default_probability&quot;:0.6224}</code></pre>
 </div>
 <div class="footnotes">

@@ -127,6 +127,10 @@ JSON 형태 데이터를 전달하면 `/predict` 인터페이스를 통해 신�
 
 
 ~~~{.r}
-$ curl -X POST -d '{"Status.of.existing.checking.account": "A11", "Duration.in.month": 24, "Credit.history": "A32", "Savings.account.bonds": "A63"}' -H 'Content-Type: application/json' localhost:8000/predict
+$ curl -X POST \
+       -d '{"Status.of.existing.checking.account": "A11", "Duration.in.month": 24, "
+Credit.history": "A32", "Savings.account.bonds": "A63"}' \
+       -H 'Content-Type: application/json' \
+       localhost:8000/predict
 {"default_probability":0.6224}
 ~~~
