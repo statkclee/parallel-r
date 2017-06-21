@@ -1,26 +1,6 @@
----
-layout: page
-title: R 병렬 프로그래밍
-subtitle: R 실운영환경(R in Production)
-output:
-  html_document: 
-    toc: yes
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
----
+# R 병렬 프로그래밍
 
-``` {r, include=FALSE}
-source("tools/chunk-options.R")
-knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
-library(tidyverse)
-library(httr)
-options(scipen = 999)
-options(dplyr.width = 120)
-options(dplyr.print_max = 1e9)
-```
 
 <img src="fig/api-plumber-api.png" alt="R RESTful API 개발환경" width="57%" />
 
@@ -35,7 +15,8 @@ options(dplyr.print_max = 1e9)
 제공할 서비스를 `myfile.R` 파일에 담아 넣고 `POST`, `GET`으로 서비스를 명세한다.
 `r$run(port=8000)` 명령어를 실행해서 `myfile.R` 파일에 담아 놓은 서비스를 RESTful API로 제공한다.
 
-``` {r plumber-local, eval=FALSE}
+
+~~~{.r}
 devtools::install_github("trestletech/plumber")
 
 library(plumber)
@@ -44,7 +25,7 @@ r <- plumb("code/myfile.R")
 r$run(port=8000)
 Starting server to listen on port 8000
 Running the swagger UI at http://127.0.0.1:8000/__swagger__/
-```
+~~~
 
 
 ## 2. AWS EC2 RESTful API 서비스 
