@@ -55,7 +55,7 @@ title: R 병렬 프로그래밍
     - [신용위험 확률(plumber) API](r-credit-score-api.html)
     - [RESTful API 개발환경](r-restful-api-test.html)
     - [OpenCPU RESTful API](r-opencpu-api-hello.html)
-1. **성능 측정과 비교**
+1. **[고성능 R코드 작성과 성능비교](perf-writing-efficient-code.html)**
     - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
     - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
     - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
