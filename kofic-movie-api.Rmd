@@ -1,0 +1,219 @@
+---
+layout: page
+title: R 병렬 프로그래밍
+subtitle: 영화진흥위원회 오픈API - 스크린수와 매출
+date: "`r Sys.Date()`"
+author: xwMOOC
+output:
+  html_document: 
+    keep_md: yes
+    toc: yes
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
+---
+ 
+``` {r, include=FALSE}
+source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12)
+
+library(tidyverse)
+library(rjson)
+library(lubridate)
+library(stringr)
+library(purrr)
+library(ggthemes)
+library(extrafont)
+library(ggrepel)
+loadfonts()
+
+# movie_df <- readRDS("data/movie_df.rds")
+movie_list <- readRDS("data/movie_list.rds")
+
+```
+
+
+## 1. 국내 영화 데이터 {#kofic-data}
+
+[영화진흥위원회(KOFIC)](http://www.kobis.or.kr/) 홈페이지를 통해 [영화 오픈API](http://www.kobis.or.kr/kobisopenapi/homepg/main/main.do) 서비스를 제공하고 있다.
+물론, 회원가입하고 API Key를 발급받아야 하고 하루 3,000번으로 제약이 있지만 분석에 필요한 데이터를 얻는데는 어려움이 없을 것으로 보인다.
+오픈 API를 통해 제공하는 데이터는 다음과 같다.
+
+1. 박스오피스: 일별 박스오피스, 주간/주말 박스오피스
+1. 공통코드	: 공통코드 조회
+1. 영화 정보 : 영화목록, 영화 상세정보
+1. 영화사 정보: 영화사목록, 영화사 상세정보
+1. 영화인 정보: 영화인목록, 영화인 상세정보
+
+하단에 호출하는 예시도 있으니 참조하여 활용한다.
+
+- XML : http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.xml?key=430156241533f1d058c603178cc3ca0e&targetDt=20120101
+- JSON : http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=430156241533f1d058c603178cc3ca0e&targetDt=20120101
+
+
+## 2. 두가지 궁금한 점 {#two-hypothesis}
+
+국내 영화데이터를 받아보고 두가지 궁금한 점이 생겼다.
+
+- 어떤 영화에 무료 영화 티켓이 많이 배부되었을까?
+- 스크린수가 많다고 해서 매출이 늘어날까?
+
+이 두가지 궁금증에 대한 탐색적 데이터 분석을 진행해 본다.
+
+### 2.1. 데이터 긁어오기 {#data-scraping}
+
+영진위 오픈 API를 통해 발급받은 키를 활용하여 영화 일일 박스오피스 데이터를 긁어온다.
+일별 박스오피스 상위 10개 영화에 대한 사항만 제공하기 때문에 유념하고 2017-01-01 부터 
+2017-08-08 일까지 데이터를 받아온다.
+
+``` {r kofic-scraping, eval=FALSE}
+# 0. 환경설정 ------------------------------
+
+library(tidyverse)
+library(rjson)
+library(lubridate)
+library(stringr)
+library(purrr)
+library(ggrepel)
+library(ggthemes)
+library(extrafont)
+loadfonts()
+
+# 1. 데이터 긁어오기 ------------------------------
+
+api_key <- '01xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+scraping_movie_info <- function(start_date, end_date) {
+    # 영화 검색 시작일과 종료일
+    start_date <- ymd(start_date)
+    end_date   <- ymd(end_date)
+    
+    # 영화 API 정보 저장
+    movie_list <- list()
+    
+    for(i in 1:(as.numeric(end_date - start_date)+1)) {
+        parameter_date <- str_replace_all(as.character(start_date+i-1), "-", "")
+        url <- paste0('http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=', api_key, '&targetDt=', parameter_date)
+        print(url)
+        movie_list[i] <- fromJSON(file = url) 
+    }
+    return(movie_list)
+}
+
+movie_list <- scraping_movie_info('2017-01-01', '2017-08-08')
+```
+
+### 2.2. 데이터 전처리 {#data-preprocessing}
+
+데이터를 긁어왔다면 다음은 데이터와 사투과정이 기다리고 있다.
+웹데이터를 긁어오게 되면 대부분 데이터프레임 대신에 리스트 형태라 
+리스트 데이터 구조를 살펴보고 데이터프레임으로 변환하는 과정을 거쳐 모형이나 시각화를 위한 사전 준비 과정을 거친다.
+
+
+``` {r kofic-wrangling}
+listviewer::jsonedit(movie_list, mode="view")
+
+# 2. 리스트 영화정보를 데이터프레임으로 변환 ------------------------------
+
+movie_df <- tibble()
+
+for(i in seq_along(movie_list)) {
+    tmp_df <- map_df(movie_list[[i]]$dailyBoxOfficeList, bind_rows)
+    tmp_df <- tmp_df %>% mutate(mdate = str_extract(movie_list[[i]]$showRange, "[0-9]+"))
+    movie_df <- bind_rows(movie_df, tmp_df)
+}
+
+DT::datatable(movie_df)
+```
+ 
+### 2.3. 데이터 후처리 {#data-post-processing}
+
+앞서 무료 티켓(관객수에 비해 매출이 적은 경우)이 어떤 영화에 집중되었는지, 
+스크린 숫자와 매출이 영향이 있는지 이를 시각화를 통해 검정하기 위해서 데이터를 뽑아 준비한다.
+8월 8일 현재 기준으로 누적 매출을 영화별로 계산한다. 로직은 가장 최근 날짜를 기준으로 누적 매출과 누적 관객수를 뽑아낸다.
+
+스크린 갯수는 일별로 스크린 갯수가 달라지기 때문에 최대 스크린 갯수를 잡는다.
+
+``` {r kofic-wrangling2}
+# 3. 탐색적 데이터 분석을 위한 데이터 정제 ------------------------------
+
+revenue_df <- movie_df %>% mutate(mdate = ymd(mdate), 
+                                  salesAcc = as.numeric(salesAcc),
+                                  audiAcc = as.numeric(audiAcc)) %>% 
+    group_by(movieCd, movieNm) %>% 
+    filter(mdate==max(mdate)) %>% 
+    select(movieCd, movieNm, salesAcc, audiAcc) %>% 
+    arrange(desc(salesAcc)) %>% 
+    ungroup()
+
+screen_df <- movie_df %>% mutate(mdate = ymd(mdate), 
+                                  scrnCnt = as.numeric(scrnCnt),
+                                  showCnt = as.numeric(showCnt)) %>% 
+    group_by(movieCd, movieNm) %>% 
+    summarise(scrnMaxCnt = max(scrnCnt), 
+              showMaxCnt = max(showCnt)) %>% 
+    arrange(desc(scrnMaxCnt)) %>% 
+    ungroup()
+
+movie_clean_df <- inner_join(revenue_df, screen_df, by=c("movieCd", "movieNm"))
+```
+
+## 3. 시각화를 통한 가설검정 {#viz}
+
+### 3.1. 관객수와 매출액 {#viz-free-ticket}
+
+관객수와 매출액을 시각적으로 표현한다. 주로 인기 영화에 관심을 두고 특히 매출에 비해 관객수가 적은 두영화 
+"다크 나이트", "군함도"를 별도 표시한다.
+
+
+``` {r kofic-viz-01}
+# 4. 시각화 ------------------------------
+## 4.1. 관객수와 매출액
+
+movie_rev_df <- movie_clean_df %>% 
+    mutate(audiAcc = audiAcc / 10^4,
+           salesAcc = salesAcc / 10^8)
+
+ggplot(movie_rev_df, aes(x=audiAcc, y=salesAcc, label=movieNm)) +
+    geom_point(shape = 1, size = 1.5, stroke = 1.5) +
+    geom_smooth(method='lm',formula=y~x) +
+    geom_text_repel(aes(label = movieNm, family = "NanumGothic"),
+                    color = "gray20",
+                    size = 5,
+                    data = subset(movie_rev_df, audiAcc > 200),
+                    force = 10) +
+    theme_bw(base_family="NanumGothic") +
+    scale_x_continuous(labels = scales::comma) +
+    scale_y_continuous(labels = scales::comma) +
+    labs(x="누적관객수(단위:만명)", y="누적매출액(단위:억원)", title="대한민국 영화 누적 관객수와 누적매출 관계",
+         subtitle="자료출처: 영화진흥위원회 오픈 API, 2017-08-08일 기준") +
+    geom_point(data=movie_rev_df %>% dplyr::filter(movieNm %in% c("다크 나이트", "군함도")), 
+               aes(x=audiAcc, y=salesAcc), 
+               colour="darkgreen", size=3)
+```
+
+### 3.1. 스크린 수와 매출 {#viz-screen}
+
+스크린수를 x축에 매출을 y축에 높고 시각화를 한다.
+
+``` {r kofic-viz-02}
+## 4.2. 매출과 스크린 수
+
+movie_screen_df <- movie_clean_df %>% 
+    mutate(salesAcc = salesAcc / 10^8)
+
+ggplot(movie_screen_df, aes(x=scrnMaxCnt, y=salesAcc, label=movieNm)) +
+    geom_point(shape = 1, size = 1.5, stroke = 1.5) +
+    geom_smooth() +
+    geom_text_repel(aes(label = movieNm, family = "NanumGothic"),
+                    color = "gray20",
+                    size = 5,
+                    data = subset(movie_screen_df, salesAcc > 50),
+                    force = 10) +
+    theme_bw(base_family="NanumGothic") +
+    scale_x_continuous(labels = scales::comma) +
+    scale_y_continuous(labels = scales::comma) +
+    labs(x="최대 스크린수(단위:개)", y="누적매출액(단위:억원)", title="대한민국 영화 최대 스크린수와 누적매출 관계",
+         subtitle="자료출처: 영화진흥위원회 오픈 API, 2017-08-08일 기준")
+```
+
