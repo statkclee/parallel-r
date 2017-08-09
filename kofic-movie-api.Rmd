@@ -192,7 +192,7 @@ ggplot(movie_rev_df, aes(x=audiAcc, y=salesAcc, label=movieNm)) +
                colour="darkgreen", size=3)
 ```
 
-### 3.1. 스크린 수와 매출 {#viz-screen}
+### 3.2. 스크린 수와 매출 {#viz-screen}
 
 스크린수를 x축에 매출을 y축에 높고 시각화를 한다.
 
@@ -217,3 +217,37 @@ ggplot(movie_screen_df, aes(x=scrnMaxCnt, y=salesAcc, label=movieNm)) +
          subtitle="자료출처: 영화진흥위원회 오픈 API, 2017-08-08일 기준")
 ```
 
+### 3.3. 누적매출 상위 영화 일자별 추이 {#viz-revenue-by-dates}
+
+누적매출 상위 영화 10개를 추려 일자별 추이를 살펴보자. 택시운전사와 군함도 두 영화는 최근 최고 매출을 경신하는데 경쟁을 하고 있지만 
+서로 다른 패턴을 보이고 있다. 
+
+``` {r kofic-viz-03}
+## 4.3. 매출액 상위 영화 추출 후 일자별 데이터 준비 ------------------------------
+top10_revenue_movie_df <- movie_df %>% mutate(mdate = ymd(mdate), 
+                                  salesAcc = as.numeric(salesAcc),
+                                  audiAcc = as.numeric(audiAcc)) %>% 
+    group_by(movieCd, movieNm) %>% 
+    filter(mdate==max(mdate)) %>% 
+    select(movieCd, movieNm, salesAcc, audiAcc) %>% 
+    ungroup() %>% 
+    top_n(10, salesAcc)
+
+top10_movie_df <- top10_revenue_movie_df %>% select(movieCd) %>% 
+    inner_join(movie_df, by="movieCd") %>% 
+    mutate(mdate = ymd(mdate), 
+           salesAcc = as.numeric(salesAcc) / 10^8,
+           audiAcc = as.numeric(audiAcc) / 10^4)
+
+## 4.3. 개봉일자별 매출액 
+
+ggplot(top10_movie_df, aes(x=mdate, y=salesAcc, color=movieNm)) +
+    geom_point(shape = 1, size = 1.3, stroke = 1.5) +
+    geom_line(size=1.5) +
+    theme_bw(base_family="NanumGothic") +
+    scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m") +
+    scale_y_continuous(labels = scales::comma) +
+    labs(x="", y="누적매출액(단위:억원)", title="영화 개봉일자별 누적매출 관계",
+         subtitle="자료출처: 영화진흥위원회 오픈 API, 2017-08-08일 기준",
+         color="개봉영화명")
+```
