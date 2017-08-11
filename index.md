@@ -14,9 +14,9 @@ title: R 병렬 프로그래밍
 
 ## 학습목차 
 
-1. [데이터 과학을 위한 데이터(빅데이터)](dataset4bigdata.html)
+1. [추천 시스템(Recommendation System)](recommendation-sys.html)
     - [영화진흥위원회 오픈API - 스크린수와 매출](kofic-movie-api.html)
-    - [추천 시스템(Recommendation System) 개요](recommendation-sys.html)
+    - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendatin)](recommendation-nonpersonal.html)
     - [R 추천시스템](recommendation-implementation.html)
     - [SparkR 추천시스템](recommendation-sparkr-impl.html)
 1. [**함수형 프로그래밍(Functional Programming)**](ds-fp.html)

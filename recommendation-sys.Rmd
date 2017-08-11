@@ -34,7 +34,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12)
 * 합계 총합: 가장 인기 있는 상품, 히트상품 상위 10 개 품목, 신상품 등
 * 개인에 맞춤형 추천: 아마존, 넥플릭스 등
 
-<img src="fig/preference_model.png" alt="선호도 모형" width="51%" />
+<img src="fig/preference_model.png" alt="선호도 모형" width="41%" />
 
 ### 1.1. 선호도 모형(Preference Model) [^coursera-recommender-system]
 
@@ -59,125 +59,64 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12)
 - 물품(Item) 속성: 제품 가격, 무게, 색상 등
 - 평점(Rating): 별점, 좋아요 등
 
-<img src="fig/user-item-rating-model.png" alt="유저-물품-평점 모형" width="77%" />
+<img src="fig/user-item-rating-model.png" alt="유저-물품-평점 모형" width="57%" />
 
-### 1.1. 추천시스템 간략한 수식 표현
+## 2. 추천시스템 데이터셋 [^Joseph-Rickert] [^big-datasets]
 
-수학적으로 추천시스템을 표현하면 다음과 같다. 수많은 고객이 수많은 제품, 서비스에 평가를 한 평가 결과로 엄청 성긴 행렬로 표현된다.
+데이터 과학을 위해 다양한 기계학습 알고리즘, 통계모형, 신경망 딥러닝을 학습하는 것과는 별도로 이를 적용할 데이터를 찾는 것도 일이다. 
+너무 많은 예제 데이터가 있는 것도 문제로 빅데이터, 데이터 과학에서 자주 인용되는 데이터를 찾아본다.
 
-* $U_{\text{사용자}}$ : 사용자 고객 집합
-* $P_{\text{제품, 서비스}}$ : 제품이나 서비스 집합
-* $R_{\text{평점}}$ : 고객이 제품에 만족도를 표현한 평점
+* **맥주 후기 데이터(BeerAdvocate reviews): [맥주 후기 데이터(BeerAdvocate reviews)](http://snap.stanford.edu/data/web-BeerAdvocate.html)** 데이터는 BeerAdvocate 요청으로 데이터가 더이상 제공되고 있지 않다.
+* **영화 추천 데이터** : [MovieLens Data Sets](https://datahub.io/dataset/movielens)으로 무비렌즈 온라인 영화추천 사용자 71,567명이 10,681 영화에 95,580 태그 및 10,000,054 평가결과가 담긴 데이터다.
+    * 1997년 9월 19일부터 1998년 4월 22일까지 7개월동안 사용자 943명로부터 1,664개 영화에서 10만개 평가를 포함한 데이터로 `library(recommenderlab)` 팩키지를 불러와서 `data(MovieLense)` 명령어로 바로 사용가능하다.
+* **항공사 데이터** : [Airline on-time performance](http://stat-computing.org/dataexpo/2009/)로 1987년부터 2008년까지 국내 항공사 출발 및 도착 정보를 담고 있는 데이터셋으로 2009년 ASA 경진대회에 사용된 데이터넷으로 빅데이터의 iris 데이터라는 별명이 붙어있다. 1.23억 관측점과 변수 29개로 구성되어 보통 개인용 컴퓨터에 바로 올라가지 않는다. [다운로드](http://www.transtats.bts.gov/OT_Delay/OT_DelayCause1.asp)
+    * 2013년 뉴욕에서 출발한 전체 항공사에 대한 정시 데이터정보를 [nycflights13 - Flights that Departed NYC in 2013](https://cran.r-project.org/web/packages/nycflights13/) R 팩키지로 되어 있어 바로 분석에 사용할 수 있다. `library(nycflights13)`
+* **백만곡 데이터** : [Million Song Dataset](http://labrosa.ee.columbia.edu/millionsong/)는 [Echo Nest](http://the.echonest.com/company/) 회사가 생성해서 제공하는 데이터로 원래 [HDF5](https://www.hdfgroup.org/about/hdf_technologies.html) 형식으로 제공되어 활용하기 까다로왔으나 다양한 사람들의 노력으로 이제 백만곡 데이터에 대한 접근성은 나아졌다. [다운로드 1%, 1.8 GB](http://static.echonest.com/millionsongsubset_full.tar.gz), [다운로드 전체, 280 GB](http://labrosa.ee.columbia.edu/millionsong/pages/getting-dataset) [UCI 노래 출시년도 예측](http://archive.ics.uci.edu/ml/datasets/YearPredictionMSD)
+    * R 팩키지로 별도로 되어 있지 않아 `sqlite` 데이터베이스 형태로 다운로드 받아 R 에서 분석한다. 711.6 MB SQLite 데이터베이스 크기를 갖는다. [^million-songs-in-r]
 
-* **효용함수** 
-
-$$u:U_{\text{사용자}} \times P_{\text{제품, 서비스}} \Rightarrow R_{\text{평점}}$$
-
-#### 1.2. 추천시스템 데이터 구조
-
-추천시스템을 개발할 때 자료구조는 영화를 영화관람자가 1 에서 5점까지 별점을 주는 구조로 되어있고, 코딩을 어떻게 하느냐에 차이가 있지만, 0 점 혹은 `?`, 결측값을 영화를 보지 않은, 경우에 따라서는 물품,제품, 서비스를 구매하지 않은 고객으로 볼 수 있다.
-
-영화나 제품 서비스에 대한 정보는 사전에 알 수 있기 때문에, 이 정보를 이용하여 사용자가 영화를 추천할 수도 있고, 기존 영화관람객이 다양한 영화를 평가 했다면 유사한 평점을 갖는 유사도를 추정하여 영화를 추천한다. 
-
-$$
-\begin{array}{c|cccc|cc}
-\text{영화} & \text{무성} & \text{광춘} & \text{영숙} & \text{환범} & \text{영화장르}_{개그} & \text{영화장르}_{폭력} \\
-\hline
-\text{곡성}       & 5 & 5 & 1 & 1 & 0.9 & 0 \\
-\text{왕의 남자}  & 5 & ? & ? & 1 & 1 & 0.01 \\
-\text{넘버3}      & ? & 4 & 1 & ? & 0.99 & 0 \\
-\text{돌아이}     & 1 & 2 & 1 & 4 & 0.1 & 1.0 \\
-\text{겨울나그네} & 1 & 5 & 1 & ? & 0 & 0.9 \\
-\hline
-\end{array}
-$$
+[^million-songs-in-r]: [The Million Song Dataset, part 1: What happened after the 1960s?](https://stattrekker.wordpress.com/2015/08/29/the-million-song-dataset-part-1-what-happened-after-the-1960s/)
 
 
-### 2. 추천 시스템 [^spark-matrix-factorization] [^python-matrix-approx]
+```{r million-song-download, eval=FALSE}
+library(RCurl)
+library(RSQLite)
+library(data.table)
 
-[^spark-matrix-factorization]: [Reza Zadeh - Spark and Matrix Factorization](https://www.youtube.com/watch?v=TukmMqw6y0s)
-[^python-matrix-approx]: [Christian Thurau - Low-rank matrix approximations in Python](https://www.youtube.com/watch?v=kfEWZA-b-YQ)
+url <- "http://labrosa.ee.columbia.edu/millionsong/sites/default/files/AdditionalFiles/track_metadata.db"
+download.file(url, "track_metadata.db", "auto")
 
-다양한 추천시스템이 존재하지만 수학적으로 보면 사용자 평가 정보와 상품 평가정보를 기반으로 전체 사용자와 상품 평가정보가 포함된 행렬을 채우는 것으로 볼 수 있다. 물론 얼마나 잘 채우냐가 좋은 추천 시스템의 요건이 된다.
+fetch  <- function(db, query, n = -1) {
+  result <- dbSendQuery(db, query)
+  data <- dbFetch(result, n)
+  dbClearResult(result)
+  return(as.data.table(data))
+}
 
-<img src="fig/low-rank-matrix-factorization.png" alt="낮은 계수 행렬 인수분해" width="50%">
+metadata.db <- dbConnect(SQLite(), dbname='track_metadata.db')
 
-모든 사용자와 모든 영화를 평점을 채워 빈칸이 없도록 하는 추정하는 것으로 $\text{사용자} \times \text{영화}$ 행렬을 **낮은 계수 행렬 인수분해(Low rank matrix factorization)** 로 근사하는 개념으로 **최소자승 교대 추정(Alternating Least Square)** 방식을 사용해서 채워 넣는다.
+dbListTables(metadata.db)
 
-1. 임의 $\text{사용자}$, $\text{영화}$ 벡터를 갖고 시작한다.
-1. $\text{영화}$를 고정시키고 $\text{사용자}$ 벡터를 최적화한다.
-1. $\text{사용자}$를 고정시키고 $\text{영화}$ 벡터를 최적화한다.
-1. 수렴할 때까지 교대로 최적화 과정을 반복한다.
+songs <- fetch(metadata.db, "SELECT * FROM songs")
+dbDisconnect(metadata.db)
 
-수식으로 표현하면 다음과 같다.
+head(songs, n=3)
+```
 
-$$
-\min_{U, P} \lVert R_{평점} - UP  \rVert^{2}
-$$
 
-사용자 $U \geq 0$, 제품 $P \geq 0$ 모두 0 보다 큰 조건이 붙는다.
+[^Joseph-Rickert]: [Finding Data on the Internet](http://www.inside-r.org/howto/finding-data-internet)
 
-#### 2.1. 추천 시스템 분류 
+[^big-datasets]: [Data Sets for Data Science](http://www.r-bloggers.com/data-sets-for-data-science/)
 
-수학적으로 추천 시스템을 살펴봤으면, 이제 협업 필터링(Collaborative filtering)에 대해 살펴본다.
 
-* **콘텐츠 기반 필터링** : 사용자 프로파일 혹은 제품(영화 등) 프로파일 정보를 활용하여 추천하는 알고리즘
-* **협업 필터링**
-    * **제품-제품 협업 필터링** : 사용자에게 사용자가 구매한 것과 가장 유사한 제품을 추천하는 알고리즘
-    * **사용자-사용자 협업 필터링** : 사용자에게 유사한 사용자가 구매한 것과 가장 유사한 제품을 추천하는 알고리즘
+## 3. 추천시스템 R 팩키지 [^r-recommender-package]
 
-#### 2.2. 유사성 측도
+[^r-recommender-package]: [R libraries for recommender systems](https://gist.github.com/talegari/77c90db326b4848368287e53b1a18e8d)
 
-유사성 측도는 유클리드, 코사인, 피어슨 상관계수가 포함된다. 
+추천시스템 구현을 지원하는 R 팩키지는 다양하다. 
 
-##### 2.2.1. 유클리드 거리
-
-유클리드 거리는 피타고라스 공식을 적용하여 다음과 같이 구할 수 있다.
-
-$$\begin{align}\mathrm{d}(\mathbf{p},\mathbf{q}) = \mathrm{d}(\mathbf{q},\mathbf{p}) & = \sqrt{(q_1-p_1)^2 + (q_2-p_2)^2 + \cdots + (q_n-p_n)^2} \\[8pt]
-& = \sqrt{\sum_{i=1}^n (q_i-p_i)^2}.\end{align}$$
-
-~~~ {.r}
-a <- c(-0.012813841, -0.024518383, -0.002765056,  0.079496744,  0.063928973,
-       0.476156960,  0.122111977,  0.322930189,  0.400701256,  0.454048860,
-       0.525526219)
-
-b <- c(0.64175768,  0.54625694,  0.40728261,  0.24819750,  0.09406221, 
-       0.16681692, -0.04211932, -0.07130129, -0.08182200, -0.08266852,
-       -0.07215885)
-
-euclidean_dist <- dist(rbind(a, b) ,method="euclidean")
-
-euclidean_dist
-~~~
-
-##### 2.2.2. 코사인 유사도
-
-코사인 유사도는 두 내적 벡터의 유사도를 코사인 각도로 측정하여 -1에서 1 사이 값을 갖게 된다.
-
-$$\text{코사인 유사도} = \cos(\theta) = {\mathbf{A} \cdot \mathbf{B} \over \|\mathbf{A}\| \|\mathbf{B}\|} = \frac{ \sum\limits_{i=1}^{n}{A_i  B_i} }{ \sqrt{\sum\limits_{i=1}^{n}{A_i^2}}  \sqrt{\sum\limits_{i=1}^{n}{B_i^2}} } $$
-
-`crossprod` 함수로 계산을 해도 되고, `lsa` 팩키지의 `cosine` 함수를 사용한다.
-
-~~~ {.r}
-crossprod(a, b)/sqrt(crossprod(a) * crossprod(b))
-
-library(lsa)
-cosine(a, b)
-~~~
-
-##### 2.2.3. 피어슨 상관계수
-
-피어슨 상관계수는 두변수의 공분산을 각 변수의 표준편차로 나누어서 계산된다.
-
-$$ \rho_{X,Y}= \frac{\operatorname{cov}(X,Y)}{\sigma_X \sigma_Y} $$
-
-피어슨 상관계수는 `cor` 기본내장함수를 사용해서 계산한다.
-
-~~~ {.r}
-df <- data.frame(a, b)
-cor(df, method="pearson")
-~~~
-
+- [recommenderlab](https://github.com/mhahsler/recommenderlab): Lab for Developing and Testing Recommender Algorithms 
+- [rrecsys](https://cran.r-project.org/web/packages/rrecsys/index.html) : Environment for Assessing Recommender Systems
+- [recosystem](https://cran.r-project.org/web/packages/recosystem/index.html): Recommender System using Matrix Factorization
+- [rectools](https://github.com/Pooja-Rajkumar/rectools): Advanced package for recommender systems
 
 

@@ -1,0 +1,130 @@
+---
+layout: page
+title: xwMOOC 데이터 과학
+subtitle: 추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendatin)
+date: "`r Sys.Date()`"
+author: xwMOOC
+output:
+  html_document: 
+    keep_md: yes
+    toc: yes
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
+---
+ 
+``` {r, include=FALSE}
+source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12)
+
+library(tidyverse)
+library(arules)
+library(stringr)
+
+```
+
+## 1. 비개인화 추천 {#non-personal-recommendation}
+
+비개인화 추천이 필요한 이유는 사용자를 우선 식별하기 어려운 경우가 있다. 
+예를 들어 신규 고객이라든가, 추천 알고리즘이 너무 복잡해서 계산이 오래 걸려 이런 경우를 피하고 싶은데 
+그럼에도 불구하고 나름 효과적인 추천 알고리즘이 필요한 경우 비개인화 추천 알고리즘이 유용하다.
+
+과거 빌보드 챠트가 대표적인데 매출이나 라디오 방송횟수를 고려하여 매주 순위를 매겼다. 
+영화 순위와 가장 인기있는 상품(매출기준, 별점기준) 등을 통해 제품추천 순위를 정한다.
+
+## 2. 영화 비개인화 추천 {#movie-non-personal-recommendation}
+
+### 2.1. 영화 및 평점 데이터 {#movie-review}
+
+코세라 미네소타 대학 추천시스템 강의에 활용된 "Non-Personalized and Stereotype-Based Recommenders" 데이터(`movies.csv`, 
+`ratings.csv`)를 활용하여 비개인화 추천 알고리즘을 개발해본다. 
+
+``` {r nonpersonal-data}
+# 1. 데이터 가져오기 -----------------------
+
+movie_df <- read_csv("data/movies.csv")
+rating_df <- read_csv("data/ratings.csv")
+
+# 2. 데이터 정제과정 -----------------------
+
+nonperson_df <- left_join(rating_df, movie_df, by="movieId")
+
+nonperson_df %>% sample_n(100) %>% 
+    DT::datatable()
+```
+
+### 2.2. 비개인화 추천 알고리즘 {#non-personal-algorithm}
+
+영화별로 묶어 영화를 본 관객 평점을 평균내어 가장 높은 평점을 받은 영화 10개를 뽑아 이를 
+추천영화로 제시한다. 통계적으로 보면 평균을 내어 이를 활용하는 것으로 볼 수 있다.
+
+``` {r nonpersonal-summary}
+# 3. 고평점 영화 추천 -----------------------
+
+nonperson_df %>% group_by(movieId, title) %>% 
+    summarise(mean_movie_rating = mean(rating)) %>% 
+    arrange(desc(mean_movie_rating)) %>% 
+    ungroup() %>% 
+    top_n(10, mean_movie_rating)
+```
+
+## 3. 제품추천 (Product Association) [^movie-recommendation] {#product-recommendation}
+
+[^movie-recommendation]: [Movie Recommendation with Market Basket Analysis](https://rpubs.com/vitidN/203264)
+
+다음 단계로 관객이 특정 영화를 하나 본 사실을 바탕으로 다른 영화를 추천해보자.
+마치 고객이 물건을 하나 구매한 후에 다른 제품을 추천하는 것과 유사하다.
+이를 위해서 사용하는 기법이 지지도(Support), 신뢰도(Confidence), **향상도(lift)**를 활용하는 것이다.
+연관분석에 대한 [xwMOOC 장바구니 데이터분석](http://statkclee.github.io/ml/ml-market-basket.html)을 참조한다.
+
+### 3.1. 연관분석기법으로 영화추천 {#association-rules}
+
+가장 먼저 `arules` 팩키지를 활용 **관객-영화 행렬(User-Item Matrix)**을 생성시킨다. 관객이 영화를 봤으면 1, 그렇지 않은 경우 0으로 
+인코딩하는데 엄청나게 성긴 행렬 객체로 표현해야 주기억장치(main memory)이 꽉 차서 컴퓨터가 사망하는 사례를 막을 수 있다.
+이유는 간단하다. 영화가 너무 많고 약 2시간 기준이라고 하면 유저인 관객이 이 모든 영화를 다 보는 것은 불가능하기 때문에 
+거의 대부분의 영화에 0 이 채워지게 된다. 따라서 관객-영화 행렬이 엄청 커질 수 밖에 없다.
+
+``` {r product-association}
+# 4. Lift -----------------------------------
+(user_item_matrix <- as(split(nonperson_df$movieId, nonperson_df$userId), "transactions"))
+
+format(object.size(user_item_matrix), units = "auto")
+
+rule_param = list(
+    supp = 0.001,
+    conf = 0.7,
+    maxlen = 2
+)
+
+movie_arules <- apriori(user_item_matrix, parameter = rule_param)
+
+movie_arules <- as(movie_arules,"data.frame")
+```
+
+### 3.2. 영화추천 {#the-matrix}
+
+다음 단계로 관객-영화 행렬(User-Item Matrix)을 연관분석 특히, 향상도(lift)로 계산한 후에 
+매트릭스(The Matrix) 영화를 본 관객에게 향상도를 기준으로 다음에 볼 영화를 추천해 보자.
+
+``` {r product-association-lift}
+## 4.1. 추천 영화 ---------------------------
+
+recom_df <- movie_arules %>% 
+    mutate(tmp_movie = str_extract_all(rules, "[0-9]+")) %>% 
+    separate(tmp_movie, c("lhs_movie", "rhs_movie"), sep=",", fill="left", remove = TRUE) %>% 
+    mutate(lhs_movie = as.numeric(str_extract(lhs_movie, "[[:number:]]+")), 
+           rhs_movie = as.numeric(str_extract(rhs_movie, "[[:number:]]+")))
+
+recom_df <- movie_df %>% select(movieId, title) %>% 
+    right_join(recom_df, by=c("movieId" = "rhs_movie")) %>% 
+    rename(recom_title=title, recom_movieId = movieId) 
+
+recom_df <- movie_df %>% select(movieId, title) %>% 
+    right_join(recom_df, by=c("movieId" = "lhs_movie")) %>% 
+    rename(source_title=title, source_movieId = movieId) %>% 
+    select(rules, lift, support, confidence, source_movieId, source_title, recom_movieId, recom_title)
+
+recom_df %>% filter(source_movieId == 2571) %>% 
+    arrange(desc(lift)) %>% DT::datatable() %>% 
+    DT::formatRound(c("lift", "support", "confidence"), digits=3)
+```
