@@ -72,10 +72,11 @@ JesterJokes_df <- as.data.frame(JesterJokes)
 DT::datatable(JesterJokes_df)
 ```
 
-### 2.2. 농담 데이터 {#text-mining}
+### 2.2. 텍스트 데이터 전처리 {#text-mining}
 
 전통적으로 `tm` 팩키지를 활용하여 텍스트 데이터를 말뭉치(Corpus)로 변환시키고 이를 
-문서단어행렬(Document Term Matrix)로 변환하고, 다시 tf-idf 로 변환시켜 텍스트를 
+문서단어행렬(Document Term Matrix)로 변환하고, 다시 tf-idf 로 
+변환시켜 텍스트를 
 분석할 수 있는 적절한 형태로 가공시킨다. 이를 `clean_joke` 함수로 구성하면 다음과 같다.
 
 ``` {r joke-text-mining}

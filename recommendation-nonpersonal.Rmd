@@ -1,7 +1,7 @@
 ---
 layout: page
 title: xwMOOC 데이터 과학
-subtitle: 추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendatin)
+subtitle: 추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)
 date: "`r Sys.Date()`"
 author: xwMOOC
 output:

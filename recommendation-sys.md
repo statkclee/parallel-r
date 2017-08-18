@@ -24,6 +24,8 @@ xwMOOC
 
 <img src="fig/recommendation-longtail-1.png" style="display: block; margin: auto;" />
 
+인기도가 높은 소수 제품과 **인기도가 낮은 다수 제품**을 어떻게 추천하여 효과적으로 매출로 연결시킬 수 있을까라는 문제에 추천시스템이 해답을 제시할 수 있다.
+
 추천 방식을 다음과 같이 나눌 수도 있다.
 
 * 수작업 혹은 편집자: 편집자 추천, 여행 필수품 등
