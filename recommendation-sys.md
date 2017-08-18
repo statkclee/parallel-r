@@ -13,6 +13,17 @@ xwMOOC
 
 과거 거의 모든 분야에 자원이 희소하여 최대한의 자원을 절약하여 최대의 효과를 내는 방식으로 진화를 하였으나, 인터넷과 웹의 도래로 말미암아 **긴꼬리(Long-tail)** 현상이 어디서나 관측되고 있다. 따라서 과거 희소성에 근거한 접근법이 오히려 문제가 되고, 너무 많은 풍요의 시대에 추천을 통해 더 나은 방식으로 진화를 거듭해 나가고 있다. 
 
+> ### 추천 시스템 정의
+>
+> 제품/서비스 추천 문제에 통계적 기법과 지식 발견(Knowledge Discovery) 기법을 적용시킨 것이
+> 추천시스템이다. Sarwar et al. (2000)  
+>
+> *Recommender systems apply statistical and knowledge discovery
+> techniques to the problem of making product recommendations.*
+> 
+
+<img src="fig/recommendation-longtail-1.png" style="display: block; margin: auto;" />
+
 추천 방식을 다음과 같이 나눌 수도 있다.
 
 * 수작업 혹은 편집자: 편집자 추천, 여행 필수품 등
@@ -94,7 +105,24 @@ head(songs, n=3)
 [^big-datasets]: [Data Sets for Data Science](http://www.r-bloggers.com/data-sets-for-data-science/)
 
 
-## 3. 추천시스템 R 팩키지 [^r-recommender-package]
+## 3. 추천시스템 [^recommender-system]
+
+[^recommender-system]: [추천 알고리즘 구현(Implementations) 소프트웨어](http://michael.hahsler.net/research/recommender/)
+
+- Apache Mahout: A machine learning library including collaborative filtering (Java)
+- C/Matlab Toolkit for Collaborative Filtering (C/Matlab)
+- Cofi: A Java-Based Collaborative Filtering Library (Java)
+- Crab: Recommender engine components (Python)
+- easyrec: Self-contained Web application with a graphical administration interface to add recommendations to web sites (Java).
+- LensKit: Implementation of recommender algorithms with an emphasis on collaborative filtering. It is developed by GroupLens Research (Java).
+- MyMediaLite: Lightweight, multi-purpose library of recommender system algorithms. (C#/Mono).
+- RACOFI: A rule-applying collaborative filtering system
+- Rating-based item-to-item recommender system in PHP/SQL
+- SUGGEST: Top-N recommendation engine that implements a variety of recommendation algorithms (only distributed in binary format)
+- SVDFeature: Toolkit designed to solve the feature-based matrix factorization (C++)
+- Vogoo PHP LIB: Collaborative filtering engine that allows Webmasters to easily add high personalisation features to their Web Sites (PHP)
+
+### 3.1. 추천시스템 R 팩키지 [^r-recommender-package]
 
 [^r-recommender-package]: [R libraries for recommender systems](https://gist.github.com/talegari/77c90db326b4848368287e53b1a18e8d)
 

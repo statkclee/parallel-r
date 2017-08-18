@@ -16,7 +16,8 @@ title: R 병렬 프로그래밍
 
 1. [추천 시스템(Recommendation System)](recommendation-sys.html)
     - [영화진흥위원회 오픈API - 스크린수와 매출](kofic-movie-api.html)
-    - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendatin)](recommendation-nonpersonal.html)
+    - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)](recommendation-nonpersonal.html)
+    - [추천 시스템(Recommendation System) - 내용기반 필터링 추천(Content-based Filtering Recommendation)](recommendation-content-based-filtering.html)
     - [R 추천시스템](recommendation-implementation.html)
     - [SparkR 추천시스템](recommendation-sparkr-impl.html)
 1. [**함수형 프로그래밍(Functional Programming)**](ds-fp.html)
