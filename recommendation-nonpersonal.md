@@ -35,8 +35,8 @@ nonperson_df %>% sample_n(100) %>%
     DT::datatable()
 ~~~
 
-<!--html_preserve--><div id="htmlwidget-565917ece360dac28e53" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-565917ece360dac28e53">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100"],[5063,36229,39214,45461,70740,124425,57969,70282,66455,96370,8932,55479,124288,131620,86784,2988,41518,102532,22363,32780,124998,47866,42245,77512,127138,8932,18758,79401,35246,58265,64365,18758,98781,28090,45669,137118,99093,103927,87042,115611,34156,96482,45811,118067,70282,26022,31476,127453,26480,975,28176,108159,22352,104508,65670,76612,46403,70939,14328,72766,117905,58579,58802,128480,115364,57866,10055,114601,65670,52762,51549,52520,117144,70939,124102,8932,18390,119501,48838,87042,129008,42245,5475,41703,42290,127138,104500,58265,135223,64150,84549,111841,79531,80285,102532,124078,134401,67584,135092,49531],[1784,55247,8798,60126,5060,86882,4975,4954,2541,7162,38038,8366,2976,597,4306,8360,1271,111362,2053,3826,2921,47200,4015,3156,51540,1673,1953,1958,778,3247,765,344,1223,7151,1209,2712,4993,44665,920,377,1200,2021,8361,2987,1376,1517,41997,1347,8368,106782,4995,4308,5463,1584,594,720,356,2194,1917,1250,2501,2161,4701,59501,55280,5618,3114,1923,8641,5902,67734,5265,2502,2949,45499,3148,5991,349,204,2505,2321,7438,2826,2949,694,96079,7458,6953,1479,41997,194,52435,2688,1198,3543,52281,2719,4148,1537,3157],[3,4,5,4,5,3,1.5,2.5,4,4,3.5,4.5,4.5,3.5,4,2,3.5,4.5,1,3,3.5,3,1,3.5,4,5,4.5,4.5,5,4,4,4,5,3,5,4.5,4,3,5,2.5,4,3.5,4,3,4,4,4,2,3.5,3.5,4.5,4,4.5,4,3.5,4,5,5,3,4,5,4.5,5,3.5,4,4,4,4.5,2.5,2,4.5,4,4,5,3.5,2,4,2,4,4,3,1,1,4,2.5,4.5,4,3.5,1,2.5,3.5,3,3,2.5,5,4,2,3.5,3.5,3.5],[1246545450,1211763071,1372568297,1219171397,1010331428,1355324245,1201179729,1062533189,1306766891,1088599323,1206549371,1094061556,1177496949,1315455687,1357091593,1197414110,1290364449,1402649373,1118198444,1196200653,1414088233,1277246535,1291972471,1149585665,1186324092,1219336260,1360840330,1127671980,1003171610,1299476125,1287862025,1360782708,1132743804,1184776332,1197075442,1211804831,1290529856,1168651450,1053472340,1359141591,1181586268,1123419539,1169317578,1112330215,945131396,1177182279,1423047736,1143941993,1229115458,1427752523,1197183387,1425618807,1206752907,1237407739,1156452632,1163870891,1164105281,1351440591,1115604598,1250097253,1059970479,1388620251,1162869310,1420501246,1214972925,1420946998,1021673970,1281717057,1150660800,1350110616,1299238523,1169156681,998957981,1351440783,1202618316,1228301658,1158186332,1169038826,1019620324,1054615728,970776167,1154930997,1251837560,1425220778,1139604661,1356021335,1231099915,1299478369,1244851878,1170342887,1122808603,1245685708,939802247,1426349640,1211754663,1180563234,1068139510,1186787420,1053313713,1201549742],["As Good as It Gets (1997)","Into the Wild (2007)","Collateral (2004)","Get Smart (2008)","M*A*S*H (a.k.a. MASH) (1970)","Midnight in Paris (2011)","Vanilla Sky (2001)","Ocean's Eleven (a.k.a. Ocean's 11) (1960)","Cruel Intentions (1999)","Cold Mountain (2003)","Wallace &amp; Gromit in The Curse of the Were-Rabbit (2005)","Saved! (2004)","Bringing Out the Dead (1999)","Pretty Woman (1990)","Shrek (2001)","Shrek 2 (2004)","Fried Green Tomatoes (1991)","X-Men: Days of Future Past (2014)","Honey, I Blew Up the Kid (1992)","Hollow Man (2000)","High Plains Drifter (1973)","Crank (2006)","Dude, Where's My Car? (2000)","Bicentennial Man (1999)","Zodiac (2007)","Boogie Nights (1997)","French Connection, The (1971)","Terms of Endearment (1983)","Trainspotting (1996)","Sister Act (1992)","Jack (1996)","Ace Ventura: Pet Detective (1994)","Grand Day Out with Wallace and Gromit, A (1989)","Girl with a Pearl Earring (2003)","Once Upon a Time in the West (C'era una volta il West) (1968)","Eyes Wide Shut (1999)","Lord of the Rings: The Fellowship of the Ring, The (2001)","Lucky Number Slevin (2006)","Gone with the Wind (1939)","Speed (1994)","Aliens (1986)","Dune (1984)","Day After Tomorrow, The (2004)","Who Framed Roger Rabbit? (1988)","Star Trek IV: The Voyage Home (1986)","Austin Powers: International Man of Mystery (1997)","Munich (2005)","Nightmare on Elm Street, A (1984)","Harry Potter and the Prisoner of Azkaban (2004)","Wolf of Wall Street, The (2013)","Beautiful Mind, A (2001)","Moulin Rouge (2001)","Reign of Fire (2002)","Contact (1997)","Snow White and the Seven Dwarfs (1937)","Wallace &amp; Gromit: The Best of Aardman Animation (1996)","Forrest Gump (1994)","Untouchables, The (1987)","Armageddon (1998)","Bridge on the River Kwai, The (1957)","October Sky (1999)","NeverEnding Story, The (1984)","Rush Hour 2 (2001)","Chronicles of Narnia: Prince Caspian, The (2008)","Lars and the Real Girl (2007)","Spirited Away (Sen to Chihiro no kamikakushi) (2001)","Toy Story 2 (1999)","There's Something About Mary (1998)","Anchorman: The Legend of Ron Burgundy (2004)","Adaptation (2002)","Adventureland (2009)","Death to Smoochy (2002)","Office Space (1999)","Dr. No (1962)","X-Men: The Last Stand (2006)","Cider House Rules, The (1999)","Chicago (2002)","Clear and Present Danger (1994)","Under Siege 2: Dark Territory (1995)","8MM (1999)","Pleasantville (1998)","Kill Bill: Vol. 2 (2004)","13th Warrior, The (1999)","Dr. No (1962)","Substitute, The (1996)","Skyfall (2012)","Troy (2004)","21 Grams (2003)","Saint, The (1997)","Munich (2005)","Smoke (1995)","How the Grinch Stole Christmas! (1966)","General's Daughter, The (1999)","Raiders of the Lost Ark (Indiana Jones and the Raiders of the Lost Ark) (1981)","Diner (1982)","Grindhouse (2007)","Haunting, The (1999)","Hannibal (2001)","Shall We Dance? (Shall We Dansu?) (1996)","Stuart Little (1999)"],["Comedy|Drama|Romance","Action|Adventure|Drama","Action|Crime|Drama|Thriller","Action|Comedy","Comedy|Drama|War","Comedy|Fantasy|Romance","Mystery|Romance|Sci-Fi|Thriller","Comedy|Crime","Drama","Drama|Romance|War","Adventure|Animation|Children|Comedy","Comedy|Drama","Drama","Comedy|Romance","Adventure|Animation|Children|Comedy|Fantasy|Romance","Adventure|Animation|Children|Comedy|Musical|Romance","Comedy|Crime|Drama","Action|Adventure|Sci-Fi","Children|Comedy|Sci-Fi","Horror|Sci-Fi|Thriller","Western","Action|Thriller","Comedy|Sci-Fi","Drama|Romance|Sci-Fi","Crime|Drama|Thriller","Drama","Action|Crime|Thriller","Comedy|Drama","Comedy|Crime|Drama","Comedy|Crime","Comedy|Drama","Comedy","Adventure|Animation|Children|Comedy|Sci-Fi","Drama|Romance","Action|Drama|Western","Drama|Mystery|Thriller","Adventure|Fantasy","Crime|Drama|Mystery","Drama|Romance|War","Action|Romance|Thriller","Action|Adventure|Horror|Sci-Fi","Adventure|Sci-Fi","Action|Adventure|Drama|Sci-Fi|Thriller","Adventure|Animation|Children|Comedy|Crime|Fantasy|Mystery","Adventure|Comedy|Sci-Fi","Action|Adventure|Comedy","Action|Crime|Drama|Thriller","Horror|Thriller","Adventure|Fantasy|IMAX","Comedy|Crime|Drama","Drama|Romance","Drama|Musical|Romance","Action|Adventure|Fantasy","Drama|Sci-Fi","Animation|Children|Drama|Fantasy|Musical","Adventure|Animation|Comedy","Comedy|Drama|Romance|War","Action|Crime|Drama","Action|Romance|Sci-Fi|Thriller","Adventure|Drama|War","Drama","Adventure|Children|Fantasy","Action|Comedy","Adventure|Children|Fantasy","Comedy|Drama","Adventure|Animation|Fantasy","Adventure|Animation|Children|Comedy|Fantasy","Comedy|Romance","Comedy","Comedy|Drama|Romance","Comedy|Drama","Comedy|Crime|Drama","Comedy|Crime","Action|Adventure|Thriller","Action|Sci-Fi|Thriller","Drama","Comedy|Crime|Drama|Musical","Action|Crime|Drama|Thriller","Action","Drama|Mystery|Thriller","Comedy|Drama|Fantasy","Action|Drama|Thriller","Action|Adventure|Fantasy","Action|Adventure|Thriller","Action|Crime|Drama","Action|Adventure|Thriller|IMAX","Action|Adventure|Drama|War","Crime|Drama|Mystery|Romance|Thriller","Action|Romance|Sci-Fi|Thriller","Action|Crime|Drama|Thriller","Comedy|Drama","Animation|Comedy|Fantasy|Musical","Crime|Drama|Mystery|Thriller","Action|Adventure","Comedy|Drama","Action|Crime|Horror|Sci-Fi|Thriller","Horror|Thriller","Horror|Thriller","Comedy|Drama|Romance","Children|Comedy|Fantasy"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>userId<\/th>\n      <th>movieId<\/th>\n      <th>rating<\/th>\n      <th>timestamp<\/th>\n      <th>title<\/th>\n      <th>genres<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+<!--html_preserve--><div id="htmlwidget-2eec84c4ae1ca1899ed0" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2eec84c4ae1ca1899ed0">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100"],[120572,7723,34587,131910,89527,90462,133811,67352,34587,8932,41486,1741,125171,19414,5063,104887,2702,86768,76630,121403,95708,75422,53930,2945,12778,120941,78774,102532,123297,58346,84752,42290,2988,75001,370,9050,53834,7880,50898,62805,128045,138072,35227,67683,129005,26022,132187,113645,102025,46093,73445,36229,70282,96370,130715,127138,130819,53834,2988,74546,45811,133811,48821,74849,104397,105059,92882,65670,93710,34494,113806,68558,12649,21860,121052,48821,35050,41613,101921,10055,125171,134181,132295,45811,126912,102668,124078,93705,45461,21391,21391,120067,35259,14437,6116,25411,35227,62805,104037,104958],[420,3698,1674,2599,44191,2028,48738,2004,248,2100,5219,2991,1777,6365,6787,364,7445,7482,1104,68157,76251,4014,4239,2719,41285,77561,802,1265,235,1278,6502,2671,2701,40815,2918,2628,3481,3471,32,1387,3186,163,707,97913,4673,1653,68358,34,534,1721,57368,33166,3113,207,637,4901,5507,1405,345,56757,3274,55269,53464,1101,357,5010,1949,30707,516,253,4367,4036,6365,1997,246,1459,1350,3000,3717,8961,914,30707,592,344,293,2921,1103,507,413,1387,2527,2567,2622,7346,858,40278,3107,68791,1732,34542],[3,3,3,3.5,5,5,4.5,3,2,2,3.5,2.5,3,3,2.5,3,4,3,3.5,4.5,3,4,4,3,3.5,3.5,4,4.5,4,4,2.5,3,3,3.5,4.5,2.5,4,4,4,3.5,3,2,2,2.5,4,3.5,5,3.5,4,2.5,5,4.5,0.5,1.5,1.5,3,3,3.5,5,1.5,2.5,4,1,3,4,5,5,4,3,3.5,4,3.5,2.5,3.5,4.5,1,3.5,5,2.5,4.5,3,3.5,4,1,3,4,4.5,3,3,3,3,3,1,2.5,5,4.5,3,3.5,3,4],[1130275875,964234265,1186505532,1279181697,1145316340,938916435,1260775162,1142441379,1186509345,1219336392,1191247530,1226945264,1137512518,1166639320,1253826804,1182624547,1388774960,1113020042,1341727404,1305673164,1310676384,1269215161,1105334819,1090433523,1164668442,1338010679,896975970,1199368143,1080674182,1009168887,1136232505,1139762390,931248855,1426140368,1185126271,1119436487,1233539982,1107865114,1075632089,1170546420,1310303230,1173816439,987550013,1368834285,1002996324,1177182433,1286568553,1336860046,1371736268,1197045998,1214871126,1184375959,1053639944,1060105690,1095978050,1370793325,1058030123,1233612523,994767930,1230448427,1169265531,1266660938,1290462293,1023544881,1138042249,1177856681,1180234730,1149772885,1071366162,1322910687,1119062822,1272182968,1150346092,1128634528,1118607152,965285586,1340502333,973923482,1422889068,1109643768,1137512640,1139997287,1291034865,1169268784,1360518271,1154627241,1088531518,1286333375,1085195538,944130941,944130754,1226108447,1298139039,1291656461,1205528465,1157067122,987460974,1243294206,1023822267,1286236083],["Beverly Hills Cop III (1994)","Running Man, The (1987)","Witness (1985)","Election (1999)","V for Vendetta (2006)","Saving Private Ryan (1998)","Last King of Scotland, The (2006)","Gremlins 2: The New Batch (1990)","Houseguest (1994)","Splash (1984)","Resident Evil (2002)","Live and Let Die (1973)","Wedding Singer, The (1998)","Matrix Reloaded, The (2003)","All the President's Men (1976)","Lion King, The (1994)","Man on Fire (2004)","Enter the Dragon (1973)","Streetcar Named Desire, A (1951)","Inglourious Basterds (2009)","Kick-Ass (2010)","Chocolat (2000)","Blow (2001)","Haunting, The (1999)","Match Point (2005)","Iron Man 2 (2010)","Phenomenon (1996)","Groundhog Day (1993)","Ed Wood (1994)","Young Frankenstein (1974)","28 Days Later (2002)","Notting Hill (1999)","Wild Wild West (1999)","Harry Potter and the Goblet of Fire (2005)","Ferris Bueller's Day Off (1986)","Star Wars: Episode I - The Phantom Menace (1999)","High Fidelity (2000)","Close Encounters of the Third Kind (1977)","Twelve Monkeys (a.k.a. 12 Monkeys) (1995)","Jaws (1975)","Girl, Interrupted (1999)","Desperado (1995)","Mulholland Falls (1996)","Wreck-It Ralph (2012)","Tango &amp; Cash (1989)","Gattaca (1997)","Star Trek (2009)","Babe (1995)","Shadowlands (1993)","Titanic (1997)","Cloverfield (2008)","Crash (2004)","End of Days (1999)","Walk in the Clouds, A (1995)","Sgt. Bilko (1996)","Spy Game (2001)","xXx (2002)","Beavis and Butt-Head Do America (1996)","Adventures of Priscilla, Queen of the Desert, The (1994)","Sweeney Todd: The Demon Barber of Fleet Street (2007)","Single White Female (1992)","Darjeeling Limited, The (2007)","Fantastic Four: Rise of the Silver Surfer (2007)","Top Gun (1986)","Four Weddings and a Funeral (1994)","Black Hawk Down (2001)","Man for All Seasons, A (1966)","Million Dollar Baby (2004)","Renaissance Man (1994)","Interview with the Vampire: The Vampire Chronicles (1994)","Lara Croft: Tomb Raider (2001)","Shadow of the Vampire (2000)","Matrix Reloaded, The (2003)","Exorcist, The (1973)","Hoop Dreams (1994)","Absolute Power (1997)","Omen, The (1976)","Princess Mononoke (Mononoke-hime) (1997)","Gone in 60 Seconds (2000)","Incredibles, The (2004)","My Fair Lady (1964)","Million Dollar Baby (2004)","Batman (1989)","Ace Ventura: Pet Detective (1994)","Léon: The Professional (a.k.a. The Professional) (Léon) (1994)","High Plains Drifter (1973)","Rebel Without a Cause (1955)","Perfect World, A (1993)","Airheads (1994)","Jaws (1975)","Westworld (1973)","EDtv (1999)","William Shakespeare's A Midsummer Night's Dream (1999)","Girl Next Door, The (2004)","Godfather, The (1972)","Jarhead (2005)","Backdraft (1991)","Terminator Salvation (2009)","Big Lebowski, The (1998)","Grizzly Man (2005)"],["Action|Comedy|Crime|Thriller","Action|Sci-Fi","Drama|Romance|Thriller","Comedy","Action|Sci-Fi|Thriller|IMAX","Action|Drama|War","Drama|Thriller","Comedy|Horror","Comedy","Comedy|Fantasy|Romance","Action|Horror|Sci-Fi|Thriller","Action|Adventure|Thriller","Comedy|Romance","Action|Adventure|Sci-Fi|Thriller|IMAX","Drama|Thriller","Adventure|Animation|Children|Drama|Musical|IMAX","Action|Crime|Drama|Mystery|Thriller","Action|Crime","Drama","Action|Drama|War","Action|Comedy","Drama|Romance","Crime|Drama","Horror|Thriller","Crime|Drama|Romance","Action|Adventure|Sci-Fi|Thriller|IMAX","Drama|Romance","Comedy|Fantasy|Romance","Comedy|Drama","Comedy|Fantasy","Action|Horror|Sci-Fi","Comedy|Romance","Action|Comedy|Sci-Fi|Western","Adventure|Fantasy|Thriller|IMAX","Comedy","Action|Adventure|Sci-Fi","Comedy|Drama|Romance","Adventure|Drama|Sci-Fi","Mystery|Sci-Fi|Thriller","Action|Horror","Drama","Action|Romance|Western","Crime|Drama|Thriller","Animation|Comedy","Action|Comedy|Crime|Thriller","Drama|Sci-Fi|Thriller","Action|Adventure|Sci-Fi|IMAX","Children|Drama","Drama|Romance","Drama|Romance","Action|Mystery|Sci-Fi|Thriller","Crime|Drama","Action|Fantasy|Horror|Mystery|Thriller","Drama|Romance","Comedy","Action|Crime|Drama|Thriller","Action|Crime|Thriller","Adventure|Animation|Comedy|Crime","Comedy|Drama","Drama|Horror|Musical|Thriller","Drama|Thriller","Adventure|Comedy|Drama","Action|Adventure|Sci-Fi","Action|Romance","Comedy|Romance","Action|Drama|War","Drama","Drama","Comedy|Drama","Drama|Horror","Action|Adventure","Drama|Horror","Action|Adventure|Sci-Fi|Thriller|IMAX","Horror|Mystery","Documentary","Mystery|Thriller","Horror|Mystery|Thriller","Action|Adventure|Animation|Drama|Fantasy","Action|Crime","Action|Adventure|Animation|Children|Comedy","Comedy|Drama|Musical|Romance","Drama","Action|Crime|Thriller","Comedy","Action|Crime|Drama|Thriller","Western","Drama","Crime|Drama|Thriller","Comedy","Action|Horror","Action|Sci-Fi|Thriller|Western","Comedy","Comedy|Fantasy","Comedy|Romance","Crime|Drama","Action|Drama|War","Action|Drama","Action|Adventure|Sci-Fi|Thriller","Comedy|Crime","Documentary"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>userId<\/th>\n      <th>movieId<\/th>\n      <th>rating<\/th>\n      <th>timestamp<\/th>\n      <th>title<\/th>\n      <th>genres<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
 ### 2.2. 비개인화 추천 알고리즘 {#non-personal-algorithm}
 
@@ -150,9 +150,9 @@ set item appearances ...[0 item(s)] done [0.00s].
 set transactions ...[2500 item(s), 862 transaction(s)] done [0.02s].
 sorting and recoding items ... [2500 item(s)] done [0.01s].
 creating transaction tree ... done [0.00s].
-checking subsets of size 1 2 done [0.09s].
+checking subsets of size 1 2 done [0.11s].
 writing ... [249409 rule(s)] done [0.06s].
-creating S4 object  ... done [0.03s].
+creating S4 object  ... done [0.04s].
 
 ~~~
 
@@ -191,5 +191,177 @@ recom_df %>% filter(source_movieId == 2571) %>%
     DT::formatRound(c("lift", "support", "confidence"), digits=3)
 ~~~
 
-<!--html_preserve--><div id="htmlwidget-0abfe183e4515077d1c1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-0abfe183e4515077d1c1">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12"],["{2571} =&gt; {1196}","{2571} =&gt; {480}","{2571} =&gt; {6539}","{2571} =&gt; {260}","{2571} =&gt; {2959}","{2571} =&gt; {7153}","{2571} =&gt; {4993}","{2571} =&gt; {593}","{2571} =&gt; {5952}","{2571} =&gt; {356}","{2571} =&gt; {296}","{2571} =&gt; {318}"],[1.20945168486556,1.19930177812314,1.18847853426096,1.18187923218983,1.17191127948185,1.16517917371496,1.1650758991571,1.16210356023413,1.15640578140202,1.1304154975074,1.1199070049135,1.11424491442647],[0.554524361948956,0.564965197215777,0.554524361948956,0.568445475638051,0.619489559164733,0.604408352668213,0.657772621809745,0.556844547563805,0.620649651972158,0.631090487238979,0.617169373549884,0.564965197215777],[0.715568862275449,0.729041916167665,0.715568862275449,0.733532934131736,0.79940119760479,0.779940119760479,0.848802395209581,0.718562874251497,0.800898203592814,0.81437125748503,0.796407185628742,0.729041916167665],[2571,2571,2571,2571,2571,2571,2571,2571,2571,2571,2571,2571],["Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)"],[1196,480,6539,260,2959,7153,4993,593,5952,356,296,318],["Star Wars: Episode V - The Empire Strikes Back (1980)","Jurassic Park (1993)","Pirates of the Caribbean: The Curse of the Black Pearl (2003)","Star Wars: Episode IV - A New Hope (1977)","Fight Club (1999)","Lord of the Rings: The Return of the King, The (2003)","Lord of the Rings: The Fellowship of the Ring, The (2001)","Silence of the Lambs, The (1991)","Lord of the Rings: The Two Towers, The (2002)","Forrest Gump (1994)","Pulp Fiction (1994)","Shawshank Redemption, The (1994)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>rules<\/th>\n      <th>lift<\/th>\n      <th>support<\/th>\n      <th>confidence<\/th>\n      <th>source_movieId<\/th>\n      <th>source_title<\/th>\n      <th>recom_movieId<\/th>\n      <th>recom_title<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 2, 3);\nDTWidget.formatRound(this, row, data, 3, 3);\nDTWidget.formatRound(this, row, data, 4, 3);\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script><!--/html_preserve-->
+<!--html_preserve--><div id="htmlwidget-cd93f0dce8ffe6d618e0" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-cd93f0dce8ffe6d618e0">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12"],["{2571} =&gt; {1196}","{2571} =&gt; {480}","{2571} =&gt; {6539}","{2571} =&gt; {260}","{2571} =&gt; {2959}","{2571} =&gt; {7153}","{2571} =&gt; {4993}","{2571} =&gt; {593}","{2571} =&gt; {5952}","{2571} =&gt; {356}","{2571} =&gt; {296}","{2571} =&gt; {318}"],[1.20945168486556,1.19930177812314,1.18847853426096,1.18187923218983,1.17191127948185,1.16517917371496,1.1650758991571,1.16210356023413,1.15640578140202,1.1304154975074,1.1199070049135,1.11424491442647],[0.554524361948956,0.564965197215777,0.554524361948956,0.568445475638051,0.619489559164733,0.604408352668213,0.657772621809745,0.556844547563805,0.620649651972158,0.631090487238979,0.617169373549884,0.564965197215777],[0.715568862275449,0.729041916167665,0.715568862275449,0.733532934131736,0.79940119760479,0.779940119760479,0.848802395209581,0.718562874251497,0.800898203592814,0.81437125748503,0.796407185628742,0.729041916167665],[2571,2571,2571,2571,2571,2571,2571,2571,2571,2571,2571,2571],["Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)","Matrix, The (1999)"],[1196,480,6539,260,2959,7153,4993,593,5952,356,296,318],["Star Wars: Episode V - The Empire Strikes Back (1980)","Jurassic Park (1993)","Pirates of the Caribbean: The Curse of the Black Pearl (2003)","Star Wars: Episode IV - A New Hope (1977)","Fight Club (1999)","Lord of the Rings: The Return of the King, The (2003)","Lord of the Rings: The Fellowship of the Ring, The (2001)","Silence of the Lambs, The (1991)","Lord of the Rings: The Two Towers, The (2002)","Forrest Gump (1994)","Pulp Fiction (1994)","Shawshank Redemption, The (1994)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>rules<\/th>\n      <th>lift<\/th>\n      <th>support<\/th>\n      <th>confidence<\/th>\n      <th>source_movieId<\/th>\n      <th>source_title<\/th>\n      <th>recom_movieId<\/th>\n      <th>recom_title<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 2, 3);\nDTWidget.formatRound(this, row, data, 3, 3);\nDTWidget.formatRound(this, row, data, 4, 3);\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script><!--/html_preserve-->
+
+## 4. 농담 추천 [^recommenderlab-jester] {#joke-recom}
+
+[^recommenderlab-jester]: [Recommender Systems: Non-personalized Recommender](http://michael.hahsler.net/other_courses/ICMA_Recommendation_Tools/code/non-personalized.html#bester-average-rating)
+
+### 4.1. `recommenderlab` 팩키지를 통한 비개인화 추천 {#joke-recommenderlab}
+
+`recommenderlab` 팩키지를 기능을 활용하여 즉각 농담을 추천할 수 있다.
+`Jester5k` 농담은 5,000명이 100개 농담에 대한 평점이 담겨있다.
+
+`recommenderRegistry` 체계를 활용하기 때문에 먼저 등록을 한다. 
+그리고 나서 `Recommender`에 `method = "POPULAR"`를 인자로 넘기면 추천을 해준다.
+첫번째 유저 `u2841`에 대한 추천 농담을 3개 뽑는 과정은 다음과 같다.
+
+
+
+~~~{.r}
+# 0. 환경설정 ------------------------------
+
+# library(recommenderlab) # devtools::install_github("mhahsler/recommenderlab")
+# library(tidyverse)
+# library(stringr)
+
+# 1. 데이터 가져오기 -----------------------
+data(Jester5k)
+
+# 2. 팩키지 사용 추천 ----------------------
+recommenderRegistry$get_entry("POPULAR", type ="realRatingMatrix")
+~~~
+
+
+
+~~~{.output}
+Recommender method: POPULAR for realRatingMatrix
+Description: Recommender based on item popularity.
+Reference: NA
+Parameters:
+  normalize    aggregationRatings aggregationPopularity
+1  "center" new("standardGeneric" new("standardGeneric"
+
+~~~
+
+
+
+~~~{.r}
+joke_recom <- Recommender(Jester5k, method = "POPULAR")
+
+joke_pred <- predict(joke_recom, Jester5k[1:3,])
+(joke_pred_list <- as(joke_pred, "list"))
+~~~
+
+
+
+~~~{.output}
+$u2841
+ [1] "j89" "j72" "j76" "j88" "j83" "j87" "j81" "j78" "j73" "j80"
+
+$u15547
+ [1] "j89" "j93" "j76" "j88" "j91" "j83" "j87" "j81" "j97" "j78"
+
+$u15221
+character(0)
+
+~~~
+
+
+
+~~~{.r}
+cat(JesterJokes[joke_pred_list$u2841[1:3]], sep = "\n\n")
+~~~
+
+
+
+~~~{.output}
+A radio conversation of a US naval ship with Canadian authorities ... Americans: Please divert your course 15 degrees to the North to avoid a collision. Canadians: Recommend you divert YOUR course 15 degrees to the South to avoid a collision. Americans: This is the Captain of a US Navy ship. I say again, divert YOUR course. Canadians: No. I say again, you divert YOUR course. Americans: This is the aircraft carrier USS LINCOLN, the second largest ship in the United States' Atlantic Fleet. We are accompanied by three destroyers, three cruisers and numerous support vessels. I demand that you change your course 15 degrees north, that's ONE FIVE DEGREES NORTH, or counter-measures will be undertaken to ensure the safety of this ship. Canadians: This is a lighthouse. Your call.
+
+On the first day of college, the Dean addressed the students, pointing out some of the rules: "The female dormitory will be out-of-bounds for all male students and the male dormitory to the female students. Anybody caught breaking this rule will be finded $20 the first time." He continued, "Anybody caught breaking this rule the second time will be fined $60. Being caught a third time will cost you a fine of $180. Are there any questions ?" At this point, a male student in the crowd inquired: "How much for a season pass ?"
+
+There once was a man and a woman that both got in a terrible car wreck. Both of their vehicles were completely destroyed, buy fortunately, no one was hurt. In thankfulness, the woman said to the man, 'We are both okay, so we should celebrate. I have a bottle of wine in my car, let's open it.' So the woman got the bottleout of the car, and handed it to the man. The man took a really big drink, and handed the woman the bottle. The woman closed the bottle and put it down. The man asked, 'Aren't you going to take a drink?' The woman cleverly replied, 'No, I think I'll just wait for the cops to get here.'
+
+~~~
+
+### 4.2. 인기도를 세가지 기준으로 적용하기 {#joke-popularity}
+
+첫번째로 농담 평점을 기준으로, 두번째로 유저 평가수를 기준으로, 세번째로 이 둘을 조합한 기준을 넣어 
+농담을 추천해본다.
+
+#### 4.2.1. 인기도가 높은 농담 추천
+
+Jester5k 평점 데이터를 정규화하고 농담이 칼럼기준으로 되어 있어 유저가 평가한 농담 평점을 평균내고 
+이를 평점이 높은 순으로 정렬하고 나서 상위 3개를 뽑는다.
+
+
+~~~{.r}
+# 3. 인기도에 따른 추천 --------------------
+## 3.1. 평균 평점이 높은 농담
+joke_avg_top3 <- Jester5k %>% 
+    normalize %>% 
+    colMeans %>% 
+    sort(decreasing = TRUE) %>% 
+    head(3)
+
+cat(JesterJokes[names(joke_avg_top3)], sep = "\n\n")
+~~~
+
+
+
+~~~{.output}
+A guy goes into confession and says to the priest, "Father, I'm 80 years old, widower, with 11 grandchildren. Last night I met two beautiful flight attendants. They took me home and I made love to both of them. Twice." The priest said: "Well, my son, when was the last time you were in confession?" "Never Father, I'm Jewish." "So then, why are you telling me?" "I'm telling everybody."
+
+A radio conversation of a US naval ship with Canadian authorities ... Americans: Please divert your course 15 degrees to the North to avoid a collision. Canadians: Recommend you divert YOUR course 15 degrees to the South to avoid a collision. Americans: This is the Captain of a US Navy ship. I say again, divert YOUR course. Canadians: No. I say again, you divert YOUR course. Americans: This is the aircraft carrier USS LINCOLN, the second largest ship in the United States' Atlantic Fleet. We are accompanied by three destroyers, three cruisers and numerous support vessels. I demand that you change your course 15 degrees north, that's ONE FIVE DEGREES NORTH, or counter-measures will be undertaken to ensure the safety of this ship. Canadians: This is a lighthouse. Your call.
+
+A guy walks into a bar, orders a beer and says to the bartender, "Hey, I got this great Polish Joke..." The barkeep glares at him and says in a warning tone of voice: "Before you go telling that joke you better know that I'm Polish, both bouncers are Polish and so are most of my customers" "Okay" says the customer,"I'll tell it very slowly."
+
+~~~
+
+#### 4.2.2. 평가가 많은 농담 추천
+
+평점보다 농담에 대한 평가횟수가 높은 농담을 정렬하여 상위 3개를 추출하여 추천한다.
+
+
+~~~{.r}
+## 3.2. 평가수 높은 농담
+
+joke_freq_top3 <- Jester5k %>% 
+    normalize %>% 
+    colCounts %>% 
+    sort(decreasing = TRUE) %>% 
+    head(3)
+
+cat(JesterJokes[names(joke_freq_top3)], sep = "\n\n")
+~~~
+
+
+
+~~~{.output}
+Q. Did you hear about the dyslexic devil worshiper? A. He sold his soul to Santa.
+
+They asked the Japanese visitor if they have elections in his country. "Every Morning" he answers.
+
+Q: What did the blind person say when given some matzah? A: Who the hell wrote this?
+
+~~~
+
+#### 4.2.3. 평가수와 평점을 조합하여 추천
+
+이 둘을 조합하여 농담을 추천하는 것도 가능하다.
+
+
+~~~{.r}
+## 3.3. 평점이 높고 자주 언급되는 농담
+
+joke_avg_freq_top3 <- Jester5k %>% 
+    normalize %>% 
+    binarize(minRating = 5) %>% 
+    colCounts() %>% 
+    sort(decreasing = TRUE) %>% 
+    head(3)
+
+cat(JesterJokes[names(joke_avg_freq_top3)], sep = "\n\n")
+~~~
+
+
+
+~~~{.output}
+A guy goes into confession and says to the priest, "Father, I'm 80 years old, widower, with 11 grandchildren. Last night I met two beautiful flight attendants. They took me home and I made love to both of them. Twice." The priest said: "Well, my son, when was the last time you were in confession?" "Never Father, I'm Jewish." "So then, why are you telling me?" "I'm telling everybody."
+
+An old Scotsmen is sitting with a younger Scottish gentleman and says the boy. "Ah, lad look out that window. You see that stone wall there, I built it with me own bare hands, placed every stone meself. But do they call me MacGregor the wall builder? No! He Takes a few sips of his beer then says, "Aye, and look out on that lake and eye that beautiful pier. I built it meself, laid every board and hammered each nail but do they call me MacGregor the pier builder? No! He continues..."And lad, you see that road? That too I build with me own bare hands. Laid every inch of pavement meself, but do they call MacGregor the road builder? No!" Again he returns to his beer for a few sips, then says, "Agh, but you screw one sheep..."
+
+A man arrives at the gates of heaven. St. Peter asks, "Religion?" The man says, "Methodist." St. Peter looks down his list, and says, "Go to room 24, but be very quiet as you pass room 8." Another man arrives at the gates of heaven. "Religion?" "Baptist." "Go to room 18, but be very quiet as you pass room 8." A third man arrives at the gates. "Religion?" "Jewish." "Go to room 11, but be very quiet as you pass room 8." The man says, "I can understand there being different rooms for different religions, but why must I be quiet when I pass room 8?" St. Peter tells him, "Well the Catholics are in room 8, and they think they're the only ones here.
+
+~~~

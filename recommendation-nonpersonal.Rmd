@@ -20,6 +20,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12)
 library(tidyverse)
 library(arules)
 library(stringr)
+library(recommenderlab) # devtools::install_github("mhahsler/recommenderlab")
 
 ```
 
@@ -127,4 +128,95 @@ recom_df <- movie_df %>% select(movieId, title) %>%
 recom_df %>% filter(source_movieId == 2571) %>% 
     arrange(desc(lift)) %>% DT::datatable() %>% 
     DT::formatRound(c("lift", "support", "confidence"), digits=3)
+```
+
+## 4. 농담 추천 [^recommenderlab-jester] {#joke-recom}
+
+[^recommenderlab-jester]: [Recommender Systems: Non-personalized Recommender](http://michael.hahsler.net/other_courses/ICMA_Recommendation_Tools/code/non-personalized.html#bester-average-rating)
+
+### 4.1. `recommenderlab` 팩키지를 통한 비개인화 추천 {#joke-recommenderlab}
+
+`recommenderlab` 팩키지를 기능을 활용하여 즉각 농담을 추천할 수 있다.
+`Jester5k` 농담은 5,000명이 100개 농담에 대한 평점이 담겨있다.
+
+`recommenderRegistry` 체계를 활용하기 때문에 먼저 등록을 한다. 
+그리고 나서 `Recommender`에 `method = "POPULAR"`를 인자로 넘기면 추천을 해준다.
+첫번째 유저 `u2841`에 대한 추천 농담을 3개 뽑는 과정은 다음과 같다.
+
+
+``` {r jester5k}
+# 0. 환경설정 ------------------------------
+
+# library(recommenderlab) # devtools::install_github("mhahsler/recommenderlab")
+# library(tidyverse)
+# library(stringr)
+
+# 1. 데이터 가져오기 -----------------------
+data(Jester5k)
+
+# 2. 팩키지 사용 추천 ----------------------
+recommenderRegistry$get_entry("POPULAR", type ="realRatingMatrix")
+
+joke_recom <- Recommender(Jester5k, method = "POPULAR")
+
+joke_pred <- predict(joke_recom, Jester5k[1:3,])
+(joke_pred_list <- as(joke_pred, "list"))
+
+cat(JesterJokes[joke_pred_list$u2841[1:3]], sep = "\n\n")
+```
+
+### 4.2. 인기도를 세가지 기준으로 적용하기 {#joke-popularity}
+
+첫번째로 농담 평점을 기준으로, 두번째로 유저 평가수를 기준으로, 세번째로 이 둘을 조합한 기준을 넣어 
+농담을 추천해본다.
+
+#### 4.2.1. 인기도가 높은 농담 추천
+
+Jester5k 평점 데이터를 정규화하고 농담이 칼럼기준으로 되어 있어 유저가 평가한 농담 평점을 평균내고 
+이를 평점이 높은 순으로 정렬하고 나서 상위 3개를 뽑는다.
+
+``` {r jester5k-nonpersonal-item-rating}
+# 3. 인기도에 따른 추천 --------------------
+## 3.1. 평균 평점이 높은 농담
+joke_avg_top3 <- Jester5k %>% 
+    normalize %>% 
+    colMeans %>% 
+    sort(decreasing = TRUE) %>% 
+    head(3)
+
+cat(JesterJokes[names(joke_avg_top3)], sep = "\n\n")
+```
+
+#### 4.2.2. 평가가 많은 농담 추천
+
+평점보다 농담에 대한 평가횟수가 높은 농담을 정렬하여 상위 3개를 추출하여 추천한다.
+
+``` {r jester5k-nonpersonal-item-count}
+## 3.2. 평가수 높은 농담
+
+joke_freq_top3 <- Jester5k %>% 
+    normalize %>% 
+    colCounts %>% 
+    sort(decreasing = TRUE) %>% 
+    head(3)
+
+cat(JesterJokes[names(joke_freq_top3)], sep = "\n\n")
+```
+
+#### 4.2.3. 평가수와 평점을 조합하여 추천
+
+이 둘을 조합하여 농담을 추천하는 것도 가능하다.
+
+``` {r jester5k-nonpersonal-item-combine}
+
+## 3.3. 평점이 높고 자주 언급되는 농담
+
+joke_avg_freq_top3 <- Jester5k %>% 
+    normalize %>% 
+    binarize(minRating = 5) %>% 
+    colCounts() %>% 
+    sort(decreasing = TRUE) %>% 
+    head(3)
+
+cat(JesterJokes[names(joke_avg_freq_top3)], sep = "\n\n")
 ```
