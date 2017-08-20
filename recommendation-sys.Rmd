@@ -17,6 +17,13 @@ mainfont: NanumGothic
 source("tools/chunk-options.R")
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.width=12)
 
+library(recommenderlab) # devtools::install_github("mhahsler/recommenderlab")
+library(tidyverse)
+library(stringr)
+library(matrixStats)
+
+options(scipen=999)
+
 ```
 
 
@@ -144,9 +151,12 @@ head(songs, n=3)
 [^big-datasets]: [Data Sets for Data Science](http://www.r-bloggers.com/data-sets-for-data-science/)
 
 
-## 3. 추천시스템 [^recommender-system]
+## 3. 추천시스템을 구현하는 알고리즘과 시스템 [^recommender-system]
 
 [^recommender-system]: [추천 알고리즘 구현(Implementations) 소프트웨어](http://michael.hahsler.net/research/recommender/)
+
+추천시스템은 상업적인 가치 뿐만 아니라 학술적으로 사람 심리, 알고리즘, 기계학습 등 다양한 분야가 망라되어 있어 오래전부터 
+연구되어오고 사업적으로도 활용되어 왔다. 자바, 파이썬, PHP를 포함하여 R언어로도 구현되어 활용할 수 있다.
 
 - Apache Mahout: A machine learning library including collaborative filtering (Java)
 - C/Matlab Toolkit for Collaborative Filtering (C/Matlab)
@@ -172,4 +182,149 @@ head(songs, n=3)
 - [recosystem](https://cran.r-project.org/web/packages/recosystem/index.html): Recommender System using Matrix Factorization
 - [rectools](https://github.com/Pooja-Rajkumar/rectools): Advanced package for recommender systems
 
+### 3.2. 추천시스템 간략한 수식 표현
+
+수학적으로 추천시스템을 표현하면 다음과 같다. 수많은 고객이 수많은 제품, 서비스에 평가를 한 평가 결과로 엄청 성긴 행렬로 표현된다.
+
+* $U_{\text{사용자}}$ : 사용자 고객 집합
+* $P_{\text{제품, 서비스}}$ : 제품이나 서비스 집합
+* $R_{\text{평점}}$ : 고객이 제품에 만족도를 표현한 평점
+
+* **효용함수** 
+
+$$u:U_{\text{사용자}} \times P_{\text{제품, 서비스}} \Rightarrow R_{\text{평점}}$$
+
+### 3.2. 추천시스템 데이터 구조
+
+추천시스템을 개발할 때 자료구조는 영화를 영화관람자가 1 에서 5점까지 별점을 주는 구조로 되어있고, 
+코딩을 어떻게 하느냐에 차이가 있지만, 0 점 혹은 `?`, 결측값을 영화를 보지 않은, 경우에 따라서는 물품,제품, 서비스를 구매하지 않은 고객으로 볼 수 있다.
+
+영화나 제품 서비스에 대한 정보는 사전에 알 수 있기 때문에, 
+이 정보를 이용하여 사용자가 영화를 추천할 수도 있고, 기존 영화관람객이 다양한 영화를 평가 했다면 유사한 평점을 갖는 유사도를 추정하여 영화를 추천한다. 
+
+$$
+\begin{array}{c|cccc|cc}
+\text{영화} & \text{무성} & \text{광춘} & \text{영숙} & \text{환범} & \text{영화장르}_{개그} & \text{영화장르}_{폭력} \\
+\hline
+\text{곡성}       & 5 & 5 & 1 & 1 & 0.9 & 0 \\
+\text{왕의 남자}  & 5 & ? & ? & 1 & 1 & 0.01 \\
+\text{넘버3}      & ? & 4 & 1 & ? & 0.99 & 0 \\
+\text{돌아이}     & 1 & 2 & 1 & 4 & 0.1 & 1.0 \\
+\text{겨울나그네} & 1 & 5 & 1 & ? & 0 & 0.9 \\
+\hline
+\end{array}
+$$
+
+
+### 3.3. 행렬분해와 근사 [^matrix-factorization]
+
+[^matrix-factorization]: [김민환, Recommendation System :협업 필터링을 중심으로](http://rosaec.snu.ac.kr/meet/file/20120728b.pdf)
+
+행렬분해를 통한 근사는 추천시스템의 핵심을 이룬다. 위키피디아 웹사이트에 [특이값 분해(Singular value decomposition)](https://en.wikipedia.org/wiki/Singular_value_decomposition)에 대한
+기하적인 설명이 나와 있다. 행렬 $\mathbf{M}$을 $\mathbf{U}, \boldsymbol{\Sigma}, \mathbf{V}$ 행렬로 분해할 경우,
+$\mathbf{V}$는 회전을, $\boldsymbol{\Sigma}$는 늘이고 줄이는 척도조정, $\mathbf{U}$은 두번째 회전시키는 역할을 한다.
+
+<img src="fig/Singular-Value-Decomposition.png" alt="특이값 분해 이해" width="55%">
+
+특이값 분해를 수학표기법으로 표현하면 다음과 같다.
+
+$$\mathbf{M} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^*$$
+
+R 코드로 구현하면 모든 관객이 영화를 보았다면 다음과 같은 행태의 데이터가 나오게 된다.
+$\boldsymbol{\Sigma}$ 두개 차원만 선택하여 원래 행렬을 행렬분해를 통해 근사하게 되면 
+제법 오차가 작은 행렬을 구할 수 있다.
+
+``` {r svd-data}
+# 0. 환경설정 ------------------------------
+
+# library(recommenderlab) # devtools::install_github("mhahsler/recommenderlab")
+# library(tidyverse)
+# library(stringr)
+# library(matrixStats)
+
+# 1. 데이터 ------------------------------
+
+rating_df <- tribble(
+    ~ user, ~슈퍼맨,  ~배트맨,  ~색계, ~아멜리에,
+      "병곤",     1 ,      2 ,      8 ,     10,
+      "용섭",     10,       7,       8,      3,
+      "우상",     8 ,      9 ,      9 ,     2,
+      "성수",     4 ,      5 ,      9 ,     7)
+
+rating_mat <- rating_df %>% 
+    remove_rownames() %>% 
+    column_to_rownames(var="user") %>% 
+        as.matrix()
+
+DT::datatable(rating_mat)
+
+# 2. 행렬분해 ------------------------------
+## 2.1. 행렬 근사
+(rating_svd <- svd(rating_mat))
+
+D <- diag(rating_svd$d)
+D[3:4, 3:4] <- 0
+
+(rating_approx <- rating_svd$u %*% D %*% t(rating_svd$v)) #  X = U D V'
+
+sum(rating_mat - rating_approx)
+```
+
+현실적으로 모든 관객이 영화를 다 볼 수는 없고, 경우에 따라서는 평점을 남기지 않게 된다.
+이런 경우 결측값이 발생되게 되고 무엇으로 그 값을 채워넣어야 한다.
+예를 들어, **용섭**이 영화를 두개를 관람하지 않는 경우, 어떤 영화를 추천해야 해야하는데
+행렬 근사 방법을 적용시키면 매우 커다란 행렬도 PC에서 작업이 가능하게 된다.
+
+
+``` {r svd-matrix-factorization}
+## 2.2. 영화 추천
+
+rating_mat[2,c(2,4)] <- 0
+
+rating_mean <- rowMeans(rating_mat)
+rating_std  <- rowSds(rating_mat)
+
+rating_mat[2,c(2,4)] <- rating_mean[2] * 2
+
+rating_std_mat <- apply(rating_mat, 1, scale)
+
+(rating_std_svd <- svd(rating_std_mat))
+
+D <- diag(rating_std_svd$d)
+D[3:4, 3:4] <- 0
+
+rating_std_mf <- rating_std_svd$u %*% D %*% t(rating_std_svd$v) #  X = U D V'
+
+rating_mean + rating_std_mf * rating_std
+```
+
+**용섭**이 영화를 보지 않았다는 것을 상정하기 위해 `0`으로 치완하고 나서 각 관객별 평균과 표준편차를 구하는데 이는 정규화를 위한 것이다.
+이를 통해 특이값분해(SVD)로 행렬을 분해시키고 나서, $\boldsymbol{\Sigma}$ 두개 차원만 선택하고 나서 정규화된 것을 다시 원래 척도로 되돌리는 과정을 거친다.
+최종결과는 배트맨이 아멜리에 보다 큰 값이 나왔으니 배트맨을 추천한다.
+
+### 3.4. 추천 시스템 알고리즘 [^spark-matrix-factorization] [^python-matrix-approx]
+
+[^spark-matrix-factorization]: [Reza Zadeh - Spark and Matrix Factorization](https://www.youtube.com/watch?v=TukmMqw6y0s)
+[^python-matrix-approx]: [Christian Thurau - Low-rank matrix approximations in Python](https://www.youtube.com/watch?v=kfEWZA-b-YQ)
+
+다양한 추천시스템이 존재하지만 수학적으로 보면 사용자 평가 정보와 상품 평가정보를 기반으로 전체 사용자와 상품 평가정보가 포함된 행렬을 채우는 것으로 볼 수 있다. 
+물론 얼마나 잘 채우냐가 좋은 추천 시스템의 요건이 된다.
+
+<img src="fig/low-rank-matrix-factorization.png" alt="낮은 계수 행렬 인수분해" width="50%">
+
+모든 사용자와 모든 영화를 평점을 채워 빈칸이 없도록 하는 추정하는 것으로 $\text{사용자} \times \text{영화}$ 행렬을 **낮은 계수 행렬 인수분해(Low rank matrix factorization)** 로 근사하는 개념으로 
+**최소자승 교대 추정(Alternating Least Square)** 방식을 사용해서 채워 넣는다.
+
+1. 임의 $\text{사용자}$, $\text{영화}$ 벡터를 갖고 시작한다.
+1. $\text{영화}$를 고정시키고 $\text{사용자}$ 벡터를 최적화한다.
+1. $\text{사용자}$를 고정시키고 $\text{영화}$ 벡터를 최적화한다.
+1. 수렴할 때까지 교대로 최적화 과정을 반복한다.
+
+수식으로 표현하면 다음과 같다.
+
+$$
+\min_{U, P} \lVert R_{평점} - UP  \rVert^{2}
+$$
+
+사용자 $U \geq 0$, 제품 $P \geq 0$ 모두 0 보다 큰 조건이 붙는다.
 
