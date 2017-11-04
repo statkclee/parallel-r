@@ -50,14 +50,42 @@
 </aside>
 <h2 id="학습목차">학습목차</h2>
 <ol style="list-style-type: decimal">
-<li><a href="recommendation-sys.html">추천 시스템(Recommendation System)</a>
+<li><strong>고성능 아키텍쳐와 성능측정</strong>
 <ul>
-<li><a href="kofic-movie-api.html">영화진흥위원회 오픈API - 스크린수와 매출</a></li>
-<li><a href="recommendation-nonpersonal.html">추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)</a></li>
-<li><a href="recommendation-content-based-filtering.html">추천 시스템(Recommendation System) - 내용기반 필터링 추천(Content-based Filtering Recommendation)</a></li>
-<li><a href="recommendation-user-based-filtering.html">추천 시스템(Recommendation System) - 사용자기반 협업 필터링(User-based Collaborative Filtering)</a></li>
-<li><a href="recommendation-implementation.html">추천 시스템(Recommendation System) - 탐색적분석과 모형선정</a></li>
-<li><a href="recommendation-sparkr-impl.html">SparkR 추천시스템</a></li>
+<li><a href="r-perf-arch.html">고성능 R 아키텍처</a>
+<ul>
+<li><a href="why-r-hpc.html">왜 고성능 R 아키텍처가 필요한가?</a></li>
+<li><a href="r-scale-up.html">R 스케일-업 성능향상</a></li>
+<li><a href="r-scale-out.html">R 스케일-아웃 성능향상</a>
+<ul>
+<li><a href="r-scale-out-nytimes.html">뉴욕타임즈 기사 병렬처리 사례</a><br />
+</li>
+</ul></li>
+</ul></li>
+<li><strong><a href="perf-writing-efficient-code.html">고성능 R코드 작성과 성능비교</a></strong>
+<ul>
+<li><a href="perf-benchmark.html">R 코드 성능 측정기준 - 벤치마킹</a></li>
+<li><a href="performance-profiling.html">정보수집 프로파일링(profiling) - profviz</a></li>
+<li><a href="performance-profviz.html">정보수집 프로파일링을 통한 성능향상</a></li>
+</ul></li>
+</ul></li>
+<li><strong>자동화(Automation)</strong>
+<ul>
+<li><strong>R코드 자동화</strong>
+<ul>
+<li><a href="r-parallel-rscript-unix.html">유닉스 철학과 파이프라인</a></li>
+<li><a href="r-parallel-rscript-exec.html"><code>.R</code> 스크립트 실행</a></li>
+<li><a href="r-parallel-rscript-args.html"><code>.R</code> 스크립트를 인자와 함께 실행</a></li>
+<li><a href="r-parallel-rscript-optparse.html"><code>optparse</code> 파이썬 스타일</a></li>
+<li><a href="r-parallel-local-export.html">분석결과 내보내기</a></li>
+</ul></li>
+<li><a href="r-makefile.html">R 자동화(Make)</a>
+<ul>
+<li><a href="http://statkclee.github.io/make-novice/index-kr.html">소프트웨어 카펜트리 자동화 Make(소프트웨어)</a></li>
+<li><a href="r-make-software.html">R과 Make(소프트웨어+R) - TV 토론 효과</a></li>
+<li><a href="r-stat545-make.html">STAT545 자동화 - Make</a></li>
+<li>Drake Make(데이터)</li>
+</ul></li>
 </ul></li>
 <li><a href="ds-fp.html"><strong>함수형 프로그래밍(Functional Programming)</strong></a>
 <ul>
@@ -70,32 +98,15 @@
 </ul></li>
 <li><a href="ds-fp-write-fn.html">R 함수 작성</a></li>
 <li><a href="ds-fp-purrr.html">R 함수형 프로그래밍</a></li>
+<li><a href="r-multidplyr.html">병렬 데이터 처리 - multidplyr</a></li>
+<li><a href="r-doparallel.html">멀티코어 병렬 프로그래밍 - doParallel</a></li>
 </ul></li>
-<li><a href="r-makefile.html">R 자동화(Make)</a>
+<li><strong><a href="r-restful-production">R 실운영환경(R in Production)</a></strong>
 <ul>
-<li><a href="http://statkclee.github.io/make-novice/index-kr.html">소프트웨어 카펜트리 자동화 Make(소프트웨어)</a></li>
-<li><a href="r-make-software.html">R과 Make(소프트웨어+R) - TV 토론 효과</a></li>
-<li><a href="r-stat545-make.html">STAT545 자동화 - Make</a></li>
-<li>Drake Make(데이터)</li>
-</ul></li>
-<li><a href="r-perf-arch.html">고성능 R 아키텍처</a>
-<ul>
-<li><a href="why-r-hpc.html">왜 고성능 R 아키텍처가 필요한가?</a></li>
-<li><a href="r-scale-up.html">R 스케일-업 성능향상</a></li>
-<li><a href="r-scale-out.html">R 스케일-아웃 성능향상</a>
-<ul>
-<li><a href="r-scale-out-nytimes.html">뉴욕타임즈 기사 병렬처리 사례</a></li>
-</ul></li>
-<li><a href="r-multidplyr.html">병렬 데이터 처리 - multidplyr</a><br />
-</li>
-</ul></li>
-<li><strong>R코드 자동화</strong>
-<ul>
-<li><a href="r-parallel-rscript-unix.html">유닉스 철학과 파이프라인</a></li>
-<li><a href="r-parallel-rscript-exec.html"><code>.R</code> 스크립트 실행</a></li>
-<li><a href="r-parallel-rscript-args.html"><code>.R</code> 스크립트를 인자와 함께 실행</a></li>
-<li><a href="r-parallel-rscript-optparse.html"><code>optparse</code> 파이썬 스타일</a></li>
-<li><a href="r-parallel-local-export.html">분석결과 내보내기</a></li>
+<li><a href="r-in-production-plumber.html">웹에서 운영되는 R(plumber)</a></li>
+<li><a href="r-credit-score-api.html">신용위험 확률(plumber) API</a></li>
+<li><a href="r-restful-api-test.html">RESTful API 개발환경</a></li>
+<li><a href="r-opencpu-api-hello.html">OpenCPU RESTful API</a></li>
 </ul></li>
 <li><a href="http://statkclee.github.io/r-docker/">재현가능한 과학연구를 위한 도커</a>
 <ul>
@@ -106,18 +117,14 @@
 <li><a href="http://statkclee.github.io/r-docker/05-dockerfiles.html">도커파일(Dockerfiles)</a></li>
 <li><a href="http://statkclee.github.io/r-docker/06-Sharing-all-your-analysis.html">분석결과 공유</a></li>
 </ul></li>
-<li><strong><a href="r-restful-production">R 실운영환경(R in Production)</a></strong>
+<li><a href="recommendation-sys.html">추천 시스템(Recommendation System)</a>
 <ul>
-<li><a href="r-in-production-plumber.html">웹에서 운영되는 R(plumber)</a></li>
-<li><a href="r-credit-score-api.html">신용위험 확률(plumber) API</a></li>
-<li><a href="r-restful-api-test.html">RESTful API 개발환경</a></li>
-<li><a href="r-opencpu-api-hello.html">OpenCPU RESTful API</a></li>
-</ul></li>
-<li><strong><a href="perf-writing-efficient-code.html">고성능 R코드 작성과 성능비교</a></strong>
-<ul>
-<li><a href="perf-benchmark.html">R 코드 성능 측정기준 - 벤치마킹</a></li>
-<li><a href="performance-profiling.html">정보수집 프로파일링(profiling) - profviz</a></li>
-<li><a href="performance-profviz.html">정보수집 프로파일링을 통한 성능향상</a></li>
+<li><a href="kofic-movie-api.html">영화진흥위원회 오픈API - 스크린수와 매출</a></li>
+<li><a href="recommendation-nonpersonal.html">추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)</a></li>
+<li><a href="recommendation-content-based-filtering.html">추천 시스템(Recommendation System) - 내용기반 필터링 추천(Content-based Filtering Recommendation)</a></li>
+<li><a href="recommendation-user-based-filtering.html">추천 시스템(Recommendation System) - 사용자기반 협업 필터링(User-based Collaborative Filtering)</a></li>
+<li><a href="recommendation-implementation.html">추천 시스템(Recommendation System) - 탐색적분석과 모형선정</a></li>
+<li><a href="recommendation-sparkr-impl.html">SparkR 추천시스템</a></li>
 </ul></li>
 <li><strong>빅데이터</strong>
 <ul>
@@ -147,7 +154,7 @@
 </section>
 <h3 id="xwmooc-오픈-교재">xwMOOC 오픈 교재</h3>
 <ul>
-<li><a href="http://unplugged.xwmooc.org">컴퓨터 과학 언플러그드</a><br />
+<li><a href="http://statkclee.github.io/unplugged">컴퓨터 과학 언플러그드</a><br />
 </li>
 <li><a href="http://reeborg.xwmooc.org">리보그</a>
 <ul>
@@ -159,7 +166,7 @@
 <li><a href="http://python.xwmooc.org">정보과학을 위한 파이썬</a><br />
 </li>
 <li><a href="http://swcarpentry.xwmooc.org">소프트웨어 카펜트리 5.3</a></li>
-<li><a href="http://raspberry-pi.xwmooc.org/">IoT 오픈 하드웨어(라즈베리 파이)</a>
+<li><a href="http://statkclee.github.io/raspberry-pi">IoT 오픈 하드웨어(라즈베리 파이)</a>
 <ul>
 <li><a href="http://computer.xwmooc.org/">$100 오픈 컴퓨터</a><br />
 </li>
@@ -178,7 +185,7 @@
 <li><a href="http://statkclee.github.io/trilobite">고생대 프로젝트</a></li>
 </ul></li>
 <li><a href="http://sympy.xwmooc.org/">기호 수학(Symbolic Math)</a></li>
-<li><a href="http://politics.xwmooc.org/">선거와 투표</a></li>
+<li><a href="http://statkclee.github.io/politics">선거와 투표</a></li>
 </ul>
         </div>
       </div>
