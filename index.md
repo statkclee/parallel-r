@@ -14,13 +14,28 @@ title: R 병렬 프로그래밍
 
 ## 학습목차 
 
-1. [추천 시스템(Recommendation System)](recommendation-sys.html)
-    - [영화진흥위원회 오픈API - 스크린수와 매출](kofic-movie-api.html)
-    - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)](recommendation-nonpersonal.html)
-    - [추천 시스템(Recommendation System) - 내용기반 필터링 추천(Content-based Filtering Recommendation)](recommendation-content-based-filtering.html)
-    - [추천 시스템(Recommendation System) - 사용자기반 협업 필터링(User-based Collaborative Filtering)](recommendation-user-based-filtering.html)
-    - [추천 시스템(Recommendation System) - 탐색적분석과 모형선정](recommendation-implementation.html)
-    - [SparkR 추천시스템](recommendation-sparkr-impl.html)
+1. **고성능 아키텍쳐와 성능측정**
+    - [고성능 R 아키텍처](r-perf-arch.html)
+        - [왜 고성능 R 아키텍처가 필요한가?](why-r-hpc.html)
+        - [R 스케일-업 성능향상](r-scale-up.html)
+        - [R 스케일-아웃 성능향상](r-scale-out.html)     
+            - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html)         
+    - **[고성능 R코드 작성과 성능비교](perf-writing-efficient-code.html)**
+        - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
+        - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
+        - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
+1. **자동화(Automation)**
+    - **R코드 자동화**
+        - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
+        - [`.R` 스크립트 실행](r-parallel-rscript-exec.html)
+        - [`.R` 스크립트를 인자와 함께 실행](r-parallel-rscript-args.html)
+        - [`optparse` 파이썬 스타일](r-parallel-rscript-optparse.html)
+        - [분석결과 내보내기](r-parallel-local-export.html)
+    - [R 자동화(Make)](r-makefile.html)
+        - [소프트웨어 카펜트리 자동화 Make(소프트웨어)](http://statkclee.github.io/make-novice/index-kr.html)
+        - [R과 Make(소프트웨어+R) - TV 토론 효과](r-make-software.html)
+        - [STAT545 자동화 - Make](r-stat545-make.html)
+        - Drake Make(데이터)
 1. [**함수형 프로그래밍(Functional Programming)**](ds-fp.html)
     - [FP 자료구조](r-parallel-fp-ds.html)
         - [리스트 자료형 살펴보기](r-parallel-fp-view-list.html)
@@ -29,23 +44,13 @@ title: R 병렬 프로그래밍
         - [트럼프 트윗](r-parallel-fp-trump-tweet.html)
     - [R 함수 작성](ds-fp-write-fn.html)
     - [R 함수형 프로그래밍](ds-fp-purrr.html)
-1. [R 자동화(Make)](r-makefile.html)
-    - [소프트웨어 카펜트리 자동화 Make(소프트웨어)](http://statkclee.github.io/make-novice/index-kr.html)
-    - [R과 Make(소프트웨어+R) - TV 토론 효과](r-make-software.html)
-    - [STAT545 자동화 - Make](r-stat545-make.html)
-    - Drake Make(데이터)
-1. [고성능 R 아키텍처](r-perf-arch.html)
-    - [왜 고성능 R 아키텍처가 필요한가?](why-r-hpc.html)
-    - [R 스케일-업 성능향상](r-scale-up.html)
-    - [R 스케일-아웃 성능향상](r-scale-out.html)     
-        - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html) 
-    - [병렬 데이터 처리 - multidplyr](r-multidplyr.html)     
-1. **R코드 자동화**
-    - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
-    - [`.R` 스크립트 실행](r-parallel-rscript-exec.html)
-    - [`.R` 스크립트를 인자와 함께 실행](r-parallel-rscript-args.html)
-    - [`optparse` 파이썬 스타일](r-parallel-rscript-optparse.html)
-    - [분석결과 내보내기](r-parallel-local-export.html)
+    - [병렬 데이터 처리 - multidplyr](r-multidplyr.html)
+    - [멀티코어 병렬 프로그래밍 - doParallel](r-doparallel.html)
+1. **[R 실운영환경(R in Production)](r-restful-production)**
+    - [웹에서 운영되는 R(plumber)](r-in-production-plumber.html)
+    - [신용위험 확률(plumber) API](r-credit-score-api.html)
+    - [RESTful API 개발환경](r-restful-api-test.html)
+    - [OpenCPU RESTful API](r-opencpu-api-hello.html)
 1. [재현가능한 과학연구를 위한 도커](http://statkclee.github.io/r-docker/) 
     - [도커는 무엇이고 왜 사용하나](http://statkclee.github.io/r-docker/01-what-and-why.html)
     - [도커 실행](http://statkclee.github.io/r-docker/02-Launching-Docker.html)
@@ -53,15 +58,13 @@ title: R 병렬 프로그래밍
     - [도커허브(Dockerhub)](http://statkclee.github.io/r-docker/04-Dockerhub.html)
     - [도커파일(Dockerfiles)](http://statkclee.github.io/r-docker/05-dockerfiles.html)
     - [분석결과 공유](http://statkclee.github.io/r-docker/06-Sharing-all-your-analysis.html)
-1. **[R 실운영환경(R in Production)](r-restful-production)**
-    - [웹에서 운영되는 R(plumber)](r-in-production-plumber.html)
-    - [신용위험 확률(plumber) API](r-credit-score-api.html)
-    - [RESTful API 개발환경](r-restful-api-test.html)
-    - [OpenCPU RESTful API](r-opencpu-api-hello.html)
-1. **[고성능 R코드 작성과 성능비교](perf-writing-efficient-code.html)**
-    - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
-    - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
-    - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
+1. [추천 시스템(Recommendation System)](recommendation-sys.html)
+    - [영화진흥위원회 오픈API - 스크린수와 매출](kofic-movie-api.html)
+    - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)](recommendation-nonpersonal.html)
+    - [추천 시스템(Recommendation System) - 내용기반 필터링 추천(Content-based Filtering Recommendation)](recommendation-content-based-filtering.html)
+    - [추천 시스템(Recommendation System) - 사용자기반 협업 필터링(User-based Collaborative Filtering)](recommendation-user-based-filtering.html)
+    - [추천 시스템(Recommendation System) - 탐색적분석과 모형선정](recommendation-implementation.html)
+    - [SparkR 추천시스템](recommendation-sparkr-impl.html)
 1. **빅데이터**
     - [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
     - [MOOC 스파크 실행환경](mooc-spark-install.html)    
@@ -84,13 +87,13 @@ title: R 병렬 프로그래밍
 
 ### xwMOOC 오픈 교재
 
-- [컴퓨터 과학 언플러그드](http://unplugged.xwmooc.org)  
+- [컴퓨터 과학 언플러그드](http://statkclee.github.io/unplugged)  
 - [리보그](http://reeborg.xwmooc.org)  
      - [러플](http://rur-ple.xwmooc.org)  
 - [파이썬 거북이](http://swcarpentry.github.io/python-novice-turtles/index-kr.html)  
 - [정보과학을 위한 파이썬](http://python.xwmooc.org)  
 - [소프트웨어 카펜트리 5.3](http://swcarpentry.xwmooc.org)
-- [IoT 오픈 하드웨어(라즈베리 파이)](http://raspberry-pi.xwmooc.org/)
+- [IoT 오픈 하드웨어(라즈베리 파이)](http://statkclee.github.io/raspberry-pi)
     - [$100 오픈 컴퓨터](http://computer.xwmooc.org/)   
     - [$100 오픈 슈퍼컴퓨터](http://computers.xwmooc.org/)
 - **데이터 과학**
@@ -102,5 +105,5 @@ title: R 병렬 프로그래밍
     - [기계학습](http://statkclee.github.io/ml)
     - [고생대 프로젝트](http://statkclee.github.io/trilobite)
 - [기호 수학(Symbolic Math)](http://sympy.xwmooc.org/)
-- [선거와 투표](http://politics.xwmooc.org/)
+- [선거와 투표](http://statkclee.github.io/politics)
 
