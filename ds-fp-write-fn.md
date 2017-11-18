@@ -1,10 +1,11 @@
 ---
 layout: page
-title: 데이터 과학
+title: R 병렬 프로그래밍
+date: "2017-11-18"
 subtitle: R 함수 작성
 output:
   html_document: 
-    keep_md: yes
+    toc: yes
   pdf_document:
     latex_engine: xelatex
 mainfont: NanumGothic
@@ -18,7 +19,7 @@ mainfont: NanumGothic
 > * 함수를 작성하는 이유와 함수작성법을 살펴본다.
 > * 좋은 함수는 어떤 함수인지 살펴본다.
 
-### 1. 함수를 작성하는 이유
+## 1. 함수를 작성하는 이유 {#why-write-function}
 
 함수를 작성하는 이유는 반복되는 중복 문제를 해결하고 추상화를 통해 더 복잡한 작업을 가능하게 만들기 위해 사용한다.
 데이터프레임에 담긴 변수의 측도가 상이하여 측도를 재조정하는 경우 다음과 같은 수학식이 많이 사용된다.
@@ -69,9 +70,9 @@ df
 > ### 위캠 어록 {.callout}
 >
 > * Duplication hides the intent
-> * If you have copied-and-pasted twice, it's time to write a function
+> * If you have copied-and-pasted twice, it is time to write a function
 
-### 2. 함수를 작성하는 시점
+## 2. 함수를 작성하는 시점 {#time-to-write-function}
 
 복사해서 붙여넣는 것을 두번 하게 되면, 함수를 작성할 시점이다. 중복을 제거하는 한 방법은 함수를 작성하는 것이다.
 함수를 작성하게 되면 의도가 명확해진다.
@@ -101,7 +102,7 @@ library(purrr)
 df[] <- map(df, rescale)
 ~~~
 
-### 3. 함수를 작성하는 방법
+## 3. 함수를 작성하는 방법 {#how-to-write-function}
 
 함수를 작성할 경우 먼저 매우 단순한 문제에서 출발한다.
 척도를 맞추는 상기 과정을 R 함수로 만들어본다. 
@@ -153,7 +154,7 @@ rescale <- function(x){
 rescale(x)
 ~~~
 
-### 4. 좋은 함수
+## 4. 좋은 함수 {#criteria-on-good-function}
 
 좋은 함수를 작성하려면 다음과 같은 조건이 만족되어야 한다.
 
@@ -176,3 +177,185 @@ rescale(x)
 
 
 
+## 5. 함수작성 사례 {#function-is-argument}
+
+### 5.1. 기능 먼저 구현 추후 중복 제거 {#feature-first-dedup-second}
+
+함수도 인자로 넣어 처리할 수 있다는 점이 처음에 이상할 수도 있지만, 함수를 인자로 처리할 경우 코드 중복을 상당히 줄일 수 있다.
+$L_1$, $L_2$, $L_3$ 값을 구하는 함수를 다음과 같이 작성해야 한다. 숫자 1,2,3 만 차이날 뿐 함수 중복이 심하다.
+
+
+* 1단계: 중복이 심한 함수, 기능 구현에 초점을 맞춤
+
+
+~~~{.r}
+f1 <- function(x) abs(x - mean(x)) ^ 1
+f2 <- function(x) abs(x - mean(x)) ^ 2
+f3 <- function(x) abs(x - mean(x)) ^ 3
+~~~
+
+* 2단계: 임시 변수로 처리할 수 있는 부분을 식별하고 적절한 인자명(`power`)을 부여한다.
+
+
+~~~{.r}
+f1 <- function(x) abs(x - mean(x)) ^ power
+f2 <- function(x) abs(x - mean(x)) ^ power
+f3 <- function(x) abs(x - mean(x)) ^ power
+~~~
+
+* 3단계: 식별된 변수명을 함수 인자로 변환한다.
+
+
+~~~{.r}
+f1 <- function(x, power) abs(x - mean(x)) ^ power
+f2 <- function(x, power) abs(x - mean(x)) ^ power
+f3 <- function(x, power) abs(x - mean(x)) ^ power
+~~~
+
+### 5.2. 기초통계 사례 {#descriptive-statistics-case}
+
+특정 변수의 중위수, 평균, 표준편차를 계산하는 함수를 작성하는 경우를 상정한다.
+
+* 1 단계: 각 기능을 구현하는 기능 구현에 초점을 맞춤
+
+
+~~~{.r}
+col_median <- 
+  function(df) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- median(df[[i]])
+    }
+    output
+  }
+
+col_mean <- 
+  function(df) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- mean(df[[i]])
+    }
+    output
+  }
+
+col_sd <- 
+  function(df) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- sd(df[[i]])
+    }
+    output
+  }
+~~~
+
+* 2 단계: `median`, `mean`, `sd`를 함수 인자 `fun` 으로 함수명을 통일.
+
+
+~~~{.r}
+col_median <- 
+  function(df) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- fun(df[[i]])
+    }
+    output
+  }
+
+col_mean <- 
+  function(df) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- fun(df[[i]])
+    }
+    output
+  }
+
+col_sd <- 
+  function(df) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- fun(df[[i]])
+    }
+    output
+  }
+~~~
+
+* 3 단계: 함수 인자 `fun` 을 넣어 중복을 제거.
+
+
+~~~{.r}
+col_median <- 
+  function(df, fun) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- fun(df[[i]])
+    }
+    output
+  }
+
+col_mean <- 
+  function(df, fun) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- fun(df[[i]])
+    }
+    output
+  }
+
+col_sd <- 
+  function(df, fun) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- fun(df[[i]])
+    }
+    output
+  }
+~~~
+
+* 4 단계: 함수를 인자로 갖는 요약통계 함수를 최종적으로 정리하고, 테스트 사례를 통해 검증.
+
+
+~~~{.r}
+col_summary <- 
+  function(df, fun) {
+    output <- numeric(length(df))
+    for (i in seq_along(df)) {
+      output[i] <- fun(df[[i]])
+    }
+    output
+  }
+col_summary(df, fun = median)
+~~~
+
+
+
+~~~{.output}
+[1] 0.5000000 0.5000000 0.7142857 0.7500000
+
+~~~
+
+
+
+~~~{.r}
+col_summary(df, fun = mean)
+~~~
+
+
+
+~~~{.output}
+[1] 0.5000000 0.5000000 0.5714286 0.6000000
+
+~~~
+
+
+
+~~~{.r}
+col_summary(df, fun = sd)
+~~~
+
+
+
+~~~{.output}
+[1] 0.3952847 0.3952847 0.4164966 0.3791438
+
+~~~

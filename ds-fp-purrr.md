@@ -1,10 +1,11 @@
 ---
 layout: page
-title: 데이터 과학
+title: R 병렬 프로그래밍
 subtitle: R 함수형 프로그래밍
+date: "2017-11-18"
 output:
   html_document: 
-    keep_md: yes
+    toc: yes
   pdf_document:
     latex_engine: xelatex
 mainfont: NanumGothic
@@ -20,14 +21,16 @@ mainfont: NanumGothic
 > * `purrr` 함수형 프로그래밍 기본을 이해한다.
 
 
-### 1. `for` 루프 대안이 필요한 이유
+## 1. `for` 루프 대안이 필요한 이유 [^hadley-wickham-managing-many-models] {#why-not-for-loop}
+
+[^hadley-wickham-managing-many-models]: [Hadley Wickham: Managing many models with R, Psychology at the University of Edinburgh](https://www.youtube.com/watch?v=rz3_FDVt9eg&t=2324s)
 
 `for` 루프는 객체와 구현 패턴을 강조하다보니 동작을 숨기게 된다. 
 반면에 함수형 프로그래밍은 명사와 마찬가지로 동사도 강조하고, 구현에 대한 상세한 내용은
-추상화하여 감추어 버린다. 이런 점에서 함수형 프로그래밍으로 코드를 작성하게 되면 
-간결하고 유지보수성이 좋아진다.
+추상화하여 감추어 버린다. 이런 점에서 함수형 프로그래밍으로 코드를 작성하게 되면 간결하고 유지보수성이 좋아진다.
+**for 루프**는 객체를 강조하는 반면 **함수형 프로그래밍**은 동작에 중점을 둔다.
 
-> #### 함수형 프로그램 작성 순서 {.callout}
+> ### 함수형 프로그램 작성 순서 {.callout}
 >
 > 1. 전문영역지식을 활용하여 작성내용을 체계화한다.
 > 1. 변수를 사용하여 정리한다.
@@ -37,229 +40,142 @@ R 함수형 프로그램 작성에 Hadley Wickham이 사용하는 서양식 작�
 바닐라 케이크와 쵸코 케이크 요리재료와 요리법은 거의 유사하다. 차이점이 있다면 밀가루(flour)와 코코아(cocoa)가 
 큰 차이가 나고 나머지 요리법의 절차는 거의 유사하다.
 
-<img src="fig/fp-cupcake.png" alt="컵케이크 요리법" width="70%" />
+<img src="fig/fp-cupcake.png" alt="컵케이크 요리법" width="87%" />
 
 바닐라 케이크와 쵸코 케이크 조리법이 두 페이지에 걸쳐 있는데 이를 한 페이지로 줄이면 다음과 같다.
 즉, 요리재료를 표준화해서 공통 요소를 뽑아내면 밀가루(flour)와 코코아(cocoa)를 바꿔 넣으면 되고,
 요리법의 경우 먼저 요리법을 체계화해서 1단계 예열, 2단계 재료 섞기, 3단계 굽기로 나누고 
 2단계를 좀더 상세하게 마른 재료와 젖은 재료를 섞어 혼합하는 과정으로 체계화한다.
 
-<img src="fig/fp-cupcake-fp.png" alt="컵케이크 요리법 함수형 프로그래밍으로 전환" width="70%" />
+<img src="fig/fp-cupcake-fp.png" alt="컵케이크 요리법 함수형 프로그래밍으로 전환" width="87%" />
+
 
 `mtcars` 데이터셋 각변수에 대한 평균과 중위수를 계산하는 것을 살펴본다. `for` 루프를 사용하는 경우 객체와 
 구현 패턴에 중점을 두게 되어 `mean`, `median` 함수명만 차이나는 `for` 루프가 두개 생성되었다.
 
 
+이를 `purrr` 팩키지를 사용해서 함수형 프로그램으로 작성하면 동작에 중점을 둔 훨씬 간결한 코드가 된다.
+
+<div class = "row">
+<div class = "col-md-6">
+**`for` 루프는 명사에 중점**
+
+
 ~~~{.r}
-# 각 변수 평균을 계산
+means <- vector("double", ncol(mtcars))
 
-out1 <- vector("double", ncol(mtcars))
-
-for(i in seq_along(mtcars)) {
-	out1[[i]] <- mean(mtcars[[i]], na.rm = TRUE)
+for(i in seq_along(means)) {
+    means[[i]] <- mean(mtcars[[i]], na.rm=TRUE)
 }
-
-# 각 변수 중위수를 계산
-out2 <- vector("double", ncol(mtcars))
-
-for(i in seq_along(mtcars)) {
-	out2[[i]] <- median(mtcars[[i]], na.rm = TRUE)
-}
+means
 ~~~
 
-이를 `purrr` 팩키지를 사용해서 함수형 프로그램으로 작성하면 다음과 같다.
+
+
+~~~{.output}
+ [1]  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250
+ [7]  17.848750   0.437500   0.406250   3.687500   2.812500
+
+~~~
+
+
+
+~~~{.r}
+medians <- vector("double", ncol(mtcars))
+for(i in seq_along(mtcars)) {
+    medians[[i]] <- median(mtcars[[i]], na.rm=TRUE)
+}
+medians
+~~~
+
+
+
+~~~{.output}
+ [1]  19.200   6.000 196.300 123.000   3.695   3.325  17.710   0.000
+ [9]   0.000   4.000   2.000
+
+~~~
+
+</div>
+<div class = "col-md-6">
+**함수형 프로그래밍은 동작에 중점**
 
 
 ~~~{.r}
 library(purrr)
 
-means <- map_dbl(mtcars, mean)
-medians <- map_dbl(mtcars, median)
-~~~
-
-
-### 2. 함수도 인자다.
-
-함수도 인자로 넣어 처리할 수 있다는 점이 처음에 이상할 수도 있지만, 함수를 인자로 처리할 경우 코드 중복을 상당히 줄일 수 있다.
-$L_1$, $L_2$, $L_3$ 값을 구하는 함수를 다음과 같이 작성해야 한다. 숫자 1,2,3 만 차이날 뿐 함수 중복이 심하다.
-
-
-* 1단계: 중복이 심한 함수, 기능 구현에 초점을 맞춤
-
-
-~~~{.r}
-f1 <- function(x) abs(x - mean(x)) ^ 1
-f2 <- function(x) abs(x - mean(x)) ^ 2
-f3 <- function(x) abs(x - mean(x)) ^ 3
-~~~
-
-* 2단계: 임시 변수로 처리할 수 있는 부분을 식별하고 적절한 인자명(`power`)을 부여한다.
-
-
-~~~{.r}
-f1 <- function(x) abs(x - mean(x)) ^ power
-f2 <- function(x) abs(x - mean(x)) ^ power
-f3 <- function(x) abs(x - mean(x)) ^ power
-~~~
-
-* 3단계: 식별된 변수명을 함수 인자로 변환한다.
-
-
-~~~{.r}
-f1 <- function(x, power) abs(x - mean(x)) ^ power
-f2 <- function(x, power) abs(x - mean(x)) ^ power
-f3 <- function(x, power) abs(x - mean(x)) ^ power
-~~~
-
-#### 2.1. 기초통계 사례 
-
-특정 변수의 중위수, 평균, 표준편차를 계산하는 함수를 작성하는 경우를 상정한다.
-
-* 1 단계: 각 기능을 구현하는 기능 구현에 초점을 맞춤
-
-
-~~~{.r}
-col_median <- 
-	function(df) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- median(df[[i]])
-		}
-		output
-	}
-
-col_mean <- 
-	function(df) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- mean(df[[i]])
-		}
-		output
-	}
-
-col_sd <- 
-	function(df) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- sd(df[[i]])
-		}
-		output
-	}
-~~~
-
-* 2 단계: `median`, `mean`, `sd`를 함수 인자 `fun` 으로 함수명을 통일.
-
-
-~~~{.r}
-col_median <- 
-	function(df) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- fun(df[[i]])
-		}
-		output
-	}
-
-col_mean <- 
-	function(df) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- fun(df[[i]])
-		}
-		output
-	}
-
-col_sd <- 
-	function(df) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- fun(df[[i]])
-		}
-		output
-	}
-~~~
-
-* 3 단계: 함수 인자 `fun` 을 넣어 중복을 제거.
-
-
-~~~{.r}
-col_median <- 
-	function(df, fun) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- fun(df[[i]])
-		}
-		output
-	}
-
-col_mean <- 
-	function(df, fun) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- fun(df[[i]])
-		}
-		output
-	}
-
-col_sd <- 
-	function(df, fun) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- fun(df[[i]])
-		}
-		output
-	}
-~~~
-
-* 4 단계: 함수를 인자로 갖는 요약통계 함수를 최종적으로 정리하고, 테스트 사례를 통해 검증.
-
-
-~~~{.r}
-col_summary <- 
-	function(df, fun) {
-		output <- numeric(length(df))
-		for (i in seq_along(df)) {
-			output[i] <- fun(df[[i]])
-		}
-		output
-	}
-col_summary(df, fun = median)
+map_dbl(mtcars, mean)
 ~~~
 
 
 
 ~~~{.output}
-[1]  3 30  6  5
+       mpg        cyl       disp         hp       drat         wt 
+ 20.090625   6.187500 230.721875 146.687500   3.596563   3.217250 
+      qsec         vs         am       gear       carb 
+ 17.848750   0.437500   0.406250   3.687500   2.812500 
 
 ~~~
 
 
 
 ~~~{.r}
-col_summary(df, fun = mean)
+map_dbl(mtcars, median)
 ~~~
 
 
 
 ~~~{.output}
-[1]  3.0 30.0  5.0  4.4
+    mpg     cyl    disp      hp    drat      wt    qsec      vs      am 
+ 19.200   6.000 196.300 123.000   3.695   3.325  17.710   0.000   0.000 
+   gear    carb 
+  4.000   2.000 
 
 ~~~
+</div>
+</div>
 
+
+## 3. 함수형 프로그래밍 라이브러리 `purrr` {#purrr-library}
+
+### 3.1. 함수를 데이터로 간주 {#function-is-data-as-well}
+
+함수를 데이터로 간주하는 것도 가능하다. 함수(mean, median, sd)를 리스트로 만들어 놓고 이를 `map` 함수에 
+데이터로 던져서 `mtcars` 데이터셋 각 칼럼별로 평균, 중위수, 표준편차를 구하는 것도 가능하다.
 
 
 ~~~{.r}
-col_summary(df, fun = sd)
+# 3. 함수를 데이터로 간주하는 것도 가능 ------------------
+
+funs_list <- list(mean, median, sd)
+
+map(funs_list, ~ mtcars %>% map_dbl(.x))
 ~~~
 
 
 
 ~~~{.output}
-[1]  1.581139 15.811388  2.915476  1.516575
+[[1]]
+       mpg        cyl       disp         hp       drat         wt 
+ 20.090625   6.187500 230.721875 146.687500   3.596563   3.217250 
+      qsec         vs         am       gear       carb 
+ 17.848750   0.437500   0.406250   3.687500   2.812500 
+
+[[2]]
+    mpg     cyl    disp      hp    drat      wt    qsec      vs      am 
+ 19.200   6.000 196.300 123.000   3.695   3.325  17.710   0.000   0.000 
+   gear    carb 
+  4.000   2.000 
+
+[[3]]
+        mpg         cyl        disp          hp        drat          wt 
+  6.0269481   1.7859216 123.9386938  68.5628685   0.5346787   0.9784574 
+       qsec          vs          am        gear        carb 
+  1.7869432   0.5040161   0.4989909   0.7378041   1.6152000 
 
 ~~~
 
-### 3. 함수형 프로그래밍 라이브러리 `purrr`
+### 3.2. `purrr` 기초 {#purrr-basics}
 
 함수를 인자로 넘기는 방법이 하나만 있는 것은 아니다. `sapply`, `lapply` 함수를 사용하는 방법이 많이 사용되고 있으며, 
 위에서 처럼 직접 함수를 작성해도 되지만, `purrr` 팩키지를 사용하여 기능을 동일한 기능 구현을 통일하는 것도 가능하다.
@@ -274,19 +190,6 @@ sapply(df, mean)
 ~~~{.output}
    a    b    c    d 
  3.0 30.0  5.0  4.4 
-
-~~~
-
-
-
-~~~{.r}
-col_summary(df, mean)
-~~~
-
-
-
-~~~{.output}
-[1]  3.0 30.0  5.0  4.4
 
 ~~~
 
@@ -321,7 +224,7 @@ map_dbl(df, mean)
 * `map_int()` : 정수형 벡터를 반환
 * `map_chr()` : 문자형 벡터를 반환
 
-#### 3.1. `purrr` `map` 함수 `.f` 지정방법
+### 3.3. `purrr` `map` 함수 `.f` 지정방법 {#how-to-use-purrr}
 
 `.f` 함수를 지정하는 다양한 방법을 살펴보면 다음과 같다.
 
@@ -381,3 +284,4 @@ map_dbl(list_of_results, 1)
 
 함수형 프로그래밍은 패턴을 일반화하여 추상화해서, 개발자가 데이터와 동작에 집중하게도록 한다.
 이를 통해 반복문제를 좀더 쉽게 풀 수 있도록 하고, 더 이해하기 좋은 코드를 만들게 돕는다.
+
