@@ -113,12 +113,12 @@ $x_{n-1}$ 보다 $x_n$이, $x_n$ 보다 $x_{n+1}$이 함수 $f$ 근에 더 가�
 
 <div class = "row">
 <div class = "col-md-6">
-**for 루프를 사용한 방법**
+**while 루프를 사용한 방법**
 
 ``` {r fp-newton, message=FALSE}
-find_root <- function(a, init, eps = 10^(-10)){
-    while(abs(init**2 - a) > eps){
-        init <- 1/2 *(init + a/init)
+find_root <- function(guess, init, eps = 10^(-10)){
+    while(abs(init**2 - guess) > eps){
+        init <- 1/2 *(init + guess/init)
         cat("현재 값: ", init, "\n")
     }
     return(init)
@@ -132,13 +132,13 @@ find_root(612, 10)
 **재귀를 사용한 방법**
 
 ``` {r fp-newton-recurrsion, message=FALSE}
-find_root_recur <- function(a, init, eps = 10^(-10)){
-    if(abs(init**2 - a) < eps){
+find_root_recur <- function(guess, init, eps = 10^(-10)){
+    if(abs(init**2 - guess) < eps){
         return(init)
     } else{
-        init <- 1/2 *(init + a/init)
+        init <- 1/2 *(init + guess/init)
         cat("재귀방법 현재 값: ", init, "\n")
-        return(find_root_recur(a, init, eps))
+        return(find_root_recur(guess, init, eps))
     }
 }
 
@@ -162,12 +162,12 @@ find_root_recur(612, 10)
 ``` {r fp-map, message=FALSE}
 # 제곱근 함수 -------------------------------------------
 
-find_root_recur <- function(a, init, eps = 10^(-10)){
-    if(abs(init**2 - a) < eps){
+find_root_recur <- function(guess, init, eps = 10^(-10)){
+    if(abs(init**2 - guess) < eps){
         return(init)
     } else{
-        init <- 1/2 *(init + a/init)
-        return(find_root_recur(a, init, eps))
+        init <- 1/2 *(init + guess/init)
+        return(find_root_recur(guess, init, eps))
     }
 }
 
