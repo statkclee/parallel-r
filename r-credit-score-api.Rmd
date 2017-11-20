@@ -18,11 +18,12 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
 library(tidyverse)
 library(rpart)
-library(recipes)
-library(skimr)
-library(purrr)
-library(ROCR)
-library(twidlr)
+library(randomForest)
+library(rpart.plot)
+library(rpart)
+library(party)
+library(partykit)
+
 options(scipen = 999)
 options(dplyr.width = 120)
 options(dplyr.print_max = 1e9)
@@ -39,7 +40,7 @@ options(dplyr.print_max = 1e9)
 
 그중 [배관공(Plumber)](https://github.com/trestletech/plumber)를 활용하여 신용위험을 알려주는 API를 개발해보자.
 
-<img src="fig/predictive-model-api.png" alt="예측모형 배관공(plumber) 공동작업" width="77%" />
+<img src="fig/predictive-model-api.png" alt="예측모형 배관공(plumber) 공동작업" width="57%" />
 
 ## 2. 신용평가 모형 개발 {#develop-predictive-model}
 
@@ -52,7 +53,7 @@ options(dplyr.print_max = 1e9)
 2. 개발된 신용평가 예측모형 배포: `02-deploy_ml_credit_model.R`
 3. 신용평가 예측 서비스 제공: `03-run-restful-api-credit-model.R`
 
-<img src="fig/credit-model-api-script.png" alt="예측모형 API 스크립트" width="77%" />
+<img src="fig/credit-model-api-script.png" alt="예측모형 API 스크립트" width="97%" />
 
 신용부도 이력을 갖는 데이터(`german credit`)를 가지고 신용평가모형을 개발한다. 
 `randomForest` 팩키지 확률숲(Random Forest) 모형을 기본으로 중요성이 있는 변수 5개를 뽑아내서 
@@ -69,16 +70,16 @@ options(dplyr.print_max = 1e9)
 개발된 신용평가 예측모형을 RESTful API 함수 형태로 개발하여 배포하는 형태로 변형시키고 배포한다.
 
 
-``` {r german-credit-model}
+``` {r german-credit-model, fig.width=12}
 # 0. 환경설정 ----------------
-library(tidyverse)
-library(rpart)
-library(randomForest)
-library(rpart.plot)
-library(rpart)
-library(party)
-library(partykit)
--
+# library(tidyverse)
+# library(rpart)
+# library(randomForest)
+# library(rpart.plot)
+# library(rpart)
+# library(party)
+# library(partykit)
+
 # 1. 데이터 가져오기 ----------------
 
 url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data"

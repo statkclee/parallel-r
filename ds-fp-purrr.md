@@ -2,7 +2,7 @@
 layout: page
 title: R 병렬 프로그래밍
 subtitle: R 함수형 프로그래밍
-date: "2017-11-18"
+date: "2017-11-20"
 output:
   html_document: 
     toc: yes
@@ -285,3 +285,398 @@ map_dbl(list_of_results, 1)
 함수형 프로그래밍은 패턴을 일반화하여 추상화해서, 개발자가 데이터와 동작에 집중하게도록 한다.
 이를 통해 반복문제를 좀더 쉽게 풀 수 있도록 하고, 더 이해하기 좋은 코드를 만들게 돕는다.
 
+## 4. 함수형 프로그래밍을 통한 데이터 분석 [^hadley-r4ds] {#gapminder-purrr}
+
+[^hadley-r4ds]: [Garrett Grolemund and Hadley Wickham(2017), "R for Data Science"](http://r4ds.had.co.nz/many-models.html)
+
+지금까지 학습한 함수형 프로그래밍을 `gapminder` 데이터 분석에 적극 활용해 보자.
+우선, 전세계적으로 국가별로 기대수명(lifeExp)이 연도별로 어떻게 변화해가는지 시각화해보자.
+하지만, 문제는 국가가 너무 많다는 점이다. 142 국가가 있어 국가별로 회귀모형같은 단순한 모형을 
+돌려서 관계를 도출하기가 쉽지 않다.
+
+
+~~~{.r}
+# 0. 환경설정 ------------------
+
+library(tidyverse)
+library(purrr)
+library(gapminder)
+library(broom)
+library(modelr)
+library(gridExtra)
+library(stringr)
+library(ggthemes)
+library(extrafont)
+loadfonts()
+
+# 1. 문제모형 시각화 들어가며 -------------
+
+gapminder %>% 
+    ggplot(aes(year, lifeExp, group = country)) +
+    geom_line(alpha = 1/3)
+~~~
+
+<img src="fig/gapminder-purrr-setup-1.png" title="plot of chunk gapminder-purrr-setup" alt="plot of chunk gapminder-purrr-setup" style="display: block; margin: auto;" />
+
+### 4.1. 가내수공업 방식 {#handicraft-data-analysis}
+
+한땀 한땀 수작업으로 정성스럽게 데이터를 분석하는 방식과 함수를 활용하여 수작업을 좀더 개선하는 형태로 데이터를 분석하는 방식으로 살펴본다.
+
+<div class = "row">
+<div class = "col-md-6">
+**특정국가를 잡아 시각화**
+
+
+~~~{.r}
+# 2. 특정국가 모형 적합 -------------
+
+nz <- gapminder %>%  
+    filter(country == "New Zealand")
+
+orig_g <- nz %>% 
+    ggplot(aes(year, lifeExp)) + 
+    geom_line() + 
+    ggtitle("Full data = ")
+
+nz_mod <- lm(lifeExp ~ year, data = nz)
+
+model_g <- nz %>% 
+    add_predictions(nz_mod) %>%
+    ggplot(aes(year, pred)) + 
+    geom_line() + 
+    ggtitle("Linear trend + ")
+
+resid_g <- nz %>% 
+    add_residuals(nz_mod) %>% 
+    ggplot(aes(year, resid)) + 
+    geom_hline(yintercept = 0, colour = "white", size = 3) + 
+    geom_line() + 
+    ggtitle("Remaining pattern")
+
+grid.arrange(orig_g, model_g, resid_g, ncol=3)
+~~~
+
+<img src="fig/gapminder-viz-procedural-approach-1.png" title="plot of chunk gapminder-viz-procedural-approach" alt="plot of chunk gapminder-viz-procedural-approach" style="display: block; margin: auto;" />
+
+</div>
+<div class = "col-md-6">
+**함수로 시각화**
+
+
+~~~{.r}
+# 4. 함수로 작성 -------------
+
+draw_model <- function(country_name) {
+    df <- gapminder %>%  
+        filter(country == country_name)
+    
+    orig_g <- df %>% 
+        ggplot(aes(year, lifeExp)) + 
+        geom_line() + 
+        theme_bw(base_family = "NanumGothic") +
+        ggtitle("원본 데이터 = ")
+    
+    lm_mod <- lm(lifeExp ~ year, data = df)
+    
+    model_g <- df %>% 
+        add_predictions(lm_mod) %>%
+        ggplot(aes(year, pred)) + 
+        geom_line() + 
+        theme_bw(base_family = "NanumGothic") +
+        ggtitle("선형 추세 + ")
+    
+    resid_g <- df %>% 
+        add_residuals(lm_mod) %>% 
+        ggplot(aes(year, resid)) + 
+        geom_hline(yintercept = 0, colour = "white", size = 3) + 
+        geom_line() + 
+        theme_bw(base_family = "NanumGothic") +
+        ggtitle("남은 패턴")
+    
+    grid.arrange(orig_g, model_g, resid_g, ncol=3)
+}
+
+# draw_model("New Zealand")
+draw_model("Korea, Rep.")
+~~~
+
+<img src="fig/gapminder-viz-with-function-1.png" title="plot of chunk gapminder-viz-with-function" alt="plot of chunk gapminder-viz-with-function" style="display: block; margin: auto;" />
+</div>
+</div>
+
+
+### 4.2. 현대화된 다수 모형 분석방법 {#many-models-with-purrr}
+
+현대화된 다수 모형 분석방법은 3가지 팩키지가 구심적 같은 역할을 수행한다.
+
+- 자료구조는 **중첩 데이터프레임(nested dataframe)**
+- 핵심 프로그래밍은 **함수형 프로그래밍(functional programming)**
+- 모형은 `broom`
+
+<img src="fig/many-models-data-analysis.png" alt="다수 모형 데이터 분석" width="47%" />
+
+
+142개 국가에 대해서 국가별로 기대수명(lifeExp)에 대한 회귀분석을 돌리는 것은 사람이 할 짓이 아니다.
+이를 좀더 체계적으로 수행하기 위해서 `nest()`함수를 활용하여 **중첩 데이터프레임(nested dataframe)**을 도입하여 
+데이터를 `group_by`로 정리하고 나서 회귀모형 함수를 `group_by` 즉, 국가별로 함수형 프로그래밍을 적용하여 수행한다.
+
+- 데이터프레임의 `group_by`로 생성된 키(key)
+- `group_by`로 구분되는 그룹데이터
+- 함수형 프로그래밍으로 적합시킨 회귀모형
+- 각 그룹별로 적합시킨 회귀모형 성능 및 복잡성, 모형을 상세하게 살펴볼 수 있는 세부 데이터
+
+<img src="fig/nested-dataframe-with-many-models.png" alt="중첩데이터프레임" width="97%" />
+
+
+~~~{.r}
+# 2. gapminder 다수 모형 ------------------
+## 2.1. 모형 데이터(중첩 데이터프레임, nested dataframe) 준비 ------------------
+by_country <- gapminder %>% 
+    group_by(continent, country) %>% 
+    nest()
+
+by_country$data[[1]]
+~~~
+
+
+
+~~~{.output}
+# A tibble: 12 x 4
+    year lifeExp      pop gdpPercap
+   <int>   <dbl>    <int>     <dbl>
+ 1  1952  28.801  8425333  779.4453
+ 2  1957  30.332  9240934  820.8530
+ 3  1962  31.997 10267083  853.1007
+ 4  1967  34.020 11537966  836.1971
+ 5  1972  36.088 13079460  739.9811
+ 6  1977  38.438 14880372  786.1134
+ 7  1982  39.854 12881816  978.0114
+ 8  1987  40.822 13867957  852.3959
+ 9  1992  41.674 16317921  649.3414
+10  1997  41.763 22227415  635.3414
+11  2002  42.129 25268405  726.7341
+12  2007  43.828 31889923  974.5803
+
+~~~
+
+
+
+~~~{.r}
+## 2.2. 선형회귀 모형 준비 -----------------
+country_model <- function(df) {
+    lm(lifeExp ~ year, data=df)
+}
+
+## 2.3. 국가별 선형회귀 모형 접합 -----------------
+
+# models <- map(by_country$data, country_model)
+
+by_country <- by_country %>% 
+    mutate(model = map(data, country_model))
+
+names(by_country$model) <- by_country$country
+
+by_country$model["Korea, Rep."]
+~~~
+
+
+
+~~~{.output}
+$`Korea, Rep.`
+
+Call:
+lm(formula = lifeExp ~ year, data = df)
+
+Coefficients:
+(Intercept)         year  
+ -1034.4133       0.5554  
+
+~~~
+
+### 4.3. 현대화된 다수 모형 결과 수집 {#many-models-result-with-purrr}
+
+리스트 칼럼 형태로 중첩 데이터프레임이 준비되면 데이터 뿐만 아니라 앞서 적합시킨 모형,
+그리고 모형 결과를 하나의 데이터프레임에 담을 수 있게 된다.
+이렇게 되면 데이터, 모형, 모형결과를 `group_by` 집단별로 비교하는 것이 용이하다.
+
+
+~~~{.r}
+## 2.4. 국가별 선형모형 결과 -----------------
+
+by_country <- by_country %>% 
+    mutate(
+        tidy    = map(model, broom::tidy),
+        glance  = map(model, broom::glance),
+        rsq     = glance %>% map_dbl("r.squared"),
+        augment = map(model, broom::augment)
+    )
+
+by_country$tidy["Korea, Rep."]
+~~~
+
+
+
+~~~{.output}
+$`Korea, Rep.`
+         term   estimate   std.error statistic      p.value
+1 (Intercept) -1034.4133 38.87692064 -26.60739 1.297646e-10
+2        year     0.5554  0.01963902  28.28043 7.104026e-11
+
+~~~
+
+
+
+~~~{.r}
+by_country$glance["Korea, Rep."]
+~~~
+
+
+
+~~~{.output}
+$`Korea, Rep.`
+  r.squared adj.r.squared    sigma statistic      p.value df    logLik
+1  0.987651     0.9864161 1.174243  799.7828 7.104026e-11  2 -17.86081
+       AIC      BIC deviance df.residual
+1 41.72163 43.17635 13.78846          10
+
+~~~
+
+### 4.4. 데이터 원복 {#many-models-unnest-with-purrr}
+
+`nest()`로 만든 중첩 데이터프레임을 `unnest()` 함수로 중첩 데이터프레임을 풀어서 원복시킨다.
+
+
+~~~{.r}
+## 2.5. unnest 원복 -----------------
+
+unnest(by_country, data)    
+~~~
+
+
+
+~~~{.output}
+# A tibble: 1,704 x 7
+   continent     country       rsq  year lifeExp      pop gdpPercap
+      <fctr>      <fctr>     <dbl> <int>   <dbl>    <int>     <dbl>
+ 1      Asia Afghanistan 0.9477123  1952  28.801  8425333  779.4453
+ 2      Asia Afghanistan 0.9477123  1957  30.332  9240934  820.8530
+ 3      Asia Afghanistan 0.9477123  1962  31.997 10267083  853.1007
+ 4      Asia Afghanistan 0.9477123  1967  34.020 11537966  836.1971
+ 5      Asia Afghanistan 0.9477123  1972  36.088 13079460  739.9811
+ 6      Asia Afghanistan 0.9477123  1977  38.438 14880372  786.1134
+ 7      Asia Afghanistan 0.9477123  1982  39.854 12881816  978.0114
+ 8      Asia Afghanistan 0.9477123  1987  40.822 13867957  852.3959
+ 9      Asia Afghanistan 0.9477123  1992  41.674 16317921  649.3414
+10      Asia Afghanistan 0.9477123  1997  41.763 22227415  635.3414
+# ... with 1,694 more rows
+
+~~~
+
+
+
+~~~{.r}
+unnest(by_country, tidy)
+~~~
+
+
+
+~~~{.output}
+# A tibble: 284 x 8
+   continent     country       rsq        term      estimate    std.error
+      <fctr>      <fctr>     <dbl>       <chr>         <dbl>        <dbl>
+ 1      Asia Afghanistan 0.9477123 (Intercept)  -507.5342716 40.484161954
+ 2      Asia Afghanistan 0.9477123        year     0.2753287  0.020450934
+ 3    Europe     Albania 0.9105778 (Intercept)  -594.0725110 65.655359062
+ 4    Europe     Albania 0.9105778        year     0.3346832  0.033166387
+ 5    Africa     Algeria 0.9851172 (Intercept) -1067.8590396 43.802200843
+ 6    Africa     Algeria 0.9851172        year     0.5692797  0.022127070
+ 7    Africa      Angola 0.8878146 (Intercept)  -376.5047531 46.583370599
+ 8    Africa      Angola 0.8878146        year     0.2093399  0.023532003
+ 9  Americas   Argentina 0.9955681 (Intercept)  -389.6063445  9.677729641
+10  Americas   Argentina 0.9955681        year     0.2317084  0.004888791
+# ... with 274 more rows, and 2 more variables: statistic <dbl>,
+#   p.value <dbl>
+
+~~~
+
+
+
+~~~{.r}
+unnest(by_country, glance, .drop = TRUE)    
+~~~
+
+
+
+~~~{.output}
+# A tibble: 142 x 14
+   continent     country       rsq r.squared adj.r.squared     sigma
+      <fctr>      <fctr>     <dbl>     <dbl>         <dbl>     <dbl>
+ 1      Asia Afghanistan 0.9477123 0.9477123     0.9424835 1.2227880
+ 2    Europe     Albania 0.9105778 0.9105778     0.9016355 1.9830615
+ 3    Africa     Algeria 0.9851172 0.9851172     0.9836289 1.3230064
+ 4    Africa      Angola 0.8878146 0.8878146     0.8765961 1.4070091
+ 5  Americas   Argentina 0.9955681 0.9955681     0.9951249 0.2923072
+ 6   Oceania   Australia 0.9796477 0.9796477     0.9776125 0.6206086
+ 7    Europe     Austria 0.9921340 0.9921340     0.9913474 0.4074094
+ 8      Asia     Bahrain 0.9667398 0.9667398     0.9634138 1.6395865
+ 9      Asia  Bangladesh 0.9893609 0.9893609     0.9882970 0.9766908
+10    Europe     Belgium 0.9945406 0.9945406     0.9939946 0.2929025
+# ... with 132 more rows, and 8 more variables: statistic <dbl>,
+#   p.value <dbl>, df <int>, logLik <dbl>, AIC <dbl>, BIC <dbl>,
+#   deviance <dbl>, df.residual <int>
+
+~~~
+
+### 4.5. 데이터 원복 시각화 {#many-models-unnest-viz-with-purrr}
+
+원복시킨 데이터를 바탕으로 시각화를 통해 대륙(`continent`)별로 비교한다.
+
+
+~~~{.r}
+## 2.6. 모형 시각화 -----------------
+
+resid_g <- by_country %>% 
+    unnest(augment) %>% 
+    ggplot(aes(year, .resid)) +
+    geom_line(aes(group=country), alpha = 1/3) +
+    geom_smooth(se=FALSE) +
+    geom_hline(yintercept = 0, color = "white") +
+    facet_wrap(~continent) +
+    theme_bw(base_family="NanumGothic")
+
+lifeExp_g <- by_country %>% 
+    # filter(country == "Korea, Rep.") %>% 
+    unnest(augment) %>% 
+    ggplot(aes(year, lifeExp)) +
+    geom_point(alpha = 1/3) +
+    geom_smooth(se=FALSE) +
+    geom_hline(yintercept = 0, color = "white")  +
+    facet_wrap(~continent) +
+    theme_bw(base_family="NanumGothic")
+
+grid.arrange(resid_g, lifeExp_g, ncol=2)
+~~~
+
+<img src="fig/many-models-unnest-viz-1.png" title="plot of chunk many-models-unnest-viz" alt="plot of chunk many-models-unnest-viz" style="display: block; margin: auto;" />
+
+### 4.6. 다수 모형을 통한 데이터 분석 - $R^2$와 회귀계수 {#many-models-r2-coefficient}
+
+결정계수와 회귀계수를 뽑아내서 예측한 것과 비교하여 차이나는 부분을 쉽게 탐지해낼 수 있다.
+
+
+~~~{.r}
+## 2.7. R^2 vs. Estimates -----------------
+
+by_country %>% 
+    unnest(tidy) %>% 
+    filter(term == "year") %>% 
+    ggplot(aes(rsq, estimate,color=continent)) +
+    geom_point(aes(group=continent), alpha = 1/3) +
+    geom_smooth(se=FALSE) +
+    geom_hline(yintercept = 0, color = "white") +
+    theme_bw(base_family="NanumGothic") +
+    theme(legend.position = "top") +
+    labs(x="결정계수", y="연도별 기대수명 증가 추정값")
+~~~
+
+<img src="fig/many-models-r2-coefficient-1.png" title="plot of chunk many-models-r2-coefficient" alt="plot of chunk many-models-r2-coefficient" style="display: block; margin: auto;" />
