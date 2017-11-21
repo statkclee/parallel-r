@@ -37,9 +37,9 @@ title: R 병렬 프로그래밍
         - [STAT545 자동화 - Make](r-stat545-make.html)
         - Drake Make(데이터)
 1. **[R 실운영환경(R in Production)](r-restful-production)**
-    - [웹에서 운영되는 R(plumber)](r-in-production-plumber.html)
-    - [신용위험 확률(plumber) API](r-credit-score-api.html)
     - [RESTful API 개발환경](r-restful-api-test.html)
+    - [신용위험 확률(plumber) API](r-credit-score-api.html)
+    - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)
     - [OpenCPU RESTful API](r-opencpu-api-hello.html)
 1. [**함수형 프로그래밍(Functional Programming)**](ds-fp.html)
     - [R 함수 작성](ds-fp-write-fn.html)
