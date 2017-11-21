@@ -1,26 +1,6 @@
----
-layout: page
-title: R 병렬 프로그래밍
-subtitle: OpenCPU RESTful API
-output:
-  html_document: 
-    toc: yes
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
----
+# R 병렬 프로그래밍
 
-``` {r, include=FALSE}
-source("tools/chunk-options.R")
-knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
-library(tidyverse)
-library(rpart)
-options(scipen = 999)
-options(dplyr.width = 120)
-options(dplyr.print_max = 1e9)
-```
 
 
 ## 1. OpenCPU 
@@ -30,8 +10,8 @@ options(dplyr.print_max = 1e9)
 간단한 R 팩키지 개발에 대한 내용은 [R 팩키지 - 헬로우 월드](http://statkclee.github.io/data-science/r-pkg-hello-world.html)를 참조한다.
 
 
-``` {r opencpu-hello-world, eval=FALSE}
 
+~~~{.r}
 # 0. 환경설정 --------------------------------------------
 # install.packages("opencpu") # OpenCPU 설치
 
@@ -65,7 +45,6 @@ $ curl http://localhost:8000/ocpu/library/webzenr/R/cat_function/json \
 >   -d '{"love": "FALSE"}' \
 >   -H "Content-Type: application/json"
 ["I am not a cool person."]
-
-```
+~~~
 
 
