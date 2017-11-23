@@ -37,6 +37,7 @@ title: R 병렬 프로그래밍
         - [STAT545 자동화 - Make](r-stat545-make.html)
         - Drake Make(데이터)
 1. **[R 실운영환경(R in Production)](r-restful-production)**
+    - [기계학습 - 기술부채(Technical Debt)](http://statkclee.github.io/ml/ml-technical-debt.html)
     - [RESTful API 개발환경](r-restful-api-test.html)
     - [신용위험 확률(plumber) API](r-credit-score-api.html)
     - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)
