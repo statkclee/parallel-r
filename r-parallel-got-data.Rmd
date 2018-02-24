@@ -1,0 +1,118 @@
+---
+layout: page
+title: R 병렬 프로그래밍
+date: "`r Sys.Date()`"
+subtitle: GoT 데이터
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+mainfont: NanumGothic
+---
+
+``` {r, include=FALSE}
+source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, fig.width = 12)
+```
+
+
+# 1. 왕좌의 게임 데이터 {#got-data}
+
+왕좌의 게임 데이터를 R 언어를 통해 얻는 방법은 크게 3가지로 나눌 수 있다.
+
+- `repurrrsive` 팩키지에 사전 준비된 데이터
+- `GoTr` 팩키지 API를 통해 데이터를 가져오는 방법
+- <https://anapioficeandfire.com> API 에서 직접 데이터를 가져오는 방법
+
+# 2. [repurrrsive](https://github.com/jennybc/repurrrsive) 팩키지 {#got-data-repurrrsive}
+
+`repurrrsive` 팩키지 R CRAN에서 `install.packages("repurrrsive")` 팩키지를 설치하는 방법으로 
+Jenny Bryan 교수가 학생들에게 재미난 데이터를 가지고 데이터과학을 교육하고자하는 열망으로 
+[An API of Ice And Fire](https://anapioficeandfire.com/) 에서 데이터를 추출하여 R 팩키지 내부 데이터로 정제를 시켜놓은 것이다.
+
+왕좌의 게임 등장인물에 대한 데이터를 `got_chars` 리스트 형태로 준비를 해뒀기 때문에 바로 불러서 사용하면 된다.
+
+- `listviewer::jsonedit(got_chars)`
+
+
+``` {r got-data-setup}
+# 0. 환경설정 -----
+library(tidyverse)
+library(purrr)
+library(repurrrsive)
+library(lubridate)
+# devtools::install_github("MangoTheCat/GoTr")
+library(GoTr)
+library(rvest)
+library(httr)
+library(jsonlite)
+
+# 1. 데이터 가져오기 -----
+
+## 1.1. repurrrsive 팩키지 내부 데이터
+listviewer::jsonedit(got_chars)
+```
+
+# 3. `GoTr` 팩키지 API로 데이터 가져오기 {#got-data-GoTr}
+
+<https://anapioficeandfire.com> API를 활용하여 R 에서 활용하기 편리한 형태로 팩키지로 만들어 놨다.
+따라서, `devtools::install_github("MangoTheCat/GoTr")` 명령어로 `GoTr` 팩키지를 설치하고 
+`got_api()` 함수에 적절한 인자를 넣어 주면 데이터를 받아낼 수 있다.
+
+- [R wrapper for An API of Ice And Fire](https://github.com/MangoTheCat/GoTr)
+
+위키백과사전 [List of Game of Thrones characters](https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters) 웹페이지에서
+왕좌의 게임 등장인물명을 추출한 후에 이를 `got_api()` 함수 전달하여 등장인물에 대한 세부내용을 데이터로 가져온다.
+
+``` {r GoTr-package}
+## 1.2. R 팩키지를 통한 API 호출 데이터 가져오기: GoTr
+jon_snow <- got_api(type = "characters", id = "583")
+characters_lst <- got_api(type = "characters", query = list(name = "Jaqen H'ghar"))
+
+char_dat <- read_html("https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_characters") %>% 
+    html_nodes(xpath = '//*[@id="mw-content-text"]/div/table[2]')  %>% 
+    html_table(fill=TRUE) %>% 
+    .[[1]]
+
+char_df <- char_dat %>% 
+    setNames(char_dat[1,]) %>% 
+    filter(!str_detect(Character, "^Character")) %>% 
+    mutate(Character = case_when(str_detect(Character, "Ned") ~ "Eddard Stark",
+                                 str_detect(Character, "Littlefinger") ~ "Petyr Baelish",
+                                 str_detect(Character, "The Hound") ~ "Sandor Clegane",
+                                 TRUE ~ Character))
+
+char_lst <- vector("list", length(char_df$Character))
+
+for(i in seq_along(char_lst)) {
+    char_lst[[i]] <- got_api(type = "characters", query = list(name = char_df$Character[i]))
+}
+
+listviewer::jsonedit(char_lst)
+```
+
+# 4. <https://anapioficeandfire.com> API에서 직접 가져오기 {#got-data-api}
+
+`httr` 팩키지 `GET()` 함수를 활용하여 <https://anapioficeandfire.com> API에서 직접 데이터를 가져온다.
+`modify_url()` 함수로 RESTful API 자원에 접근하는 url 주소를 명세하고 나서, `GET()`으로 원데이터를 불러온 후에 
+`content()` 함수로 데이터만 발라내고, `fromJSON()` 함수로 JSON을 데이터프레임형태로 변환시킨다. 
+
+``` {r GoTr-api}
+## 1.3. 직접 API 호출
+
+char_api_lst <- vector("list", length(char_df$Character))
+
+for(i in seq_along(char_lst)) {
+
+    src_url <- modify_url("https://anapioficeandfire.com", path = "api/characters", query = list(name = char_df$Character[i]))
+    res <- GET(url = src_url)
+    char_api_lst[[i]] <- content(res, as="text", encoding="UTF-8") %>% 
+        fromJSON(flatten=TRUE)
+}
+
+listviewer::jsonedit(char_api_lst)
+```
+
+
