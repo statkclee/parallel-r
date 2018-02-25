@@ -54,6 +54,7 @@ title: R 병렬 프로그래밍
     - [멀티코어 병렬 프로그래밍 - doParallel](r-doparallel.html)
     - **왕좌의 게임(Game of Thrones) - 데이터 사각화(Data Rectangling)**
     	- [GoT 데이터](r-parallel-got-data.html)
+    	- [GoT 데이터 - 데이터 정제](r-parallel-got-wrangling.html)
 1. [추천 시스템(Recommendation System)](recommendation-sys.html)
     - [영화진흥위원회 오픈API - 스크린수와 매출](kofic-movie-api.html)
     - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)](recommendation-nonpersonal.html)
