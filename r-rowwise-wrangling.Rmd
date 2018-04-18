@@ -1,0 +1,94 @@
+---
+layout: page
+title: R 병렬 프로그래밍
+subtitle: 열이 아닌 행(row) 데이터 조작
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+mainfont: NanumGothic
+---
+
+``` {r, include=FALSE}
+source("tools/chunk-options.R")
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+library(tidyverse)
+options(scipen = 999)
+options(dplyr.width = 120)
+options(dplyr.print_max = 1e9)
+```
+
+# 1. 행방향(row-wise) 데이터 다루기 [^row-wise-rstudio] [^row-wise-performance] {#row-wise-data-wrangling}
+
+[^row-wise-rstudio]: ["Thinking inside the box: you can do that inside a data frame?!", Jenny Bryan Software Engineer, RStudio](https://github.com/rstudio/webinars/tree/master/54-row-oriented-work)
+
+[^row-wise-performance]: [Winston Chang, "Applying a function over rows of a data frame"](https://rpubs.com/wch/200398)
+
+R에서 열 칼럼(column)은 매우 특별한 의미를 갖는데 특히, 데이터분석에서는 환상적이다. 
+하지만, 역으로 행방향 데이터 작업은 일반적이지 않고 쉽게 말해 열 칼럼방향으로 데이터를 다루는 것보다 어렵다.
+
+빅데이터 시대 다양한 유형의 데이터를 데이터분석가 혹은 데이터 과학자가 마주하게 되면 
+
+이러한 질문에 행방향 데이터 처리에 대해 코드를 작성하기 쉽고, 코드를 읽기 쉽고, 코드의 실행시간이 짧게 걸리는 것이 권장되는 R 코드다.
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">what&#39;s a safe way to iterate over rows of a dataframe? re: <a href="https://t.co/goizEjISry">https://t.co/goizEjISry</a> <a href="https://twitter.com/hashtag/rstats?src=hash&amp;ref_src=twsrc%5Etfw">#rstats</a></p>&mdash; Dean Attali (@daattali) <a href="https://twitter.com/daattali/status/761058049859518464?ref_src=twsrc%5Etfw">August 4, 2016</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+# 2. 맛보기 {#row-wise-taste}
+
+데이터프레임을 리스트로 변화하는 사례를 살펴보자. 먼저 데이터프레임을 하나 생성한다.
+
+```{r dataframe}
+# 0. 환경설정 -----
+library(tidyverse)
+
+# 1. 데이터 -----
+## 데이터 프레임
+i_have_df <- tribble(
+    ~x, ~y, ~가나다,
+    1L, "one", "하나",
+    2L, "two", "둘"
+)
+```
+
+다양한 방법이 있지만, 먼저 `pmap()` 함수에 `list()` 함수를 적용시키게 되면 각 행에 대해서 리스트 변환작업을 하고 
+결과를 리스트로 반환한다.
+
+마찬가지로 리스트를 데이터프레임으로 변환하는 방법을 살펴보자. [^spread-duplicate]
+이를 위해서 `map_df()` 함수로 리스트 자료구조 객체에 `enframe()` 함수를 적용시켜 `tibble` 자료구조를 만들고 나서 `spread()` 함수로 원복시킨다.
+
+[^spread-duplicate]: [Spread with duplicate identifiers (using tidyverse and %>%)](https://stackoverflow.com/questions/43259380/spread-with-duplicate-identifiers-using-tidyverse-and)
+
+<div class = "row">
+  <div class = "col-md-6">
+**데이터프레임 &rarr; 리스트 **
+
+``` {r dataframe-to-list}
+## 데이터프레임 --> 리스트 
+(i_want_list <- pmap(i_have_df, list))
+```
+  </div>
+
+  <div class = "col-md-6">
+**리스트 &rarr; 데이터프레임**
+
+``` {r list-to-dataframe}
+## 리스트 --> 데이터프레임
+map_df(i_want_list, enframe, name="xyz") %>% 
+    mutate(value = value %>% unlist) %>% 
+    group_by(xyz) %>% 
+    mutate(ind = row_number()) %>% 
+    spread(xyz, value) %>% 
+    select(-ind)
+```
+  </div>
+
+</div>
+
+
+
+
+
