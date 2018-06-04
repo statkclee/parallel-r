@@ -8,6 +8,7 @@ output:
     toc_float: true
     highlight: tango
     code_folding: show
+    number_section: true
 mainfont: NanumGothic
 ---
 
@@ -22,7 +23,7 @@ options(dplyr.width = 120)
 options(dplyr.print_max = 1e9)
 ```
 
-# 1. GSS TV 시청시간 {#gss-tvhours-data}
+# GSS TV 시청시간 {#gss-tvhours-data}
 
 [General Social Survey](http://gss.norc.org/)는 1972년 이래로 미국인 생각하는 다양한 사회이슈에 대한 설문결과 조사를 제공하고 있다.
 또한, GSS 데이터는 [openCPU](https://www.opencpu.org/) HTTP API 사례로 사용되고 있다.
@@ -39,25 +40,34 @@ $$\text{TV 시청시간} = f(\text{age, marital, sex, income}) + \epsilon$$
 다만, `openCPU`는 과학기술 분야에 방점을 두고 있다. [Deploying a scoring engine for predictive analytics with OpenCPU June 23, 2014](https://www.opencpu.org/posts/scoring-engine/) 웹페이지에서
 원본 데이터를 다운로드 받을 수 있다.
 
-# 2. RStudio 프로젝트 구조 {#gss-tvhours-data-project}
+<img src="fig/gss-tvhours-restful-api.png" alt="TV 시청시간 Restful API" width="100%" />
+
+1. 훈련데이터를 대상으로 탐색적 데이터분석을 진행한다.
+1. `caret`을 기반으로 다양한 예측모형을 넣어 최적의 예측모형을 구축한다.
+1. 최종 선택한 예측모형을 배포한다.
+1. 선택된 예측모형에 기반하여 예측할 데이터를 준비한다.
+1. Restful API 서버에 모형을 배포한다.
+1. TV 시청시간 예측 서비스를 제공한다.
+
+# RStudio 프로젝트 구조 {#gss-tvhours-data-project}
 
 RStudio 프로젝트를 하나 생성하고 나서... `gss_tvhours` 디렉토리를 생성하고 RESTful API 서비스 개발에 필요한 모든 파일을 한 곳에 몰아 놓는다.
 
 ```{r rstudio-project-structure, eval = FALSE}
 \rproject
  +--\code
+    | predictive-model.R
  +--\data
     | GSS2012.sav
  +--\gss_tvhours
-    | 01-predictive-model.R
-    | 02-serve-model.R
+    | serve-model.R
     | glm_m.rds
     | server.R
 ```
 
-# 3. TV 시청시간 예측 서비스 {#gss-tvhours-data-restful-api}
+# TV 시청시간 예측 서비스 {#gss-tvhours-data-restful-api}
 
-## 3.1. `caret` 예측모형 {#gss-tvhours-data-restful-api-caret}
+## `caret` 예측모형 {#gss-tvhours-data-restful-api-caret}
 
 TV 시청시간 예측 문제는 예측변수가 연속형으로 회귀모형으로 간주할 수 있다.
 그리고 `GSS2012.sav` 데이터의 입력변수가 많기 때문에 변수 선택과정을 건너뛰고, 
@@ -130,12 +140,18 @@ model_arch <- testing %>%
            CART = predict(cart_m, testing),
            RF = predict(rf_m, testing),
            XGB = predict(xgboost_m, testing))
+    
+glm_metric_df      <- metrics(model_arch, truth = tvhours, estimate = GLM)
+cart_metric_df     <- metrics(model_arch, truth = tvhours, estimate = CART)
+rf_metric_df       <- metrics(model_arch, truth = tvhours, estimate = RF)
+xgboost_metric_df  <- metrics(model_arch, truth = tvhours, estimate = XGB)
 
-metrics(model_arch, truth = tvhours, estimate = GLM)
-metrics(model_arch, truth = tvhours, estimate = CART)
-metrics(model_arch, truth = tvhours, estimate = RF)
-metrics(model_arch, truth = tvhours, estimate = XGB)
 
+bind_rows(glm_metric_df, cart_metric_df) %>% 
+    bind_rows(rf_metric_df) %>% 
+    bind_rows(xgboost_metric_df) %>% 
+    DT::datatable() %>% 
+    DT::formatRound(c("rmse", "rsq"), digits=2)
 
 ## 2.4. 모형 성능 ----- 
 metrics(model_arch, truth = tvhours, estimate = GLM)
@@ -144,7 +160,7 @@ metrics(model_arch, truth = tvhours, estimate = GLM)
 # glm_m %>% write_rds("gss_model/glm_m.rds")
 ```
 
-## 3.2. RESTful API 서비스 개발 {#gss-tvhours-data-restful-api-convert}
+## RESTful API 서비스 개발 {#gss-tvhours-data-restful-api-convert}
 
 일반화선형모형으로 TV 시청시간 예측모형으로 선정했다면 이를 RESTful API 서비스로 변환시킨다.
 이를 위해서 `health_check` 서비스로 RESTful API가 정상 동작이 되는지 확인하고 나서,
@@ -152,6 +168,7 @@ metrics(model_arch, truth = tvhours, estimate = GLM)
 웹서비스를 통해 입력받는 데이터를 R 데이터프레임으로 변환시키고 나서, `predict()` 함수로 TV 시청시간을 예측하고 이를 반환한다.
 
 ``` {r gss-tvhours-restful-api-model-convert, eval=FALSE}
+# serve-model.R
 # 0. 환경설정 -----
 library(plumber)
 
@@ -190,17 +207,82 @@ predict_tvhours <- function(age=NA, marital=NULL, sex=NULL, income=NULL) {
 }
 ```
 
-## 3.3. TV 시청시간 예측 서비스 {#gss-tvhours-data-restful-api-service}
+## TV 시청시간 예측 서비스 {#gss-tvhours-data-restful-api-service}
 
 다음 코드로 RStudio에서 서비스를 실행시키면 TV 시청시간 서비스가 구동하게 되는데 
 웹브라우저 주소창에 `http://localhost:8000/tvhours?age=36&marital=5&sex=2&income=12`을 입력하거나
 Postman, curl을 통해 TV 시청시간 결과값을 반환 받을 수 있다.
 
 ``` {r gss-tvhours-restful-api-model-service, eval=FALSE}
+# server.R
 library(plumber)
 
-serve_model <- plumb("gss_tvhours/02-serve-model.R")
+serve_model <- plumb("gss_tvhours/serve-model.R")
 serve_model$run(port = 8000)
 ```
 
 <img src="fig/gss-tvhours.png" alt="GSS TV 시청시간" width="100%" />
+
+# TV 시청시간 AWS 클라우드 서비스 [^plumber-api-on-aws] {#gss-tvhours-data-restful-api-service-aws}
+
+[^plumber-api-on-aws]: [Andrew B. Collier (2017-09-14), Hosting a Plumber API on AWS](http://www.exegetic.biz/blog/2017/09/plumber-api-on-aws/)
+
+TV 시청시간 예측 서비스를 AWS EC2위에 배포(`srv/shiny-server/gss-tvhours`)하고 나서 
+`Rscript server.R`을 실행시키게 되면 `plumber` Restful API 서비스가 올라가기는 하지만 제대로 이용할 수 없다.
+
+``` {r gss-tvhours-restful-api-model-service-on-aws, eval=FALSE}
+$ Rscript server.R
+```
+
+
+## 문제확인 {#gss-tvhours-data-restful-api-service-aws-problem}
+
+[MobaXterm: Enhanced terminal for Windows with X11 server, tabbed SSH client, network tools and much more](https://mobaxterm.mobatek.net/)을 다운로드 받아 설치하게 되면 `telnet` 명령어를 던질 수 있다. 
+이를 통해서 접속이 되지 않음이 확인된다.
+
+``` {r aws-restful-api-error, eval=FALSE}
+[victor-PC1] $ telnet ec2-1xx-xxx-xxx-xx.ap-northeast-2.compute.amazonaws.com 8000
+Trying 1x.xxx.xx.xxx...
+telnet: Unable to connect to remote host: Connection refused
+```
+
+
+`sudo iptables -L`, `netstat -an | grep 8000` 명령얼르 통해서 **8000** 포트를 확인한다.
+8000 포드는 `loopback` 인터페이스에 대응되는 것이 확인되어 이를 `plumber` 코드에 반영하면 된다.
+
+``` {r aws-restful-api-error-investigate, eval=FALSE}
+ubuntu@ip-xxx-xx-xx-7:~$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+ubuntu@ip-xxx-xx-xx-7:~$ netstat -an | grep 8000
+tcp        0      0 127.0.0.1:8000          0.0.0.0:*               LISTEN
+```
+
+## 문제해결 {#gss-tvhours-data-restful-api-service-aws-problem-fix}
+
+`serve_model$run(host = "0.0.0.0", port = 8000)`에 `host = "0.0.0.0"`를 반영시키면 문제를 해결할 수 있다.
+
+``` {r aws-restful-api-error-fix-it, eval=FALSE}
+# server.R
+library(plumber)
+
+serve_model <- plumb("gss_tvhours/serve-model.R")
+serve_model$run(host = "0.0.0.0", port = 8000)
+```
+
+`8000` 포트에 `netstat -an | grep 8000` 명령어를 통해 정상적으로 대응된 모습은 다음과 같다.
+
+``` {r aws-restful-api-error-investigate-ok, eval=FALSE}
+ubuntu@ip-xxx-xx-xx-7:~$ netstat -an | grep 8000
+tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN
+```
+
+`http://http://ec2-xx-xxx-xx-xxx.ap-northeast-2.compute.amazonaws.com:8000/tvhours?age=36&marital=5&sex=2&income=12` 와 같은 방식으로 호출을 하게 되면 TV 시청시간에 대한 응답을 얻을 수 있다.
+
+
