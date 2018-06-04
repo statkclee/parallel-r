@@ -385,14 +385,14 @@ xgboost_metric_df  &lt;-<span class="st"> </span><span class="kw">metrics</span>
 <span class="st">    </span><span class="kw">bind_rows</span>(xgboost_metric_df) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span>DT<span class="op">::</span><span class="kw">datatable</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span>DT<span class="op">::</span><span class="kw">formatRound</span>(<span class="kw">c</span>(<span class="st">&quot;rmse&quot;</span>, <span class="st">&quot;rsq&quot;</span>), <span class="dt">digits=</span><span class="dv">2</span>)</code></pre></div>
-<div id="htmlwidget-448e3f5c26c3b75ad8d8" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-448e3f5c26c3b75ad8d8">{"x":{"filter":"none","data":[["1","2","3","4"],[2.30075808961233,2.30479572520524,2.29885078102843,2.86409515919666],[0.0609086446426873,0.0544449416682847,0.065051943596796,0.0113410269781001]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>rmse<\/th>\n      <th>rsq<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-1d7d2cdb5ba067d2989e" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1d7d2cdb5ba067d2989e">{"x":{"filter":"none","data":[["1","2","3","4"],[2.56041074960412,2.61137798375392,2.54954763253322,2.93389985521159],[0.0428263986107291,0.0234041038421822,0.047280768852682,0.0120053624828994]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>rmse<\/th>\n      <th>rsq<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nDTWidget.formatRound(this, row, data, 1, 2, 3, ',', '.');\nDTWidget.formatRound(this, row, data, 2, 2, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.4. 모형 성능 ----- 
 <span class="kw">metrics</span>(model_arch, <span class="dt">truth =</span> tvhours, <span class="dt">estimate =</span> GLM)</code></pre></div>
 <pre class="output"><code># A tibble: 1 x 2
    rmse    rsq
   &lt;dbl&gt;  &lt;dbl&gt;
-1  2.30 0.0609
+1  2.56 0.0428
 </code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 3. 모형 배포 ----- </span>
 <span class="co"># glm_m %&gt;% write_rds(&quot;gss_model/glm_m.rds&quot;)</span></code></pre></div>
@@ -484,6 +484,16 @@ serve_model<span class="op">$</span><span class="kw">run</span>(<span class="dt"
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ubuntu<span class="op">@</span>ip<span class="op">-</span>xxx<span class="op">-</span>xx<span class="op">-</span>xx<span class="op">-</span><span class="dv">7</span><span class="op">:</span><span class="er">~$</span><span class="st"> </span>netstat <span class="op">-</span>an <span class="op">|</span><span class="st"> </span>grep <span class="dv">8000</span>
 tcp        <span class="dv">0</span>      <span class="dv">0</span> <span class="fl">0.0</span>.<span class="fl">0.0</span><span class="op">:</span><span class="dv">8000</span>            <span class="fl">0.0</span>.<span class="fl">0.0</span><span class="op">:</span><span class="er">*</span><span class="st">               </span>LISTEN</code></pre></div>
 <p><code>http://http://ec2-xx-xxx-xx-xxx.ap-northeast-2.compute.amazonaws.com:8000/tvhours?age=36&amp;marital=5&amp;sex=2&amp;income=12</code> 와 같은 방식으로 호출을 하게 되면 TV 시청시간에 대한 응답을 얻을 수 있다.</p>
+</div>
+<div id="gss-tvhours-data-restful-api-service-aws-deployment" class="section level2">
+<h2><span class="header-section-number">4.3</span> 배포</h2>
+<p><code>serve_pm.sh</code> 쉘스크립트 파일을 다음과 같이 작성하여 <code>ubuntu@ip-xxx-xx-xx-7:/srv/shiny-server/gss_tvhours# ./serve_pm.sh &amp;</code> 실행시키면 배포가 된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 파일명: serve_pm.sh
+<span class="co">#!/usr/bin/env Rscript</span>
+
+<span class="kw">library</span>(plumber)
+serve_model &lt;-<span class="st"> </span><span class="kw">plumb</span>(<span class="st">&quot;gss_tvhours/serve-model.R&quot;</span>)
+serve_model<span class="op">$</span><span class="kw">run</span>(<span class="dt">host=</span><span class="st">&quot;0.0.0.0&quot;</span>, <span class="dt">port =</span> <span class="dv">8000</span>)</code></pre></div>
 </div>
 </div>
 <div class="footnotes">

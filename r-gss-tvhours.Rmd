@@ -285,4 +285,16 @@ tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN
 
 `http://http://ec2-xx-xxx-xx-xxx.ap-northeast-2.compute.amazonaws.com:8000/tvhours?age=36&marital=5&sex=2&income=12` 와 같은 방식으로 호출을 하게 되면 TV 시청시간에 대한 응답을 얻을 수 있다.
 
+## 배포 {#gss-tvhours-data-restful-api-service-aws-deployment}
 
+`serve_pm.sh` 쉘스크립트 파일을 다음과 같이 작성하여 
+`ubuntu@ip-xxx-xx-xx-7:/srv/shiny-server/gss_tvhours# ./serve_pm.sh &` 실행시키면 배포가 된다.
+
+``` {r gss-tvhours-aws-deploy-shell, eval=FALSE}
+## 파일명: serve_pm.sh
+#!/usr/bin/env Rscript
+
+library(plumber)
+serve_model <- plumb("gss_tvhours/serve-model.R")
+serve_model$run(host="0.0.0.0", port = 8000)
+```
