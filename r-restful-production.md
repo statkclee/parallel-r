@@ -1,19 +1,48 @@
 ---
 layout: page
 title: R 병렬 프로그래밍
-subtitle: R 실운영환경 (R in Production)
+subtitle: 배포(deployment) = 기계학습 모형 사용
 output:
   html_document: 
     toc: yes
     toc_float: true
     highlight: tango
+    number_section: true
     code_folding: show
 mainfont: NanumGothic
 ---
 
 
 
-# 1. 예측모형 양산환경 [^r-as-a-webservice] {#r-in-production}
+# ML 모형을 실운영계로 적용 [^kevin-deploy] {#r-deployment-hard}
+
+[^kevin-deploy]: [Kevin Kuo (Jun 5, 2018), "From Prototyping to Deployment at Scale with R and sparklyr", Spark+AI Summit](https://sais2018.netlify.com/)
+
+기계학습(ML) 모형을 실운영계에 적용시킨다는 것의 의미는 개발된 예측모형을 누군가 사용하도록 만든다는 의미가 된다.
+즉, 누군가 기계학습 모형을 예측에 사용하게 된다. 그럼 어떻게 사용하게 할 수 있을까?
+
+크게 배치(batch) 모형과 실시간(real-time) 두가지 방식으로 나눌 수 있다.
+배치모형은 아래 데이터베이스 모형으로 간주되고, 실시간 모형은 `RESTful API` 모형으로 구현된다.
+
+그런데 왜 배포가 어려운가? 이 문제를 생각해 보면 기계학습 모형을 운영계에 적용시킬 경우 다양한 기술과 전문성이 요구되기 때문이다.
+이 말을 풀어서 보면 많은 사람이 기계학습 모형 배포과정에 가담하게 되면 자동으로 많은 문제가 야기된다.
+
+- 사업(Business) 
+- 데이터 과학(Data Science)
+- 데이터 엔지니어링(Data Engineering)
+- 운영(Operation)
+
+사람과 관련된 이슈 외에도 기술적으로 너무나도 많은 다양한 선택지가 존재하는 것도 이슈다.
+
+- Spark ML
+- dbml
+- PMML
+- PFA/Aardpfark
+- MLeap
+- ONNX
+- 성능문제로 C/C++로 재구현
+
+# 예측모형 양산환경 [^r-as-a-webservice] {#r-in-production}
 
 [^r-as-a-webservice]: [How do I expose R code as a web service?](https://www.quora.com/How-do-I-expose-R-code-as-a-web-service)
 
@@ -57,7 +86,7 @@ RESTful API로 예측모형 양산 서비스를 제공할 경우 복잡한 예�
 
 <img src="fig/api-plumber-api.png" alt="R RESTful API 개발환경" width="100%" />
 
-# 2. 예측모형 RESTful API 서비스로 제공 {#local-computer-api}
+# 예측모형 RESTful API 서비스로 제공 {#local-computer-api}
 
 기계학습 예측모형을 예측하려는 변수를 연속형 변수와 범주형변수로 나눠 적절한 모형 아키텍처를 선택하고 나서 
 예측모형의 성능을 나타내는 지표 `RMSE`, `ROC AUC`, 정확도(accuracy)등을 가지고 모형의 복잡성 등을 평가하고 나서 
@@ -68,7 +97,7 @@ RESTful API로 예측모형 양산 서비스를 제공할 경우 복잡한 예�
 이제 예측모형을 RESTful API로 제공할 준비가 되었다면 다음 단계로 이를 AWS 혹은 Digital Ocean에 서버를 임차하여 배포한다.
 이제 서버에 예측서비스를 요청하면 결과를 제공받을 수 있게 되었다.
 
-## 2.1. 로컬 컴퓨터 RESTful API 개발 환경 {#local-computer-api}
+## 로컬 컴퓨터 RESTful API 개발 환경 {#local-computer-api}
 
 예를 들어 `plumber`를 RESFtul API 기본 서버로 지정하는 경우 로컬컴퓨터에서 `httr` 팩키지가 지원하는 `GET`, `POST` 함수를 
 활용하여 `plumber` 팩키지가 R 코드를 서비스로 제공하도록 개발환경을 구축한다.
@@ -91,7 +120,7 @@ Starting server to listen on port 8000
 Running the swagger UI at http://127.0.0.1:8000/__swagger__/
 ~~~
 
-## 2.2. 예측 모형 개발 {#local-computer-api-pm}
+## 예측 모형 개발 {#local-computer-api-pm}
 
 기계학습 예측모형 개발에 대한 독일신용평가 데이터를 활용한 모형개발 사례는 [xwMOOC 기계학습 - 모형식별 및 선택 (yardstick)](http://statkclee.github.io/ml/ml-model-selection.html)을 
 참조한다.
@@ -100,7 +129,7 @@ Running the swagger UI at http://127.0.0.1:8000/__swagger__/
 
 - [xwMOOC 기계학습 - 데이터 과학자가 바라본 기계학습](http://statkclee.github.io/ml/)
 
-## 2.3. 예측 모형 &rarr; RESTful API 서비스 변환 {#local-computer-api-pm-convert}
+## 예측 모형 &rarr; RESTful API 서비스 변환 {#local-computer-api-pm-convert}
 
 기계학습 예측모형 개발이 완료되었다면 다음 단계로 이를 `RESTful` API 서비스로 변환을 한다.
 이에 대한 자세한 사항은 다음 두 사례를 참조한다.
@@ -108,7 +137,7 @@ Running the swagger UI at http://127.0.0.1:8000/__swagger__/
 - [R 병렬 프로그래밍 - 신용위험 확률(plumber) API](http://statkclee.github.io/parallel-r/r-credit-score-api.html)
 - [R 병렬 프로그래밍 - R 양산환경(plumber) - 타이타닉](http://statkclee.github.io/parallel-r/r-in-production-plumber.html)
 
-## 2.4. AWS EC2/디지털바다 RESTful API 서비스 {#digital-aws-restful-api}
+## AWS EC2/디지털바다 RESTful API 서비스 {#digital-aws-restful-api}
 
 로컬 컴퓨터에서 RESTful API 서비스를 개발하여 테스트를 마무리했다면, 로컬 컴퓨터에 가상컴퓨터를 생성하거나,
 클라우드에 예를 들어 AWS EC2 컴퓨터에 `plumber` 팩키지를 설치하여 RESTful API 서비스를 제공하도록 탈바꿈 한다.
