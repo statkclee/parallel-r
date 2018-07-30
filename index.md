@@ -24,6 +24,12 @@ title: R 병렬 프로그래밍
         - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
         - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
         - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
+1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
+    - [기계학습 - 기술부채(Technical Debt)](http://statkclee.github.io/ml/ml-technical-debt.html)
+    - [RESTful API 개발환경](r-restful-api-test.html)
+    - [신용위험 확률(plumber) API](r-credit-score-api.html)
+    - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)
+    - [TV 시청시간 예측서비스 - 데이터는 openCPU, 구현은 plumber, 서비스는 AWS](r-gss-tvhours.html)
 1. **자동화(Automation)**
     - **R코드 자동화**
         - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
@@ -35,12 +41,6 @@ title: R 병렬 프로그래밍
         - [소프트웨어 카펜트리 자동화 Make(소프트웨어)](http://statkclee.github.io/make-novice/index-kr.html)
         - [R과 Make(소프트웨어+R) - TV 토론 효과](r-make-software.html)
         - [STAT545 자동화 - Make](r-stat545-make.html)
-1. **[R 실운영환경(R in Production)](r-restful-production)**
-    - [기계학습 - 기술부채(Technical Debt)](http://statkclee.github.io/ml/ml-technical-debt.html)
-    - [RESTful API 개발환경](r-restful-api-test.html)
-    - [신용위험 확률(plumber) API](r-credit-score-api.html)
-    - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)
-    - [TV 시청시간 예측서비스 - 데이터는 openCPU, 구현은 plumber, 서비스는 AWS](r-gss-tvhours.html)
 1. [**함수형 프로그래밍(Functional Programming)**](ds-fp.html)
     - [R 함수 작성](ds-fp-write-fn.html)
     - [R 함수형 프로그래밍](ds-fp-purrr.html)
