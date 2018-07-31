@@ -27,6 +27,12 @@ options(dplyr.print_max = 1e9)
 
 [^ml-aws-ec2]: [AWS 우분투 EC2 + S3 버킷 + RStudio 서버](https://statkclee.github.io/ml/ds-aws-rstudio-server.html)
 
+<img src="fig/r-package-multicore-server.png" alt="멀티코어 서버 제작" width="57%" />
+
+`caret` 기반 다양한 기계학습 팩키지를 쉘스크립트에 담아 EC2 인스턴스 생성시에 설치한다.
+기계학습 예측모형에 배포를 위해서 원데이터를 `WinSCP`, `Filezilla` 같은 FTP 프로그램을 사용하여 전달한다.
+멀티코어 병렬처리를 위한 준비가 준비가 완료되면 병렬처리 기계학습 알고리즘 코드를 작성한다.
+
 ## 기계학습 컴퓨터 준비 {#make-multicore-r-server-ml-hardware}
 
 기계학습 컴퓨터를 준비하기 위해서 AWS에서 `인스턴스 시작`을 클릭하여 "단계 1: Amazon Machine Image(AMI) 선택"에서 
