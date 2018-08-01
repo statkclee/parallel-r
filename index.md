@@ -25,6 +25,7 @@ title: R 병렬 프로그래밍
         - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
         - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
 1. **[기계학습 R 서버 만들기](r-caret-parallel-server.html)**
+    - [왜 GLM인가?](r-deployment-glm.html)
 1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
     - [기계학습 - 기술부채(Technical Debt)](http://statkclee.github.io/ml/ml-technical-debt.html)
     - [RESTful API 개발환경](r-restful-api-test.html)
