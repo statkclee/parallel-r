@@ -67,11 +67,38 @@ sudo su - -c "R -e \"install.packages('randomForest', repos='http://cran.rstudio
 
 서버가 준비되면 우선 기계학습 예측모형을 개발하기 위한 데이터를 전송해야 한다.
 그러기 위해서는 권한 설정을 해야 하는데... 다음과 같이 `ubuntu` 계정이 `/home/rstudio/` 디렉토리에 소유권을 주면 
+RStudio IDE등 관련하여 여러 권한 문제가 생길 수 있다. 이를 피해가는 방법은 
+누구나 쓸 수 있도록 권한을 주는 것도 한 방법이다... 하지만 실운영환경에서는 권장되지는 않는다.
+
 `WinSCP`와 같은 도구를 통해서 데이터를 전송할 수 있다.
 
 ``` {r ftp-server-file-transfer, eval = FALSE}
-$ sudo chown -R -v ubuntu /home/rstudio/
+$ sudo chmod -R 777 /home/rstudio/
+$ sudo chown -R rstudio:rstudio /home/rstudio/
+# $ sudo chown -R -v ubuntu /home/rstudio/
 ```
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**RStudio GUI 문제 해결**
+
+`Rstudio initialization error: Error occurred during transmission`와 같은 오류가 생겨나는 경우 
+`rstudio` 사용자가 갖는 권한이 맞지 않는 경우 발생된다. 이를 원래대로 원복시키는 방법은 다음과 같다.
+
+`/home/rstudio/.rstudio` 디렉토리를 날린다. 그리고 나서 `.rstudio`, `.rstudio/graphics-r3`를 생성시키고 나서,
+`.rstudio` 디렉토리에 `rstudio` 사용자가 사용할 수 있도록 권한을 부여하면 된다.
+
+``` {r rstudio-error-trouble-shooting, eval=FALSE}
+ubuntu@ip-xxx-xx-xxx-xxx:/home/rstudio# rm -r .rstudio/
+ubuntu@ip-xxx-xx-xxx-xxx:/home/rstudio# mkdir .rstudio
+ubuntu@ip-xxx-xx-xxx-xxx:/home/rstudio# mkdir .rstudio/graphics-r3
+ubuntu@ip-xxx-xx-xxx-xxx:/home/rstudio# sudo chown -R rstudio:rstudio .rstudio
+```
+</div>
+
 
 ## 멀티코어 서버 모니터링 {#make-multicore-r-server-htop}
 
@@ -83,8 +110,6 @@ $ sudo chown -R -v ubuntu /home/rstudio/
 $ sudo apt-get install htop
 ```
 
-
 # 멀티코어 헬로월드 {#make-multicore-r-server-hello-world}
-
 
 

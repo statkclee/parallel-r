@@ -295,8 +295,23 @@ sudo su <span class="op">-</span><span class="st"> </span><span class="op">-</sp
 </div>
 <div id="make-multicore-r-server-ftp" class="section level2">
 <h2><span class="header-section-number">1.3</span> FTP 서버 연결</h2>
-<p>서버가 준비되면 우선 기계학습 예측모형을 개발하기 위한 데이터를 전송해야 한다. 그러기 위해서는 권한 설정을 해야 하는데… 다음과 같이 <code>ubuntu</code> 계정이 <code>/home/rstudio/</code> 디렉토리에 소유권을 주면 <code>WinSCP</code>와 같은 도구를 통해서 데이터를 전송할 수 있다.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="op">$</span><span class="st"> </span>sudo chown <span class="op">-</span>R <span class="op">-</span>v ubuntu <span class="op">/</span>home<span class="op">/</span>rstudio<span class="op">/</span></code></pre></div>
+<p>서버가 준비되면 우선 기계학습 예측모형을 개발하기 위한 데이터를 전송해야 한다. 그러기 위해서는 권한 설정을 해야 하는데… 다음과 같이 <code>ubuntu</code> 계정이 <code>/home/rstudio/</code> 디렉토리에 소유권을 주면 RStudio IDE등 관련하여 여러 권한 문제가 생길 수 있다. 이를 피해가는 방법은 누구나 쓸 수 있도록 권한을 주는 것도 한 방법이다… 하지만 실운영환경에서는 권장되지는 않는다.</p>
+<p><code>WinSCP</code>와 같은 도구를 통해서 데이터를 전송할 수 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="op">$</span><span class="st"> </span>sudo chmod <span class="op">-</span>R <span class="dv">777</span> <span class="op">/</span>home<span class="op">/</span>rstudio<span class="op">/</span>
+<span class="er">$</span><span class="st"> </span>sudo chown <span class="op">-</span>R rstudio<span class="op">:</span>rstudio <span class="op">/</span>home<span class="op">/</span>rstudio<span class="op">/</span>
+<span class="co"># $ sudo chown -R -v ubuntu /home/rstudio/</span></code></pre></div>
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class="blue">
+<p><strong>RStudio GUI 문제 해결</strong></p>
+<p><code>Rstudio initialization error: Error occurred during transmission</code>와 같은 오류가 생겨나는 경우 <code>rstudio</code> 사용자가 갖는 권한이 맞지 않는 경우 발생된다. 이를 원래대로 원복시키는 방법은 다음과 같다.</p>
+<p><code>/home/rstudio/.rstudio</code> 디렉토리를 날린다. 그리고 나서 <code>.rstudio</code>, <code>.rstudio/graphics-r3</code>를 생성시키고 나서, <code>.rstudio</code> 디렉토리에 <code>rstudio</code> 사용자가 사용할 수 있도록 권한을 부여하면 된다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ubuntu<span class="op">@</span>ip<span class="op">-</span>xxx<span class="op">-</span>xx<span class="op">-</span>xxx<span class="op">-</span>xxx<span class="op">:</span><span class="er">/</span>home<span class="op">/</span>rstudio<span class="co"># rm -r .rstudio/</span>
+ubuntu<span class="op">@</span>ip<span class="op">-</span>xxx<span class="op">-</span>xx<span class="op">-</span>xxx<span class="op">-</span>xxx<span class="op">:</span><span class="er">/</span>home<span class="op">/</span>rstudio<span class="co"># mkdir .rstudio</span>
+ubuntu<span class="op">@</span>ip<span class="op">-</span>xxx<span class="op">-</span>xx<span class="op">-</span>xxx<span class="op">-</span>xxx<span class="op">:</span><span class="er">/</span>home<span class="op">/</span>rstudio<span class="co"># mkdir .rstudio/graphics-r3</span>
+ubuntu<span class="op">@</span>ip<span class="op">-</span>xxx<span class="op">-</span>xx<span class="op">-</span>xxx<span class="op">-</span>xxx<span class="op">:</span><span class="er">/</span>home<span class="op">/</span>rstudio<span class="co"># sudo chown -R rstudio:rstudio .rstudio</span></code></pre></div>
+</div>
 </div>
 <div id="make-multicore-r-server-htop" class="section level2">
 <h2><span class="header-section-number">1.4</span> 멀티코어 서버 모니터링</h2>

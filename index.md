@@ -15,6 +15,7 @@ title: R 병렬 프로그래밍
 ## 학습목차 
 
 1. **고성능 아키텍쳐와 성능측정**
+    - [기계학습 - 기술부채(Technical Debt)](http://statkclee.github.io/ml/ml-technical-debt.html)
     - [고성능 R 아키텍처](r-perf-arch.html)
         - [왜 고성능 R 아키텍처가 필요한가?](why-r-hpc.html)
         - [R 스케일-업 성능향상](r-scale-up.html)
@@ -24,13 +25,12 @@ title: R 병렬 프로그래밍
         - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
         - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
         - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
-1. **[기계학습 R 서버 만들기](r-caret-parallel-server.html)**
-    - [왜 GLM인가?](r-deployment-glm.html)
+1. **[기계학습 R 서버 만들기](r-caret-parallel-server.html)**    
 1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
-    - [기계학습 - 기술부채(Technical Debt)](http://statkclee.github.io/ml/ml-technical-debt.html)
     - [RESTful API 개발환경](r-restful-api-test.html)
-    - [신용위험 확률(plumber) API](r-credit-score-api.html)
-    - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)
+    - [왜 GLM인가?](r-deployment-glm.html)
+    - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)    
+    - [신용위험 확률(plumber) API](r-credit-score-api.html)    
     - [TV 시청시간 예측서비스 - 데이터는 openCPU, 구현은 plumber, 서비스는 AWS](r-gss-tvhours.html)
 1. **자동화(Automation)**
     - **R코드 자동화**
