@@ -29,6 +29,7 @@ title: R 병렬 프로그래밍
 1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
     - [RESTful API 개발환경](r-restful-api-test.html)
     - [왜 GLM인가?](r-deployment-glm.html)
+        + [AWS RESTful API 서버](r-restful-api-on-aws.html)
     - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)    
     - [신용위험 확률(plumber) API](r-credit-score-api.html)    
     - [TV 시청시간 예측서비스 - 데이터는 openCPU, 구현은 plumber, 서비스는 AWS](r-gss-tvhours.html)
