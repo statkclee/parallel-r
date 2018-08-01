@@ -63,7 +63,11 @@ sudo su - -c "R -e \"install.packages('e1071', repos='http://cran.rstudio.com/')
 sudo su - -c "R -e \"install.packages('randomForest', repos='http://cran.rstudio.com/')\""
 ```
 
-## FTP 서버 연결 {#make-multicore-r-server-ftp}
+## FTP 서버 연결 [^ftp-file-permission] [^stackoverflow-rstudio-error] {#make-multicore-r-server-ftp}
+
+[^ftp-file-permission]: [StackExchange - Give user write access to folder](https://askubuntu.com/questions/402980/give-user-write-access-to-folder)
+
+[^stackoverflow-rstudio-error]: [Stackoverflow - Rstudio server on Ubuntu 16.04.2 LTS, RStudio initialization error: unable to connect to service](https://stackoverflow.com/questions/42690144/rstudio-server-on-ubuntu-16-04-2-lts-rstudio-initialization-error-unable-to-co)
 
 서버가 준비되면 우선 기계학습 예측모형을 개발하기 위한 데이터를 전송해야 한다.
 그러기 위해서는 권한 설정을 해야 하는데... 다음과 같이 `ubuntu` 계정이 `/home/rstudio/` 디렉토리에 소유권을 주면 
