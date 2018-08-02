@@ -76,6 +76,9 @@ options(dplyr.print_max = 1e9)
 기계학습, 딥러닝을 통해 학습한 예측모형을 양산환경으로 배포할 경우 크게 두가지 아키텍쳐가 가능하다.
 일반적인 상용 웹사이트 사례를 들어 예측모형 양산환경에 대해서 살펴보자. [^titanic-plumber-api]
 
+[^titanic-plumber-api]: [raybuhr blog, Making Predictions over HTTP with R October 17, 2017](https://raybuhr.github.io/2017/10/making-predictions-over-http/)
+
+
 |구분|      데이터베이스            |         RESTful API          |
 |----|:-----------------------------|:-----------------------------|
 |장점| 데이터베이스 테이블을 단순히 병합(Join)하면 되기 때문에 속도가 매우 빠름 | 유닉스 철학에 따라 예측서비스를 독자적 수행이 가능 |

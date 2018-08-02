@@ -27,7 +27,7 @@ title: R 병렬 프로그래밍
         - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
 1. **[기계학습 R 서버 만들기](r-caret-parallel-server.html)**    
 1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
-    - [RESTful API 개발환경](r-restful-api-test.html)
+    - [RESTful API 개발환경 - `plumber`](r-restful-api-test.html)
     - [왜 GLM인가?](r-deployment-glm.html)
         + [AWS RESTful API 서버](r-restful-api-on-aws.html)
     - [R 양산환경(`plumber`) - 타이타닉](r-in-production-plumber.html)    
