@@ -1,0 +1,178 @@
+---
+layout: page
+title: R 병렬 프로그래밍
+date: "`r Sys.Date()`"
+subtitle: HTTP API - Stone man 버전(admission)
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    number_section: true
+    code_folding: show
+---
+
+
+# Straw man 버전(결혼) 문제점 {#http-api-strawman-version-problem}
+
+[HTTP API - Straw man 버전(결혼)](r-restful-api-on-aws-strawman.html)은 예측모형을 HTTP API로 서비스하기 위해서 
+GLM 공식을 활용하여 결혼확률값을 반환하여 주었다. 
+하지만, 매번 예측모형을 개발할 때마다 예측확률 수식을 발라내서 적어줘야하는 문제가 발생한다.
+금번에는 예측모형을 그대로 활용하여 손이가는 부분을 줄어보는 방향으로 Stone Man 버전을 제작하는데
+`admission` 입학 데이터를 활용해보자. 
+
+
+## 입학 예측모형 [^ucla-admission] {#http-api-stoneman-admission}
+
+[^ucla-admission]: [UCLA Institute for Digital Research and Education, "LOGIT REGRESSION | R DATA ANALYSIS EXAMPLES"](https://stats.idre.ucla.edu/r/dae/logit-regression/)
+
+[입학 데이터](https://stats.idre.ucla.edu/stat/data/binary.csv)를 가져와서 모형데이터(`model_data`)와 API 데이터(`api_data`)로 나눈다.
+그리고 나서 `glm()` 예측모형으로 예측모형을 만들고 나서, 모형 객체를 `model_glm`이름으로 저장시켜 두고 테스트 사례도 함께 준비한다.
+
+``` {r http-api-stoneman, eval=FALSE}
+# 파일명: marriage_ml.R
+# 0. Packages -----
+library(tidyverse)
+library(janitor)
+library(rjson)
+library(jsonlite)
+
+# 1. data -----
+admit_dat <- read_csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+
+admit_x_dat <- admit_dat %>% 
+    select(-admit)
+
+# 2. data transform -----
+
+model_data <- function(self) {
+    self_df <- self %>% 
+        mutate(admit = factor(admit),
+               rank  = factor(rank))
+    return(self_df)
+}
+
+admit_df <- model_data(admit_dat)
+
+api_data <- function(x_self) {
+    self_df <- x_self %>% 
+        mutate(rank  = factor(rank))
+    return(self_df)
+}
+
+admit_x_df <- api_data(admit_x_dat)
+
+
+# 3. ML Predictive Model -----
+model_glm <- glm(admit ~ gre + gpa + rank, data = admit_df, family = "binomial")
+
+predict(model_glm, newdata=admit_x_df, type="response")[1]
+
+model_glm %>% write_rds("data/admission_glm.rds")
+
+# 4. 테스트 데이터 -----
+
+input_data <- admit_x_dat[1, ]
+
+test_case_json <- toJSON(input_data)
+cat(test_case_json)
+
+# curl -d '{"gre":380,"gpa":3.61,"rank":3}' "http://localhost:8000/predict"
+```
+
+
+## HTTP API 서비스 명세 {#http-api-strawman-version-predictive-model-api}
+
+`\healthcheck` 서비스를 작성하여 문제점을 사전에 적시한다.
+그리고 나서, 만든 기계학습 예측모형 객체를 불러와서 `api_data()` 함수에 입력데이터를 변환시키고,
+이를 `predict()` 함수에 넣어 입학확률을 계산한다.
+입력데이터가 JSON으로 전달되면 이를 데이터프레임으로 변환시키고, 원본 데이터프레임을 모형 데이터프레임으로 한번더 변환시킨 후에 
+`predict()` 함수에 기계학습 예측모형 객체와 함께 넣어 입학확률을 계산한다.
+
+``` {r http-api-stoneman-api, eval=FALSE}
+MODEL_VERSION <- "0.0.1"
+
+# 1. Import model data object -----
+
+admission_glm <- read_rds("data/admission_glm.rds")
+
+# 2. API services -----
+## 2.1. Health Check -----
+#* @get /healthcheck
+health_check <- function() {
+    result <- data.frame(
+        "input" = "",
+        "status" = 200,
+        "model_version" = MODEL_VERSION
+    )
+    
+    return(result)
+}
+
+## 2.2. Predictive Service -----
+api_data <- function(x_self) {
+    self_df <- data.frame(
+        rank = factor(x_self$rank),
+        gre  = x_self$gre,
+        gpa  = x_self$gpa)
+    return(self_df)
+}
+
+#* @post /predict
+#* @get /predict
+calculate_admission <- function(gre, gpa, rank) {
+    
+    # Input parameters turn into data.frame
+    gre  <- as.double(gre)
+    gpa  <- as.double(gpa)
+    rank <- as.integer(rank)
+    
+    payload_df <<- data.frame(gre=gre, gpa=gpa, rank=rank)
+
+    # convert dataframe into modeling dataframe
+    
+    payload_m_df <- api_data(payload_df)
+    
+    # predict and return result
+    admission_prob <<- predict(admission_glm, newdata=payload_m_df, type="response")
+    
+    return(list(admission_probability=unbox(admission_prob)))
+}
+```
+
+
+## HTTP API 서비스 명세 {#http-api-stoneman-version-predictive-model-api}
+
+`plumber` 서비스를 띄워서 해당 끝점(endpoint) 서비스에 접속하면 입학확률을 반환하는 서비스를 실행한다.
+
+``` {r http-api-stoneman-api-plumber, eval = FALSE}
+library(plumber)
+
+r <- plumb("~/admission_stoneman/admission_api.R")
+
+r$run(port = 8000)
+```
+
+## 배쉬쉘 서비스 실행 {#http-api-admission-version-predictive-model-api-shell}
+
+`admission_run.sh`을 실행시키게 되면 `admission_runapi.R`가 실행되고 이는 다시 `admission_api.R`를 실행시켜 
+HTTP API 결혼확률 서비스를 올리게 된다.
+
+``` {r http-api-stoneman-api-plumber-shell, eval = FALSE}
+#!/bin/bash
+
+exec R --vanilla CMD BATCH admission_runapi.R
+```
+
+# HTTP API 서비스 테스트 {#http-api-stoneman-version-test}
+
+AWS EC2에 FTP로 개발된 HTTP API 입학예측 서비스를 올려 `./admission_run.sh`으로 실행시키게 되면 외부에서 
+API에 입력값(income, asset)을 전달하게 되면 결혼확률값을 전달받을 수 있게 된다.
+특히, `curl`을 사용하면 터미널에서 앞서 생성한 JSON 데이터를 입력값을 실어서 전달하게 되면 `52.79.XXX.XXX` 호스트 8000 포트로 
+\predict` 서비스를 통해 결혼확률을 얻을 수 있다.
+
+``` {r http-api-stoneman-api-plumber-shell-test, eval = FALSE}
+$ curl -d  '{"gre":380,"gpa":3.61,"rank":3}' "http://localhost:8000/predict"
+{"admission_probability":0.1726}
+```
+

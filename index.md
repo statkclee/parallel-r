@@ -28,8 +28,8 @@ title: R 병렬 프로그래밍
 1. **[기계학습 R 서버 만들기](r-caret-parallel-server.html)**    
 1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
     - [RESTful API 개발환경 - `plumber`](r-restful-api-test.html)
-        1. [HTTP API - Straw man 버전](r-restful-api-on-aws-strawman.html)
-        1. [HTTP API - Stone man 버전](r-restful-api-on-aws-stoneman.html)
+        1. [HTTP API - Straw man 버전(결혼)](r-restful-api-on-aws-strawman.html)
+        1. [HTTP API - Stone man 버전(admission)](r-restful-api-on-aws-stoneman.html)
         1. [HTTP API - Iron man 버전](r-restful-api-on-aws-ironman.html)
     - [왜 GLM인가?](r-deployment-glm.html)
         + [AWS RESTful API 서버](r-restful-api-on-aws.html)
