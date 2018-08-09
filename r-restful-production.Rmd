@@ -56,12 +56,12 @@ options(dplyr.print_max = 1e9)
 기계학습 예측모형을 개발하게 되면 모형데이터를 전통적인 통계모형, 기계학습, $H_2O$, 아파치 스파크, 딥러링 텐서플로우에 배포하느냐에 따라 다양한 조합의 수가 발생된다.
 정확도가 높은 기계학습모형을 개발하는 것도 중요하지만, 잘 개발된 기계학습 알고리즘이 잘 적용될 수 있도록 배포하는 기술도 익혀두는 것이 더불어 요구된다.
 
-- [전통적인 통계모형 배포](https://statkclee.github.io/parallel-r/r-restful-api-on-aws-strawman.html): 예측모형을 수식으로 표현하여 배포하는 방식
-- [기계학습(caret) 통계모형 배포](https://statkclee.github.io/parallel-r/r-restful-api-on-aws-stoneman.html): 예측모형을 수식이 아닌 객체로 전달하여 `predict()` 함수로 배포하는 방식
+- [전통적인 통계모형 배포](r-restful-api-on-aws-strawman.html): 예측모형을 수식으로 표현하여 배포하는 방식
+- [기계학습(caret) 통계모형 배포](r-restful-api-on-aws-stoneman.html): 예측모형을 수식이 아닌 객체로 전달하여 `predict()` 함수로 배포하는 방식
 - [$H_2O$ AutoML 플랫폼](https://statkclee.github.io/model/model-recipe-h2o-automl.html): $H_2O$ AutoML로 기계학습 예측모형을 만들어서 POJO/MOJO 자바코드로 배포하는 방식 **(TBD)**
 - 스파크(Spark): **(TBD)**
 - 텐서플로우(Tensorflow): **(TBD)**
-- 데이터베이스(DBMS): **(TBD)**
+- [데이터베이스(DBMS) 배포](r-database-tidypredict.html): R 예측모형을 `tidypredict` 팩키지로 SQL 코드를 추출하여 데이터베이스(DBMS)에 배포
 
 # 예측모형 양산환경 [^r-as-a-webservice] {#r-in-production}
 
