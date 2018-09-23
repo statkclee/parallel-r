@@ -65,10 +65,10 @@ title: R 병렬 프로그래밍
 1. [추천 시스템(Recommendation System)](recommendation-sys.html)
     - [영화진흥위원회 오픈API - 스크린수와 매출](kofic-movie-api.html)
     - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)](recommendation-nonpersonal.html)
-    - [추천 시스템(Recommendation System) - 내용기반 필터링 추천(Content-based Filtering Recommendation)](recommendation-content-based-filtering.html)
+    - [추천 시스템(Recommendation System) - 콘텐츠기반 필터링 추천(Content-based Filtering Recommendation)](recommendation-content-based-filtering.html)
     - [추천 시스템(Recommendation System) - 사용자기반 협업 필터링(User-based Collaborative Filtering)](recommendation-user-based-filtering.html)
     - [추천 시스템(Recommendation System) - 탐색적분석과 모형선정](recommendation-implementation.html)
-    - [SparkR 추천시스템](recommendation-sparkr-impl.html)
+    - [`sparklyr` 추천시스템 - MovieLens](recommendation-sparklyr.html)
 1. **빅데이터**
     - [빅데이터 하드웨어, 맵리듀스, 스파크](big-data-hw.html)    
     - [MOOC 스파크 실행환경](mooc-spark-install.html)    

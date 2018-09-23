@@ -1,34 +1,43 @@
 ---
 layout: page
-title: 데이터 과학
-subtitle: SparkR 추천시스템
+xwMOOC R 병렬 프로그래밍
+subtitle: `sparklyr` 추천시스템 - MovieLens
+date: "`r Sys.Date()`"
+author: xwMOOC
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+    lib_dir: gapminder
+editor_options: 
+  chunk_output_type: console
 ---
+ 
 
-> ## 학습 목표 {.objectives}
->
-> * MovieLens 데이터로 영화 추천시스템을 개발한다.
-> * `recommenderlab` 팩키지를 통해 R코드로 구현한다.
-> * 로컬 컴퓨터에서 작게 개발하고 SparkR을 통해 확장을 시도한다.
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = TRUE, fig.align = 'center')
+
+library(here)
+
+options(scipen=999)
+```
 
 
-### 1. `MovieLens` 데이터 다운로드
+# `MovieLens` 데이터 [^movielens-data] {#movielens-dataset}
 
-[MovieLens](https://datahub.io/dataset/movielens) 데이터를 다운로드 받아 이를 정제하는 것부터 시작한다.
+[^movielens-data]: ["How to Build A Recommender System In Less Than 1 Hour"](http://blog.avenuecode.com/how-to-build-a-recommender-system-in-less-than-1-hour)
 
-~~~ {.shell}
-$ wget http://files.grouplens.org/datasets/movielens/ml-100k.zip
-$ unzip ml-100k.zip
-$ cd ml-100k
-$ ls
-~~~
+[MovieLens 1M Dataset](https://grouplens.org/datasets/movielens/1m/) 데이터를 다운로드 받아 이를 정제하는 것부터 시작한다.
 
-아래와 같이 무비렌즈 데이터가 풀리면 모든 준비는 완료된 것이다.
 
-~~~ {.output}
-allbut.pl*  u.data   u.item        u1.base  u2.test  u4.base  u5.test  ub.base
-mku.sh*     u.genre  u.occupation  u1.test  u3.base  u4.test  ua.base  ub.test
-README      u.info   u.user        u2.base  u3.test  u5.base  ua.test
-~~~
+
 
 ### 2. `MovieLens` 데이터 정제 [^movielens-clean]
 
