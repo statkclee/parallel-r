@@ -1,7 +1,6 @@
 ---
 layout: page
-xwMOOC R 병렬 프로그래밍
-subtitle: `sparklyr` 추천시스템 - MovieLens
+subtitle: sparklyr 추천시스템 - MovieLens, One Million Songs
 date: "`r Sys.Date()`"
 author: xwMOOC
 output:
@@ -24,246 +23,160 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
                     comment="", digits = 3, tidy = FALSE, prompt = TRUE, fig.align = 'center')
 
-library(here)
-
 options(scipen=999)
 ```
 
 
-# `MovieLens` 데이터 [^movielens-data] {#movielens-dataset}
+# `MovieLens` 데이터 [^movielens-data] [^recommendation-system-theory] {#movielens-dataset}
 
 [^movielens-data]: ["How to Build A Recommender System In Less Than 1 Hour"](http://blog.avenuecode.com/how-to-build-a-recommender-system-in-less-than-1-hour)
 
+[^recommendation-system-theory]: [Dmitriy Selivanov, Data Scientist(Nov 19, 2017), "Matrix Factorizations for Recommender Systems"](https://www.slideshare.net/DmitriySelivanov/matrix-factorizations-for-recommender-systems)
+
 [MovieLens 1M Dataset](https://grouplens.org/datasets/movielens/1m/) 데이터를 다운로드 받아 이를 정제하는 것부터 시작한다.
 
+## 데이터 가져오기 {#movielens-dataset-download}
+
+[MovieLens 1M Dataset](https://grouplens.org/datasets/movielens/1m/) 데이터를 다운로드 받아 압축을 풀고, 
+`ml-1m` 디렉토리 `movies.dat`, `ratings.dat`, `users.dat`를 대상으로 작업을 준비한다.
+
+```{r movielens-dataset-downlaod}
+library(here)
+# download.file(url="http://files.grouplens.org/datasets/movielens/ml-1m.zip", destfile="data/ml-1m.zip")
+unzip_file <- here("data", "ml-1m.zip")
+
+unzip(zipfile = unzip_file, exdir="data/raw")
+```
 
 
 
-### 2. `MovieLens` 데이터 정제 [^movielens-clean]
+## `MovieLens` 데이터 정제 [^movielens-clean]
 
 [^movielens-clean]: [Exploratory analysis of Movie preference data set](https://github.com/statkclee/STAT545A_MovieStats/blob/master/cleanMovieLensData.R)
 
-1. 평점, 사용자, 영화 장르, 영화 아이템 파일을 순차로 R 데이터프레임으로 불러와서 데이터를 정제한다.
-1. 평점 데이터프레임을 중심으로 `left_join` 연산으로 결합해 나간다.
-1. 꼭 필요한 변수만 남기고 아스키 파일로 내보낸다.
+평점, 사용자, 영화 아이템 파일을 순차로 R 데이터프레임으로 불러와서 데이터를 정제한다.
+특히, `read_delim()` 함수 등 `readr` 팩키지에서는 구분자가 두문자 이상인 경우 지원을 하지 않기 때문에 
+[Multicharacter separator/deliminator in Read_delim of Tidyverse? #721](https://github.com/tidyverse/readr/issues/721) 내용을 참조해서,
+구분문자를 `::`에서 탭(`\t`)으로 바꾼 후에 다시 `read_delim()` 함수로 불러온다.
 
-~~~ {.r}
-##===========================================================================
-## 01. 환경설정 및 데이터 가져오기
-##===========================================================================
+```{r movielens-dataset-clean}
+library(tidyverse)
+## movies.dat --> https://github.com/tidyverse/readr/issues/721
+movie_txt <- read_lines("data/raw/ml-1m/movies.dat")
+movie_txt <- str_replace_all(movie_txt, "::", "\t")
+movie_txt %>% write_lines("data/raw/ml-1m/movies.txt")
+movie_df  <- read_delim("data/raw/ml-1m/movies.txt", delim="\t", col_names = FALSE)
 
-setwd("~/06-sparkR")
+## ratings.dat
+rating_txt <- read_lines("data/raw/ml-1m/ratings.dat")
+rating_txt <- str_replace_all(rating_txt, "::", "\t")
+rating_txt %>% write_lines("data/raw/ml-1m/ratings.txt")
+rating_df  <- read_delim("data/raw/ml-1m/ratings.txt", delim="\t", col_names = FALSE)
 
+## users.dat
+user_txt <- read_lines("data/raw/ml-1m/users.dat")
+user_txt <- str_replace_all(user_txt, "::", "\t")
+user_txt %>% write_lines("data/raw/ml-1m/users.txt")
+user_df  <- read_delim("data/raw/ml-1m/users.txt", delim="\t", col_names = FALSE)
+
+rm(list = ls(pattern = "txt$"))
+```
+
+
+```{r movielens-dataset-clean-merge}
+movie_df <- movie_df %>% 
+    rename(movie_id = X1,
+           movie_nm = X2,
+           genre = X3)
+
+rating_df <- rating_df %>% 
+    rename(user_id = X1,
+           movie_id = X2,
+           rating = X3,
+           timestamp = X4)
+
+user_df <- user_df %>% 
+    rename(user_id = X1,
+           gender = X2,
+           age = X3,
+           occupation = X4,
+           zipcode = X5)
+
+um_rating_df <- user_df %>% select(user_id) %>% 
+    left_join(rating_df, by="user_id") %>% 
+    select(-timestamp) %>% 
+    left_join(movie_df, by="movie_id") 
+
+um_rating_df %>% 
+    sample_n(100) %>% 
+    DT::datatable()
+
+```
+
+# `sparklyr` 맛보기 [^install-sparklyr] {#movielens-sparkly}
+
+[^install-sparklyr]: [RStudio, sparklyr: R interface for Apache Spark](http://spark.rstudio.com/)
+
+## 스파크 클러스터 생성 {#movielens-sparkly-cluster}
+
+[RStudio, sparklyr: R interface for Apache Spark](http://spark.rstudio.com/)를 참조하여 자바를 설치하지 않았다면 설치하고 나서
+`sparklyr`을 통해 스파크 클러스터를 생성하여 작업을 추진하도록 한다.
+
+```{r movielens-sparklyr-cluster}
+library(sparklyr)
+sc <- spark_connect(master = "local")
+spark_version(sc)
+```
+
+## 스파크 클러스터 데이터 올리기 {#movielens-sparkly-cluster-loading}
+
+R 데이터프레임(`um_rating_df`)을 스파크 데이터프레임으로 변환시킨다.
+
+```{r movielens-sparklyr-cluster-load}
+um_rating_sdf <- sdf_copy_to(sc, um_rating_df, "um_rating", overwrite = TRUE)
+src_tbls(sc)
+```
+
+## ALS 모형적합 {#movielens-sparkly-cluster-loading-fit}
+
+ALS 알고리즘을 실행시켜 평점 행렬을 분해한다.
+
+```{r movielens-sparklyr-cluster-load-mf}
 library(dplyr)
-library(readr)
-library(plyr)
 
-# 평점 데이터
-u.df <- read_delim(file="ml-100k/u.data", delim = "|", col_names = FALSE)
-colnames(u.df) <- c("user_id", "item_id", "rating", "timestamp")
-u.df <- subset(u.df, select = -c(timestamp) )
+partitions <- sdf_partition(um_rating_sdf, training = 0.8, test = 0.2)
 
-## 사용자 테이블
-user.df <- read_delim(file="ml-100k/u.user", delim = "|", col_names = FALSE)
-colnames(user.df) <- c("user_id", "age" , "gender","occupation", "zip_code")
-user.df <- subset(user.df, select = -c(zip_code) )
-
-## 영화 쟝르 테이블
-genre.df <- read_delim(file="ml-100k/u.genre", delim = "|", col_names = FALSE)
-colnames(genre.df) <- c("genre", "code")
-
-## 영화 아이템 테이블
-item.df <- read_delim(file="ml-100k/u.item", delim = "|", col_names = FALSE)
-
-genre.v <- as.vector(genre.df[["genre"]])
-genre.v[genre.v %in% "Children\'s"] <- "Childrens"
-colnames(item.df) <- c(c("item_id", "movie_title", "release_date", "video_release_date", 
-                         "IMDb_URL"), genre.v)
-
-item.df <- subset(item.df, select = -c(IMDb_URL, video_release_date) )
-
-##===========================================================================
-## 02. 데이터프레임 결합
-##===========================================================================
-# 평점 + 영화(아이템) 합체
-cf.df <- left_join(u.df, item.df, by="item_id")
-
-# 평점 + 영화(아이템) + 사용자 합체
-cf.df <- left_join(cf.df, user.df, by="user_id")
-
-# 중복제거
-cf.df <- unique(cf.df)
-
-## 장르 칼럼을 한 칼럼으로 변환하는 함수... 시간이 오래걸림
-createGenreFieldSingle <- function(x){
-  #temporarally remove variables to make looping easier,
-  tempDat <- subset(x, select = -c(user_id, rating, movie_title, 
-                                   release_date, age, gender, occupation))  
-  count <- 0
-  genre <- "unknown"
-  
-  if(nrow(x) > 1){
-    tempDat <- head(tempDat, n = 1)
-  }
-  
-  for (i in names(tempDat)){
-    if(tempDat[i] == 1){
-      count <- count + 1
-      genre <- i
-    }
-  }
-  if(count > 1){
-    genre <- "multiple"
-  }
-  names(genre) <- "genre"
-  return(genre)
-}
-
-genreDat <- ddply(cf.df, ~user_id + movie_title, createGenreFieldSingle)
-cf.df.genre <- left_join(cf.df, genreDat, by=c("user_id", "movie_title"))
-
-##===========================================================================
-## 03. 데이터 정리 및 내보내기
-##===========================================================================
-cf.df.cl <- subset(cf.df.genre, select = 
-                             c(user_id, item_id, movie_title, rating, genre,
-                               release_date, age, gender, occupation) )
-
-write.csv(cf.df.cl, "movie-clean.csv", row.names = FALSE)
-~~~
+movie_als <- ml_als_factorization(partitions$training, 
+                                  rating.column = "rating", 
+                                  user.column = "user_id", 
+                                  item.column = "movie_id", 
+                                  rank = 10L,
+                                  regularization.parameter = 0.1,
+                                  implicit.preferences = FALSE,
+                                  alpha =1,
+                                  nonnegative = TRUE,
+                                  iter.max = 10)
+summary(movie_als)
+```
 
 
-### 3. `MovieLens` 데이터 SparkR 맛보기
+## 평점 예측 {#movielens-sparkly-cluster-loading-fit}
 
-`MovieLens` 데이터 일부를 불러와서 우분투에 설치한 SparkR이 정상 동작하는지 간을 보자.
+ALS 알고리즘을 실행시켜 평점 행렬을 분해한다.
+```{r movielens-sparklyr-cluster-load-mf-predict}
+predictions <- ml_predict(movie_als, partitions$test)
 
-SparkR 환경설정을 하고 `library(SparkR)` 라이브러리를 불러온다. 
-`sqlContext`를 생성하고 데이터를 불러온다.
-`cache` 함수를 이용해서 캐쉬기능을 사용하고, `registerTempTable` 기능을 활용하여 SQL 작업을 준비한다.
-이제 `collect` 등 SparkR 기능을 활용하여 탐색적 데이터 분석 및 모형을 개발한다.
+movie_pred_df <- predictions %>% collect() %>% 
+    filter(complete.cases(.))
+
+movie_pred_df %>% 
+    head()
+
+library(Metrics)
+rmse(movie_pred_df$prediction, movie_pred_df$rating)
+
+spark_disconnect(sc)
+```
 
 
-~~~ {.r}
-##================================================================================
-## 00. SparkR 환경설정
-##================================================================================
 
-Sys.setenv(SPARK_HOME = "/home/parallels/spark-1.6.1-bin-hadoop2.6/")
-Sys.setenv(SPARKR_SUBMIT_ARGS="--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell")
-.libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R","lib"),  .libPaths()))
-
-## SparkR 라이브러리를 적재한다.
-library(SparkR)
-
-##================================================================================
-## 01. SparkR 초기화
-##================================================================================
-
-sc <- sparkR.init()
-sqlContext <- sparkRSQL.init(sc)
-
-##================================================================================
-## 02. 데이터 불러오기
-##================================================================================
-
-user_dat <- read.table("ml-100k/u.user", sep="|")
-user_df <- createDataFrame(sqlContext, user_dat)
-names(user_df)<-c("id","age","gender","occupation","ZIPcode")
-head(user_df)
-
-cache(user_df)
-nrow(user_df)
-
-registerTempTable(user_df, "userTable")
-
-##================================================================================
-## 03. sql 테이블 작업데이터 준비
-##================================================================================
-
-male.user <- sql(sqlContext, "select * from userTable where gender ='M'")
-head(male.user)
-
-##================================================================================
-## 04. 기초 통계작업과 시각화
-##================================================================================
-
-male.user.ages <- collect(summarize(groupBy(male.user, male.user$age), count = n(male.user$age)))
-head(male.user.ages)
-
-library(ggplot2)
-ggplot(male.user.ages, aes(x=age,y=count)) + geom_bar(stat="identity")
-~~~
-
-~~~ {.output}
-  age count
-1  31    19
-2  32    23
-3  33    20
-4  34    16
-5  35    16
-6  36    14
-~~~
-
-<img src="fig/sparkr-age-ggplot.png" alt="SparkR 연령 분포" width="50%">
-
-### 4. `MovieLens` 데이터 SparkR 추천 모형 개발
-
-동일한 작업 흐름을 따라가지만, 차이가 가는 것은 `spark-csv` `jar` 모듈에서 만들어진 
-스파크 데이터프레임이 `recommenderlab` 라이브러리에서 사용하는 `realRatingMatrix` 자료형과 일치시키는 부분이 남아있는 쟁점이다.
-
-~~~ {.r}
-##====================================================================================
-## 01. 추천시스템: 환경설정
-##====================================================================================
-if(!"recommenderlab" %in% rownames(installed.packages())){
-  install.packages("recommenderlab")}
-
-library(recommenderlab)
-
-##================================================================================
-## 02. SparkR 환경설정
-##================================================================================
-
-Sys.setenv(SPARK_HOME = "/home/parallels/spark-1.6.1-bin-hadoop2.6/")
-Sys.setenv(SPARKR_SUBMIT_ARGS="--packages com.databricks:spark-csv_2.11:1.4.0 sparkr-shell")
-.libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R","lib"),  .libPaths()))
-
-## SparkR 라이브러리를 적재한다.
-library(SparkR)
-library(magrittr)
-##================================================================================
-## 03. SparkR 초기화
-##================================================================================
-
-sc <- sparkR.init()
-sqlContext <- sparkRSQL.init(sc)
-
-##====================================================================================
-## 04. 무비렌즈 데이터
-##====================================================================================
-
-# ml.df <- read.df(sqlContext, "./movie-clean.csv", "com.databricks.spark.csv", header="true", inferSchema = "true")
-ml.df <- read.csv("movie-clean.csv", header=TRUE)
-ml.cf.df <- ml.df[,c("user_id", "movie_title", "rating")]
-ml.cf.mat <- as(ml.cf.df, "realRatingMatrix")
-
-ml.cf.mat
-
-##====================================================================================
-## 05. Data Preprocessing
-##====================================================================================
-ratings_movies <- ml.cf.mat[rowCounts(ml.cf.mat) > 50,
-                             colCounts(ml.cf.mat) > 100]
-ratings_movies
-
-recc_model <- Recommender(data = ratings_movies, method = "UBCF",
-                          parameter = list(method = "pearson", nn=15))
-
-n_recommended <- 5
-
-recc_predicted <- predict(object = recc_model, newdata = ratings_movies, n = n_recommended)
-
-recc_user_7 <- recc_predicted@items[[7]]
-movies_user_7 <- recc_predicted@itemLabels[recc_user_7]
-movies_user_7
-~~~
