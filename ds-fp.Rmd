@@ -22,7 +22,7 @@ editor_options:
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
 
-knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE,
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
                     comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
 
@@ -250,5 +250,167 @@ numbers <- c(16, 25, 36, 49, 64, 81)
 map_dbl(numbers, find_root_recur, init=1, eps = 10^-10)
 ```
 
+## 데이터 불러오는 사례 {#functional-programming-purrr-read-iris}
+
+구글 검색을 통해서 쉽게 [iris(붓꽃) 데이터](https://gist.githubusercontent.com/curran/a08a1080b88344b0c8a7/raw/d546eaee765268bf2f487608c537c05e22e4b221/iris.csv)를 구할 수 있다. 이를 불러와서 각 종별로 `setosa`
+`versicolor`, `virginica`로 나눠 로컬 `.csv` 파일로 저장하고 나서 이를 다시 불러오는 사례를 함수형 프로그래밍으로 구현해본다.
+
+<img src="fig/fp-iris.png" alt="붓꽃 데이터 불러오기" width="100%" />
+
+먼저 `iris.csv` 파일을 R로 불러와서 각 종별로 나눠서 `iris_종명.csv` 파일형식으로 저장시킨다.
+
+```{r fp-iris}
+library(tidyverse)
+iris_df <- read_csv("https://gist.githubusercontent.com/curran/a08a1080b88344b0c8a7/raw/d546eaee765268bf2f487608c537c05e22e4b221/iris.csv")
+
+iris_species <- iris_df %>% 
+  count(species) %>% pull(species)
+
+for(i in 1:nrow(iris_df)) {
+  tmp_df <- iris_df %>% 
+    filter(species == iris_species[i])
+  species_name <- iris_species[i]
+  tmp_df %>% write_csv(paste0("data/iris_", species_name, ".csv"))
+}
+
+Sys.glob("data/iris_*.csv")
+```
+
+로컬 파일 `iris_종명.csv` 형식으로 저장된 데이터를 함수형 프로그래밍을 통해 불러와서 분석작업을 수행해보자. `map()` 함수를 사용해서 각 종별로 데이터를 깔끔하게 불러왔다.
+
+`iris_filename` 벡터에 `iris_종명.csv`과 경로명이 포함된 문자열을 저장시켜 놓고 `read_csv()` 함수를 각 벡터 원소에 적용시켜 출력값으로 리스트 `iris_list` 객체를 생성시켰다.
+
+```{r fp-iris-read}
+iris_filename <- c("data/iris_setosa.csv", "data/iris_versicolor.csv", "data/iris_virginica.csv")
+
+iris_list <- map(iris_filename, read_csv) %>% 
+  set_names(iris_species)
+
+listviewer::jsonedit(iris_list)
+```
+
+## 데이터 분석사례 {#functional-programming-purrr-analysis}
+
+`iris_list` 각 원소는 데이터프레임이라 `summary` 함수를 사용해서 기술 통계량을 구할 수도 있다. 물론 `cor()` 함수를 사용해서 `iris_list`의 각 원소를 지정하는 `.x` 여기서는 종별 데이터프레임에서 변수 두개를 추출하여 `sepal_length`, `sepal_width` 이 둘간의 스피커만 상관계수를 계산하는데 출력값이 `double` 연속형이라 `map_dbl`로 저정하여 작업시킨다.
+
+```{r fp-iris-analysis}
+map(iris_list, summary)
+
+map_dbl(iris_list, ~cor(.x$sepal_length, .x$sepal_width, method = "spearman"))
+```
 
 
+## 난수생성 사례 {#functional-programming-purrr-random-number}
+
+서로 다른 난수를 생성시키는 방법을 살펴보자. 
+정규분포를 가정하고 평균과 표준편차를 달리하는 모수를 지정하고 난수갯수도 숫자를 달리하여 난수를 생성시킨다.
+
+### $\mu$ 평균만 달리함 {#functional-programming-purrr-random-number-mean}
+
+정규분포에서 난수를 10개 추출하는데 표준편차는 1로 고정시키고, 평균만 달리한다.
+평균만 달리하기 때문에 `map()` 함수를 그대로 사용한다. 즉, 입력값으로 평균만 달리하는 리스트를 입력값으로 넣는다.
+
+```{r fp-iris-random-number-mean}
+## 평균을 달리하는 경우
+normal_mean <- list(1,5,10)
+
+sim_mu_name <- paste0("mu: ", normal_mean)
+
+sim_mu_list <- map(normal_mean, ~ data.frame(mean = .x, 
+                            random_number = rnorm(mean=.x, sd=1, n=10))) %>% 
+  set_names(sim_mu_name)
+
+map_dbl(sim_mu_list, ~mean(.x$random_number))
+
+listviewer::jsonedit(sim_mu_list)
+```
+
+### $\mu$ 평균과 $\sigma$ 표준편차를 달리함 {#functional-programming-purrr-random-number-mean-sd}
+
+난수갯수만 고정시키고 평균과 표준편차를 달리하여 난수를 정규분포에서 추출한다. 입력값으로 평균과 표준편차 두개가 되기 때문에 `map2()` 함수를 사용한다.
+
+```{r fp-iris-random-number-mean-sd}
+## 평균과 표준편차를 달리하는 경우
+normal_mean <- list(1,5,10)
+normal_sd   <- list(10,5,1)
+
+sim_mu_sd_name <- paste0("mu: ", normal_mean, ",  sd: ", normal_sd)
+
+sim_mu_sd_list <- map2(normal_mean, normal_sd, 
+                        ~ data.frame(mean = .x, sd = .y,
+                            random_number = rnorm(mean=.x, sd=.y, n=10))) %>% 
+  set_names(sim_mu_sd_name)
+
+map_dbl(sim_mu_sd_list, ~sd(.x$random_number))
+
+listviewer::jsonedit(sim_mu_sd_list)
+```
+
+### $\mu$ 평균, $\sigma$ 표준편차, 표본크기를 달리함 {#functional-programming-purrr-random-number-mean-sd-size}
+
+$\mu$ 평균, $\sigma$ 표준편차, 표본크기를 모두 다르게 지정하여 난수를 추출한다. 이런 경우 `pmap()` 함수를 사용하고 입력 리스트가 다수라 이를 `normal_list`로 한번더 감싸서 이름이 붙은 리스트(named list)형태로 넣어주고, 이를 `function()` 함수의 내부 인수로 사용한다.
+
+```{r fp-iris-random-number-mean-sd-size}
+## 평균, 표준편차, 표본크기를 달리하는 경우
+normal_mean <- list(1,5,10)
+normal_sd   <- list(10,5,1)
+normal_size <- list(10,20,30)
+
+sim_mu_sd_size_name <- paste0("mu: ", normal_mean, ",  sd: ", normal_sd,
+                              "  size: ", normal_size)
+
+normal_list <- list(normal_mean=normal_mean, normal_sd=normal_sd, normal_size=normal_size)
+
+sim_mu_sd_size_list <- pmap(normal_list,
+                            function(normal_mean, normal_sd, normal_size)
+                        data.frame(mean=normal_mean, sd = normal_sd, size = normal_size,
+                            random_number = rnorm(mean=normal_mean, sd=normal_sd, n=normal_size))) %>% 
+  set_names(sim_mu_sd_size_name)
+
+map_dbl(sim_mu_sd_size_list, ~length(.x$random_number))
+
+listviewer::jsonedit(sim_mu_sd_size_list)
+
+```
+
+
+## `ggplot` 시각화 [^eda-map] {#functional-programming-purrr-ggplot}
+
+[^eda-map]: [Very statisticious (August 20, 2018), "Automating exploratory plots with ggplot2 and purrr"](https://aosmith.rbind.io/2018/08/20/automating-exploratory-plots/)
+
+`list-column`을 활용하여 티블(tibble) 데이터프레임에 담아서 시각화를 진행해도 되고,
+다른 방법으로 리스트에 담아서 이를 한장에 찍는 것도 가능하다.
+
+```{r fp-iris-viz}
+library(gapminder)
+
+## 데이터 -----
+three_country <-  c("Korea, Rep.", "Japan", "China")
+
+gapminder_tbl <- gapminder %>% 
+  filter(str_detect(continent, "Asia")) %>% 
+  group_by(continent, country) %>% 
+  nest() %>% 
+  select(-continent) %>% 
+  filter(country %in% three_country )
+
+## 티블 데이터 시각화 -----
+gapminder_plot_tbl <- gapminder_tbl %>% 
+  mutate(graph = map2(data, three_country, 
+                     ~ggplot(.x, aes(x=year, y=gdpPercap)) +
+                       geom_line() +
+                       labs(title=.y)))
+
+gapminder_plot_tbl
+
+## 리스트 데이터 시각화 -----
+gapminder_plot <- map2(gapminder_tbl$data , three_country, 
+                     ~ggplot(.x, aes(x=year, y=gdpPercap)) +
+                       geom_line() +
+                       labs(title=.y))
+
+walk(gapminder_plot, print)
+
+## 리스트 데이터 시각화 - 한장에 찍기 -----
+cowplot::plot_grid(plotlist = gapminder_plot)
+```
