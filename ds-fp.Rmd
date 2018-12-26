@@ -414,3 +414,270 @@ walk(gapminder_plot, print)
 ## 리스트 데이터 시각화 - 한장에 찍기 -----
 cowplot::plot_grid(plotlist = gapminder_plot)
 ```
+
+
+# 함수형 프로그래밍 이론과 실제 {#fp-theory-practice}
+
+함수는 다음과 같이 될 수도 있어 함수형 프로그래밍 언어가 된다. [^fp-advanced-r]
+
+[^fp-advanced-r]: [Advanced R, "Introduction"](https://adv-r.hadley.nz/fp.html)
+
+- 함수의 인자
+- 함수로 반환
+- 리스트에 저장
+- 변수에 저장
+- 무명함수
+- 조작할 수 있다.
+
+Firstly, functional languages have first-class functions, functions that behave like any other data structure. 
+In R, this means that you can do anything with a function that you can do with a vector: 
+you can assign them to variables, store them in lists, pass them as arguments to other functions, create them inside functions, 
+and even return them as the result of a function.
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+John Chambers 창시자가 말하는 R 계산의 기본원칙
+
+- 존재하는 모든 것은 객체다. (Everything that exists is an object.)
+- 일어나는 모든 것은 함수호출이다. (Everything that happens is a function call.)
+
+```{r function-calls}
+library(tidyverse)
+class(`%>%`)
+class(`$`)
+class(`<-`)
+class(`+`)
+```
+
+</div>
+
+## 순수한 함수 vs 순수하지 않은 함수 {#pure-vs-impure-function}
+
+**순수한 함수(pure function)**는 입력값에만 출력값이 의존하게 되는 특성과 부수효과(side-effect)를 갖지 않는 반면 **순수하지 않은 함수(impure function)**는 환경에 의존하며 부수효과도 갖는다.
+
+<div class = "row">
+<div class = "col-md-6">
+**순수한 함수(pure function)**
+
+``` {r fp-pure-function}
+min(1:100)
+
+mean(1:100)
+```
+
+</div>
+<div class = "col-md-6">
+**순수하지 않은 함수(impure function)**
+
+``` {r fp-impure-function}
+Sys.time()
+
+rnorm(10)
+
+# write_csv("data/sample.csv")
+```
+</div>
+</div>
+
+
+## 무명함수(lambda function)와 매퍼(mapper) {#fp-lambda-functin}
+
+$\lambda$ (람다) 함수는 무명(anonymous) 함수는 함수명을 갖는 일반적인 함수와 비교하여 함수의 좋은 점은 그대로 누리면서 함수가 많아 함수명으로 메모리가 난잡하게 지져분해지는 것을 막을 수 있다.
+
+무명함수로 기능르 구현한 후에 매퍼(mapper)를 사용해서 `as_mapper()` 명칭을 부여하여 함수처럼 사용하는 것도 가능하다. 매퍼(mapper)를 사용하는 이유를 다음과 같이 정리할 수 있다.
+
+- 간결함(Concise)
+- 가독성(Easy to read)
+- 재사용성(Reusable)
+
+정치인 페이스북 페이지에서 팬수를 추출한다. 그리고 이를 이름이 부은 리스트(named list)로 일자별 팬수 추이를 리스트로 준비한다. 그리고 나서 안철수, 문재인, 심상정 세 후보에 대한 최고 팬수증가를 무명함수로 계산한다.
+
+```{r fp-lambda-function}
+library(tidyverse)
+## 데이터프레임을 리스트로 변환
+ahn_df  <- read_csv("data/fb_ahn.csv")  %>% rename(fans = ahn_fans) %>% 
+  mutate(fans_lag = lag(fans),
+         fans_diff = fans - fans_lag) %>% 
+  select(fdate, fans = fans_diff) %>% 
+  filter(!is.na(fans))
+moon_df <- read_csv("data/fb_moon.csv") %>% rename(fans = moon_fans) %>% 
+  mutate(fans_lag = lag(fans),
+         fans_diff = fans - fans_lag) %>% 
+  select(fdate, fans = fans_diff) %>% 
+  filter(!is.na(fans))
+sim_df  <- read_csv("data/fb_sim.csv")  %>% rename(fans = sim_fans) %>% 
+  mutate(fans_lag = lag(fans),
+         fans_diff = fans - fans_lag) %>% 
+  select(fdate, fans = fans_diff) %>% 
+  filter(!is.na(fans))
+
+convert_to_list <- function(df) {
+  df_fans_v <- df$fans %>% 
+    set_names(df$fdate)
+  return(df_fans_v)
+}
+
+ahn_v  <- convert_to_list(ahn_df)
+moon_v <- convert_to_list(moon_df)
+sim_v  <- convert_to_list(sim_df)
+
+fans_lst <- list(ahn_fans  = ahn_v,
+                 moon_fans = moon_v,
+                 sim_fans  = sim_v)
+
+listviewer::jsonedit(fans_lst)
+
+## 무명함수 테스트
+map_dbl(fans_lst, ~max(.x))
+```
+
+`rlang_lambda_function` 무명함수로 `increase_1000_fans` 작성해서 일별 팬수 증가가 1000명 이상인 경우 `keep()` 함수를 사용해서 각 후보별로 추출할 수 있다.  `discard()` 함수를 사용해서 반대로 버려버릴 수도 있다.
+
+```{r list-data-manipulation, eval=TRUE}
+increase_1000_fans <- as_mapper( ~.x > 1000)
+
+map(fans_lst, ~keep(.x, increase_1000_fans))
+```
+
+[술어논리(predicate logic)](https://terms.naver.com/entry.nhn?docId=1116302&cid=40942&categoryId=31530)은 조건을 테스트하여 참(`TRUE`), 거짓(`FALSE`)을 반환시킨다. `every`, `some`을 사용하여 팬수가 증가한 날이 매일 1,000명이 증가했는지, 전부는 아니고 일부 특정한 날에 1,000명이 증가했는지 파악할 수 있다.
+
+```{r list-data-manipulation-predicate, eval=TRUE}
+## 세후보 팬수가 매일 모두 1000명 이상 증가했나요?
+map(fans_lst, ~every(.x, increase_1000_fans))
+## 세후보 팬수가 전체는 아니고 일부 특정한 날에 1000명 이상 증가했나요?
+map(fans_lst, ~some(.x, increase_1000_fans))
+```
+
+## 고차 함수(High order function) {#high-order-function}
+
+고차 함수(High order function)는 함수의 인자로 함수를 받아 함수로 반환시키는 함수를 지칭한다. `high_order_fun` 함수는 함수를 인자(`func`)로 받아 함수를 반환시키는 고차함수다. 
+평균 함수(`mean`)를 인자로 넣어 출력값으로 `mean_na()` 함수를 새롭게 생성시킨다. 
+`NA`가 포함된 벡터를 넣어 평균값을 계산하게 된다.
+
+```{r high-order-function}
+high_order_fun <- function(func){
+  function(...){
+    func(..., na.rm = TRUE)
+  }
+}
+
+mean_na <- high_order_fun(mean)
+mean_na( c(NA, 1:10) )
+
+```
+
+벡터가 입력값으로 들어가서 벡터가 출력값으로 나오는 보통 함수(Regular Function)외에 고차함수는 3가지 유형이 있다. 
+
+- 벡터 &rarr; 함수: 함수공장(Function Factory) 
+- 함수 &rarr; 벡터: Functional - `for`루프를 `purrr` 팩키지 `map()` 함수로 대체
+- 함수 &rarr; 함수: 함수연산자(Function Operator) - `Functional`과 함께 사용될 경우 `adverbs`로서 강력한 기능을 발휘
+
+<img src="fig/fp.png" alt="고차함수 유형" width="57%" />
+
+## 부사(`adverbs`) - `safely`, `possibly`,... {#adverbs-safely-possibly}
+
+`purrr` 팩키지의 대표적인 부사(adverbs)에는 `possibly()`와 `safely()`가 있다.
+그외에도 `silently()`, `surely()` 등 다른 부사도 있으니 필요한 경우 `purrr` 팩키지 문서를 참조한다.
+
+`safely(mean)`은 동사 함수(`mean()`)를 받아 부사 `safely()`로 "부사 + 동사"로 기능이 추가된 부사 동사를 반환시킨다. 따라서, `NA`가 추가된 벡터를 넣을 경우 `$result`와 `$error`를 원소로 갖는 리스트를 반환시킨다.
+
+```{r adverbs-safely-example}
+mean_safe <- safely(mean)
+class(mean_safe)
+
+mean_safe(c(NA, 1:10))
+```
+
+이를 활용하여 오류처리작업을 간결하게 수행시킬 수 있다.
+`$result`와 `$error`을 원소로 갖는 리스트를 반환시키기 때문에 오류와 결과값을 추출하여 후속작업을 수행하여 디버깅하는데 유용하게 활용할 수 있다.
+
+```{r adverbs-safely-error}
+test_lst <- list("NA", 1,2,3,4,5)
+log_safe <- safely(log)
+
+map(test_lst, log_safe) %>% 
+  map("result")
+
+map(test_lst, log_safe) %>% 
+  map("error")
+```
+
+
+반면에 `possibly()`는 결과와 `otherwise` 값을 반환시켜서 오류가 발생되면 중단되는 것이 아니라 오류가 있다는 사실을 알고 예외처리시킨 후에 쭉 정상진행시킨다.
+
+```{r adverbs-possibly}
+max_possibly <- possibly(sum, otherwise = "watch out")
+
+max_possibly(c(1:10))
+
+max_possibly(c(NA, 1:10))
+
+max_possibly(c("NA", 1:10))
+```
+
+`possibly()`는 부울 논리값, `NA`, 문자열, 숫자를 반환시킬 수 있다.
+
+`transpose()`와 결합하여 `safely()`, `possibly()` 결과를 변형시킬 수도 있다.
+
+```{r adverbs-transpose}
+map(test_lst, log_safe) %>% length()
+
+map(test_lst, log_safe) %>% transpose() %>% length()
+```
+
+`compact()`를 사용해서 `NULL`을 제거하는데, 앞서 `possibly()`의 인자로 `otherwise=`를 지정하는 경우 `otherwise=NULL`와 같이 정의해서 예외처리로 `NULL`을 만들어 내고 `compact()`로 정상처리된 데이터만 얻는 작업흐름을 갖춘다.
+
+```{r adverbs-possibly-compact}
+null_lst <- list(1, NULL, 3, 4, NULL, 6, 7, NA)
+compact(null_lst)
+
+possibly_log <- possibly(log, otherwise = NULL)
+map(null_lst, possibly_log) %>% compact()
+```
+
+# 깨끗한 코드(clean code) [^clean-code-colin-fay] {#fp-clean-code}
+
+[^clean-code-colin-fay]: [Colin Fay, "A Crazy Little Thing Called {purrr} - Part 5: code optimization"](https://colinfay.me/purrr-code-optim/)
+
+`round_mean()` 함수를 `compose()` 함수를 사용해서 `mean()` 함수로 평균을 구한 후에 `round()`함수로 반올림하는 코드를 다음과 같이 쉽게 작성할 수 있다.
+
+```{r fp-clean-code}
+round_mean <- compose(round, mean)
+round_mean(1:10)
+```
+
+두번째 사례로 전형적인 데이터 분석 사례로 `lm()` &rarr; `anova()` &rarr; `tidy()`를 통해 한방에 선형회귀 모형 산출물을 깨끗한 코드로 작성하는 사례를 살펴보자.
+
+`mtcars` 데이터셋에서 연비 예측에 변수 두개를 넣고 일반적인 `lm()` 선형예측모형 제작방식과 동일하게 인자를 넣는다.
+
+```{r fp-clean-code-lm-compose}
+clean_lm <- compose(broom::tidy, anova, lm)
+clean_lm(mpg ~ hp + wt, data=mtcars)
+```
+
+`compose()`를 통해 함수를 조합하는 경우 함수의 인자를 함께 전달해야될 경우가 있다. 이와 같은 경우 `partial()`을 사용해서 인자를 넘기는 함수를 제작하여 `compose()`에 넣어준다.
+
+```{r fp-clean-code-partial}
+robust_round_mean <- compose(
+  partial(round, digits=1),
+  partial(mean, na.rm=TRUE))
+robust_round_mean(c(NA, 1:10))
+```
+
+리스트 칼럼(list-column)과 결합하여 모형에서 나온 데이터 분석결과를 깔끔하게 코드로 제작해보자. 먼저 `lm`을 돌려 모형 요약하는 함수 `summary`를 통해 `r.squared`값을 추출하는 함수를 `summary_lm`으로 제작한다.
+
+그리고 나서 `nest()` 함수로 리스트 칼럼(list-column)을 만들고 두개의 집단 수동/자동을 나타내는 `am` 변수를 그룹으로 삼아 두 집단에 속한 수동/자동 데이터에 대한 선형 회귀모형을 적합시키고 나서 "r.squared"값을 추출하여 이를 티블 데이터프레임에 저장시킨다. 
+
+```{r fp-clean-code-lm}
+summary_lm <- compose(summary, lm) 
+
+mtcars %>%
+  group_by(am) %>%
+  nest() %>%
+  mutate(lm_mod = map(data, ~ summary_lm(mpg ~ hp + wt, data = .x)),
+         r_squared = map(lm_mod, "r.squared")) %>%
+  unnest(r_squared)
+```
