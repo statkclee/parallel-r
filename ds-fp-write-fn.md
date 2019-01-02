@@ -1,25 +1,28 @@
 ---
 layout: page
 title: R 병렬 프로그래밍
-date: "2017-11-18"
 subtitle: R 함수 작성
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "2019-01-02"
 output:
   html_document: 
     toc: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
 
 
-> ## 학습 목표 {.objectives}
->
-> * 함수를 작성하는 이유와 함수작성법을 살펴본다.
-> * 좋은 함수는 어떤 함수인지 살펴본다.
-
-## 1. 함수를 작성하는 이유 {#why-write-function}
+# 함수를 작성하는 이유 {#why-write-function}
 
 함수를 작성하는 이유는 반복되는 중복 문제를 해결하고 추상화를 통해 더 복잡한 작업을 가능하게 만들기 위해 사용한다.
 데이터프레임에 담긴 변수의 측도가 상이하여 측도를 재조정하는 경우 다음과 같은 수학식이 많이 사용된다.
@@ -29,7 +32,7 @@ $$ f(x)_{\text{척도조정}} = \frac{x-min(x)}{max(x)-min(x)} $$
 
 
 
-~~~{.r}
+```r
 df <- data.frame(a=c(1,2,3,4,5),
 				 b=c(10,20,30,40,50),
 				 c=c(7,8,6,1,3),
@@ -43,19 +46,16 @@ df$c <- (df$c - min(df$c, na.rm = TRUE)) /
 df$d <- (df$d - min(df$d, na.rm = TRUE)) /
         (max(df$d, na.rm = TRUE) - min(df$d, na.rm = TRUE))
 df        
-~~~
+```
 
-
-
-~~~{.output}
+```
      a         b         c    d
 1 0.00  0.000000 0.8571429 0.75
 2 0.25 -1.111111 1.0000000 0.50
 3 0.50 -2.222222 0.7142857 1.00
 4 0.75 -3.333333 0.0000000 0.75
 5 1.00 -4.444444 0.2857143 0.00
-
-~~~
+```
 
 상기 R 코드는 측도를 모두 맞춰서 변수 4개(`a`, `b`, `c`, `d`)를 비교하거나 향후 분석을 위한 것이다. 
 하지만, 읽어야 되는 코드가 중복되고 길어 코드를 작성한 개발자의 **의도** 가 의도적이지는 않지만 숨겨졌다.
@@ -67,12 +67,21 @@ df
 1. 1번 코드가 잘 동작하게 되면 다음 복사하여 붙여넣기 신공을 사용하여 다른 칼럼 작업을 확장해 나간다. `df$b`, `df$c`, `df$d`를 생성하게 된다.
 1. 즉, 복사해서 붙여넣은 것을 변수명을 편집해서 `df$b`, `df$c`, `df$d` 변수를 순차적으로 생성해 낸다.
 
-> ### 위캠 어록 {.callout}
->
-> * Duplication hides the intent
-> * If you have copied-and-pasted twice, it is time to write a function
 
-## 2. 함수를 작성하는 시점 {#time-to-write-function}
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**위캠 어록**
+
+* Duplication hides the intent
+* If you have copied-and-pasted twice, it is time to write a function
+
+</div>
+
+
+# 함수를 작성하는 시점 {#time-to-write-function}
 
 복사해서 붙여넣는 것을 두번 하게 되면, 함수를 작성할 시점이다. 중복을 제거하는 한 방법은 함수를 작성하는 것이다.
 함수를 작성하게 되면 의도가 명확해진다.
@@ -81,7 +90,7 @@ df
 
 
 
-~~~{.r}
+```r
 rescale <- function(x){
               rng <- range(x, na.rm = TRUE)
               (x - rng[1]) / (rng[2] - rng[1])
@@ -91,18 +100,18 @@ df$a <- rescale(df$a)
 df$b <- rescale(df$b)
 df$c <- rescale(df$c)
 df$d <- rescale(df$d)
-~~~
+```
 
 또다른 방법은 함수형 프로그래밍을 사용하는 것으로 함수명을 반복적으로 사용하는 것조차도 피할 수 있다.
 
 
 
-~~~{.r}
+```r
 library(purrr)
-df[] <- map(df, rescale)
-~~~
+df <- map_df(df, rescale)
+```
 
-## 3. 함수를 작성하는 방법 {#how-to-write-function}
+# 함수를 작성하는 방법 {#how-to-write-function}
 
 함수를 작성할 경우 먼저 매우 단순한 문제에서 출발한다.
 척도를 맞추는 상기 과정을 R 함수로 만들어본다. 
@@ -114,36 +123,36 @@ df[] <- map(df, rescale)
 2. 기능이 구현되어 동작이 제대로 되는지 확인되는 R코드를 작성한다. 
 
 
-~~~{.r}
+```r
 (df$a - min(df$a, na.rm = TRUE)) / (max(df$a, na.rm = TRUE) - min(df$a, na.rm = TRUE))
-~~~
+```
 
 3. 확장가능하게 임시 변수를 사용해서 위에서 구현된 코드를 다시 작성한다. 
 
 
-~~~{.r}
+```r
 ( x - min( x , na.rm = TRUE)) / (max( x , na.rm = TRUE) - min( x , na.rm = TRUE))
-~~~
+```
 
 
-~~~{.r}
+```r
 x <- df$a
 ( x - min( x , na.rm = TRUE)) / (max( x , na.rm = TRUE) - min( x , na.rm = TRUE))
-~~~
+```
 
 4. 함수 작성의도를 명확히 하도록 다시 코드를 작성한다.
 
 
-~~~{.r}
+```r
 x <- df$a
 rng <- range(x, na.rm = TRUE)
 (x - rng[1]) / (rng[2] - rng[1])
-~~~
+```
 
 5. 최종적으로 재작성한 코드를 함수로 변환한다.
 
 
-~~~{.r}
+```r
 x <- df$a
 
 rescale <- function(x){
@@ -152,9 +161,9 @@ rescale <- function(x){
 			}
 
 rescale(x)
-~~~
+```
 
-## 4. 좋은 함수 {#criteria-on-good-function}
+# 좋은 함수 {#criteria-on-good-function}
 
 좋은 함수를 작성하려면 다음과 같은 조건이 만족되어야 한다.
 
@@ -164,22 +173,33 @@ rescale(x)
 1. 함수가 인자로 받아 반환하는 것을 명확히 한다.
 1. 함수 내부 몸통부문에 좋은 스타일을 잘 사용한다.
 
+좋은 함수 작성과 연계하여  **깨끗한 코드(Clean code)**는 다음과 같은 특성을 갖고 작성된 코드를 뜻한다.
 
-> ### 좋은 함수란? {.callout}
->
-> 척도를 일치시키는 기능을 함수로 구현했지만, 기능을 구현했다고 좋은 함수가 되지는 않는다.
-> 좋은 함수가 되는 조건은 다음과 같다.
->
-> 1. **Correct:** 기능이 잘 구현되어 올바르게 동작할 것
-> 1. **Understandable:** 사람이 이해할 수 있어야 함. 즉, 함수는 컴퓨터를 위해 기능이 올바르게 구현되고, 사람도 이해할 수 있도록 작성되어야 한다.
-> 1. 즉, **Correct + Understandable:** 컴퓨터와 사람을 위해 적성될 것.
+- 가볍고 빠르다 - Light
+- 가독성이 좋다 - Readable
+- 해석가능하다 - Interpretable
+- 유지보수가 뛰어나다 - Maintainable
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**좋은 함수란?**
+
+척도를 일치시키는 기능을 함수로 구현했지만, 기능을 구현했다고 좋은 함수가 되지는 않는다.
+좋은 함수가 되는 조건은 다음과 같다.
+
+1. **Correct:** 기능이 잘 구현되어 올바르게 동작할 것
+1. **Understandable:** 사람이 이해할 수 있어야 함. 즉, 함수는 컴퓨터를 위해 기능이 올바르게 구현되고, 사람도 이해할 수 있도록 작성되어야 한다.
+1. 즉, **Correct + Understandable:** 컴퓨터와 사람을 위해 적성될 것.
+
+</div>
 
 
+# 함수작성 사례 {#function-is-argument}
 
-
-## 5. 함수작성 사례 {#function-is-argument}
-
-### 5.1. 기능 먼저 구현 추후 중복 제거 {#feature-first-dedup-second}
+## 기능 먼저 구현 추후 중복 제거 {#feature-first-dedup-second}
 
 함수도 인자로 넣어 처리할 수 있다는 점이 처음에 이상할 수도 있지만, 함수를 인자로 처리할 경우 코드 중복을 상당히 줄일 수 있다.
 $L_1$, $L_2$, $L_3$ 값을 구하는 함수를 다음과 같이 작성해야 한다. 숫자 1,2,3 만 차이날 뿐 함수 중복이 심하다.
@@ -188,40 +208,39 @@ $L_1$, $L_2$, $L_3$ 값을 구하는 함수를 다음과 같이 작성해야 한
 * 1단계: 중복이 심한 함수, 기능 구현에 초점을 맞춤
 
 
-~~~{.r}
+```r
 f1 <- function(x) abs(x - mean(x)) ^ 1
 f2 <- function(x) abs(x - mean(x)) ^ 2
 f3 <- function(x) abs(x - mean(x)) ^ 3
-~~~
+```
 
 * 2단계: 임시 변수로 처리할 수 있는 부분을 식별하고 적절한 인자명(`power`)을 부여한다.
 
 
-~~~{.r}
+```r
 f1 <- function(x) abs(x - mean(x)) ^ power
 f2 <- function(x) abs(x - mean(x)) ^ power
 f3 <- function(x) abs(x - mean(x)) ^ power
-~~~
+```
 
 * 3단계: 식별된 변수명을 함수 인자로 변환한다.
 
 
-~~~{.r}
+```r
 f1 <- function(x, power) abs(x - mean(x)) ^ power
 f2 <- function(x, power) abs(x - mean(x)) ^ power
 f3 <- function(x, power) abs(x - mean(x)) ^ power
-~~~
+```
 
-### 5.2. 기초통계 사례 {#descriptive-statistics-case}
+## 기초통계 사례 {#descriptive-statistics-case}
 
 특정 변수의 중위수, 평균, 표준편차를 계산하는 함수를 작성하는 경우를 상정한다.
 
 * 1 단계: 각 기능을 구현하는 기능 구현에 초점을 맞춤
 
 
-~~~{.r}
-col_median <- 
-  function(df) {
+```r
+col_median <- function(df) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- median(df[[i]])
@@ -229,8 +248,7 @@ col_median <-
     output
   }
 
-col_mean <- 
-  function(df) {
+col_mean <- function(df) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- mean(df[[i]])
@@ -238,22 +256,20 @@ col_mean <-
     output
   }
 
-col_sd <- 
-  function(df) {
+col_sd <- function(df) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- sd(df[[i]])
     }
     output
   }
-~~~
+```
 
 * 2 단계: `median`, `mean`, `sd`를 함수 인자 `fun` 으로 함수명을 통일.
 
 
-~~~{.r}
-col_median <- 
-  function(df) {
+```r
+col_median <- function(df) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- fun(df[[i]])
@@ -261,8 +277,7 @@ col_median <-
     output
   }
 
-col_mean <- 
-  function(df) {
+col_mean <- function(df) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- fun(df[[i]])
@@ -270,22 +285,20 @@ col_mean <-
     output
   }
 
-col_sd <- 
-  function(df) {
+col_sd <- function(df) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- fun(df[[i]])
     }
     output
   }
-~~~
+```
 
 * 3 단계: 함수 인자 `fun` 을 넣어 중복을 제거.
 
 
-~~~{.r}
-col_median <- 
-  function(df, fun) {
+```r
+col_median <- function(df, fun) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- fun(df[[i]])
@@ -293,8 +306,7 @@ col_median <-
     output
   }
 
-col_mean <- 
-  function(df, fun) {
+col_mean <- function(df, fun) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- fun(df[[i]])
@@ -302,22 +314,20 @@ col_mean <-
     output
   }
 
-col_sd <- 
-  function(df, fun) {
+col_sd <- function(df, fun) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- fun(df[[i]])
     }
     output
   }
-~~~
+```
 
 * 4 단계: 함수를 인자로 갖는 요약통계 함수를 최종적으로 정리하고, 테스트 사례를 통해 검증.
 
 
-~~~{.r}
-col_summary <- 
-  function(df, fun) {
+```r
+col_summary <- function(df, fun) {
     output <- numeric(length(df))
     for (i in seq_along(df)) {
       output[i] <- fun(df[[i]])
@@ -325,37 +335,37 @@ col_summary <-
     output
   }
 col_summary(df, fun = median)
-~~~
+```
 
-
-
-~~~{.output}
+```
 [1] 0.5000000 0.5000000 0.7142857 0.7500000
+```
 
-~~~
-
-
-
-~~~{.r}
+```r
 col_summary(df, fun = mean)
-~~~
+```
 
-
-
-~~~{.output}
+```
 [1] 0.5000000 0.5000000 0.5714286 0.6000000
+```
 
-~~~
-
-
-
-~~~{.r}
+```r
 col_summary(df, fun = sd)
-~~~
+```
 
-
-
-~~~{.output}
+```
 [1] 0.3952847 0.3952847 0.4164966 0.3791438
+```
 
-~~~
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**`purrr` 함수형 프로그래밍**
+
+`map(.x, .f, ...)` `.x` 원소 각각에 대해서 `.f` 함수를 적용시키는 연산작업을 한다.
+
+</div>
+
+
