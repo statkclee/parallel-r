@@ -21,7 +21,7 @@ editor_options:
 # source("tools/chunk-options.R")
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
-                    comment="", digits = 3, tidy = FALSE, prompt = TRUE, fig.align = 'center')
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
 library(here)
 
