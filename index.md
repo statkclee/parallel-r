@@ -19,12 +19,13 @@ title: R 병렬 프로그래밍
     - [고성능 R 아키텍처](r-perf-arch.html)
         - [왜 고성능 R 아키텍처가 필요한가?](why-r-hpc.html)
         - [R 스케일-업 성능향상](r-scale-up.html)
+        - [Rcpp - 코드 최적화](r-perf-rcpp.html)
         - [R 스케일-아웃 성능향상](r-scale-out.html)     
             - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html)         
     - **[고성능 R코드 작성과 성능비교](perf-writing-efficient-code.html)**
         - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
         - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
-        - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)
+        - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)    
 1. **[기계학습 R 서버 만들기](r-caret-parallel-server.html)**    
 1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
     - [RESTful API 개발환경 - `plumber`](r-restful-api-test.html)

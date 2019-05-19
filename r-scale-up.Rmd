@@ -2,12 +2,19 @@
 layout: page
 title: 데이터 과학
 subtitle: R 스케일-업 성능향상
+date: "`r Sys.Date()`"
+author: xwMOOC
 output:
   html_document: 
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+    lib_dir: gapminder
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include=FALSE}
