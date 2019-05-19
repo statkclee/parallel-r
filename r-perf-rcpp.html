@@ -372,7 +372,7 @@ div.tocify {
 
 
 <div id="rcpp" class="section level1">
-<h1><span class="header-section-number">1</span> Rcpp <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h1>
+<h1><span class="header-section-number">1</span> Rcpp 헬로월드 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></h1>
 <p><a href="https://github.com/RcppCore/Rcpp">Rcpp</a>는 R과 C++를 무리없이 깔끔하게 통합시키기 위해서 개발된 팩키지다. R과 C를 연동하는 방식은 다음과 같이 세가지 유형으로 나눠볼 수 있다.</p>
 <ol style="list-style-type: decimal">
 <li><code>.C</code> 함수: 간단하지만 제한적 사용이 가능하고 R 메모리 위에서 연산작업을 수행하기 때문에 객체는 포인터 연산자로 다뤄야함.</li>
@@ -406,9 +406,8 @@ div.tocify {
 </tr>
 </tbody>
 </table>
-</div>
-<div id="rcpp-performance" class="section level1">
-<h1><span class="header-section-number">2</span> 속도 측정</h1>
+<div id="rcpp-performance" class="section level2">
+<h2><span class="header-section-number">1.1</span> 속도 측정</h2>
 <p><a href="https://github.com/joshuaulrich/microbenchmark"><code>microbenchmark</code></a> 팩키지는 측정하고자 하는 함수를 넣어 함수 실행시간을 비교할 수 있다.</p>
 <p><code>find_min()</code> 함수는 R 내부에 자체 <code>min()</code> 함수가 있지만 속도 비교를 위해서 직관적인 알고리즘을 통해서 벡터 내부 최소값을 찾아내는 함수로 구현하고 이를 <code>microbenchmark</code>를 통해서 속도를 비교해 본다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">find_min &lt;-<span class="st"> </span><span class="cf">function</span>(input_v){
@@ -423,34 +422,28 @@ div.tocify {
 
 ## 시운전 
 <span class="kw">find_min</span>(<span class="kw">rnorm</span>(<span class="dv">100</span>))</code></pre></div>
-<pre><code>[1] -2.716765</code></pre>
+<pre><code>[1] -1.914999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 속도 비교
 <span class="kw">library</span>(microbenchmark)
 input_v &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="fl">1e5</span>)
 <span class="kw">microbenchmark</span>( <span class="kw">find_min</span>(input_v), 
                 <span class="kw">max</span>(input_v) )</code></pre></div>
 <pre><code>Unit: microseconds
-              expr      min       lq      mean   median        uq
- find_min(input_v) 3592.247 3690.949 4033.1376 3752.957 3939.1265
-      max(input_v)  116.338  116.623  140.8402  117.618  137.1025
-       max neval
- 10405.823   100
-   555.804   100</code></pre>
+              expr      min        lq      mean   median        uq
+ find_min(input_v) 3429.829 3529.5265 3595.9355 3574.327 3614.5755
+      max(input_v)  116.338  116.6225  126.2738  117.760  121.8845
+      max neval
+ 4734.005   100
+  230.116   100</code></pre>
 </div>
-<div id="rcpp-evalCpp" class="section level1">
-<h1><span class="header-section-number">3</span> <code>evalCpp</code> 함수로 <code>C++</code> 돌려보기</h1>
-<p>복잡한 <code>C++</code> 코드가 아니라면 <code>evalCpp()</code> 함수 내부에 <code>C++</code>코드를 넣어 실행결과를 반환받을 수 있다. BMI 지수(비만도 계산)을 <code>C++</code> 코드로 다음과 같이 작성할 수 있다. 단, 키는 cm가 아니라 m 단위로 넣어준다.</p>
-<p><span class="math display">\[BMI = \frac{몸무게}{키^2}\]</span></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
-<span class="kw">evalCpp</span>( <span class="st">&quot;70 / (1.7 * 1.7)&quot;</span> )</code></pre></div>
-<pre><code>[1] 24.22145</code></pre>
 <div id="rcpp-datatype" class="section level2">
-<h2><span class="header-section-number">3.1</span> 기본 자료형</h2>
+<h2><span class="header-section-number">1.2</span> 기본 자료형</h2>
 <p>R과 C++의 기본 자료형은 정수와 실수가 될 것이다. R은 기본적으로 실수 즉 부동소수점(double)이 기본이 되는 반면 C++는 정수(integer)가 기본이 된다는 점에서 차이가 난다. 즉 R에서 앞서 계산된 BMI 24를 입력하게 되면 실수로 <code>double</code> 자료형인 반면 정수로 표기하려면 <code>24L</code>와 같이 명시적으로 표시를 해줘야한다. 반면에 <code>C++</code>는 그렇지 않다.</p>
 <div class="row">
 <div class="col-md-6">
 <p><strong>C++</strong></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 실수
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
+## 실수
 bmi_c_double &lt;-<span class="st"> </span><span class="kw">evalCpp</span>( <span class="st">&quot;24.0&quot;</span> )
 <span class="kw">typeof</span>(bmi_c_double)</code></pre></div>
 <pre><code>[1] &quot;double&quot;</code></pre>
@@ -488,9 +481,16 @@ bmi_r_int &lt;-<span class="st"> </span>24L
 </div>
 </div>
 </div>
+<div id="rcpp-evalCpp" class="section level2">
+<h2><span class="header-section-number">1.3</span> <code>evalCpp</code> 함수로 <code>C++</code> 돌려보기</h2>
+<p>복잡한 <code>C++</code> 코드가 아니라면 <code>evalCpp()</code> 함수 내부에 <code>C++</code>코드를 넣어 실행결과를 반환받을 수 있다. BMI 지수(비만도 계산)을 <code>C++</code> 코드로 다음과 같이 작성할 수 있다. 단, 키는 cm가 아니라 m 단위로 넣어준다.</p>
+<p><span class="math display">\[BMI = \frac{몸무게}{키^2}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
+<span class="kw">evalCpp</span>( <span class="st">&quot;70 / (1.7 * 1.7)&quot;</span> )</code></pre></div>
+<pre><code>[1] 24.22145</code></pre>
 </div>
-<div id="rcpp-evalCpp-funciton" class="section level1">
-<h1><span class="header-section-number">4</span> 인라인 코드와 <code>cpp</code> 함수</h1>
+<div id="rcpp-evalCpp-funciton" class="section level2">
+<h2><span class="header-section-number">1.4</span> 인라인 코드와 <code>cpp</code> 함수</h2>
 <p><code>evalCpp()</code> 함수는 <code>C++</code> 코드 한줄을 작성해서 간단한 연산작업을 수행하는데 적합하다. <code>cppFunction()</code> 함수는 이름 그대로 <code>C++</code> 함수를 작성해서 R환경에서 불러 사용할 때 적합하다. 아래 코드는 앞서 작성한 BMI 비만도를 계산하는 계산 로직을 <code>C++</code> 코드로 작성한 사례로 <code>calc_bmi()</code> 함수를 다른 R 함수 호출하는 것과 동일한 방식으로 불러 사용할 수 있다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cppFunction</span>(<span class="st">&quot;double calc_bmi(double weight, double height){</span>
 <span class="st">                    double bmi = weight / (height * height) ;</span>
@@ -539,7 +539,7 @@ END_RCPP
 Generated R functions 
 -------------------------------------------------------
 
-`.sourceCpp_13_DLLInfo` &lt;- dyn.load('C:/Users/statkclee/AppData/Local/Temp/RtmpOMnzTN/sourceCpp-x86_64-w64-mingw32-1.0.1/sourcecpp_26787bf843a/sourceCpp_15.dll')
+`.sourceCpp_13_DLLInfo` &lt;- dyn.load('C:/Users/statkclee/AppData/Local/Temp/RtmpEdUGry/sourceCpp-x86_64-w64-mingw32-1.0.1/sourcecpp_23a043fd60bc/sourceCpp_15.dll')
 
 calc_bmi &lt;- Rcpp:::sourceCppFunction(function(weight, height) {}, FALSE, `.sourceCpp_13_DLLInfo`, 'sourceCpp_13_calc_bmi')
 
@@ -548,9 +548,112 @@ rm(`.sourceCpp_13_DLLInfo`)
 Building shared library
 --------------------------------------------------------
 
-DIR: C:/Users/statkclee/AppData/Local/Temp/RtmpOMnzTN/sourceCpp-x86_64-w64-mingw32-1.0.1/sourcecpp_26787bf843a
+DIR: C:/Users/statkclee/AppData/Local/Temp/RtmpEdUGry/sourceCpp-x86_64-w64-mingw32-1.0.1/sourcecpp_23a043fd60bc
 
-C:/PROGRA~1/R/R-35~1.2/bin/x64/R CMD SHLIB -o &quot;sourceCpp_15.dll&quot; --preclean &quot;&quot; &quot;file26784ab5673a.cpp&quot;  </code></pre>
+C:/PROGRA~1/R/R-35~1.2/bin/x64/R CMD SHLIB -o &quot;sourceCpp_15.dll&quot; --preclean &quot;&quot; &quot;file23a010e91bf8.cpp&quot;  </code></pre>
+</div>
+<div id="rcpp-debugging" class="section level2">
+<h2><span class="header-section-number">1.5</span> <code>C++</code> 디버깅</h2>
+<p><code>Rprintf()</code> 함수를 사용해서 콘솔에 변수값을 출력함으로써 간단한 디버깅을 수행할 수 있다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cppFunction</span>(
+<span class="st">'double calc_bmi(double weight, double height) {</span>
+<span class="st">            // R콘솔에 입력값 체중과 키 출력</span>
+<span class="st">            Rprintf(&quot;몸무게: %f </span><span class="ch">\\</span><span class="st">n&quot;, weight) ;</span>
+<span class="st">            Rprintf(&quot;키: %f </span><span class="ch">\\</span><span class="st">n&quot;, height) ;</span>
+<span class="st">            double bmi = weight / (height * height) ;</span>
+<span class="st">            return bmi ;</span>
+<span class="st">            }'</span>
+)
+<span class="kw">calc_bmi</span>(<span class="dt">weight=</span><span class="fl">70.0</span>, <span class="dt">height=</span><span class="fl">1.7</span>)</code></pre></div>
+<pre><code>몸무게: 70.000000 
+키: 1.700000 </code></pre>
+<pre><code>[1] 24.22145</code></pre>
+<p><code>check_bmi()</code> 함수와 같이 정상값을 벗어나는 경우 무리하게 BMI를 계산하는 대신 오류 메시지를 발생시켜서 동작을 중지시키거나, <code>tryCatch</code>를 사용해서 오류를 인정하고 다른 계속 프로그램 실행을 강제시킨다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cppFunction</span>(<span class="st">'</span>
+<span class="st">double check_bmi(double weight, double height) {</span>
+
+<span class="st">      if(weight &lt; 50 | height &lt; 2.5) stop(&quot;사람이 아닙니다!!!&quot;) ;</span>
+<span class="st">           </span>
+<span class="st">      double bmi = weight / (height * height) ;</span>
+<span class="st">      return bmi ;</span>
+<span class="st">}'</span>)
+
+<span class="co"># 범위 밖 사례</span>
+<span class="co"># check_bmi(40, 3)</span>
+<span class="co"># Error in check_bmi(40, 3) : 사람이 아닙니다!!!</span>
+  
+<span class="kw">tryCatch</span>( <span class="kw">check_bmi</span>(<span class="dv">40</span>, <span class="dv">3</span>), <span class="dt">error =</span> <span class="cf">function</span>(e){
+    <span class="kw">message</span>(<span class="st">&quot;C++ 예외사항: &quot;</span>, <span class="kw">conditionMessage</span>(e))
+})</code></pre></div>
+</div>
+</div>
+<div id="rcpp-file" class="section level1">
+<h1><span class="header-section-number">2</span> <code>.cpp</code> 파일 실행</h1>
+<p>간단한 <code>C++</code> 코드는 <code>evalCpp()</code> 함수로 감싸서 <code>C++</code> 표현식을 처리하고, 함수가 필요한 경우는 <code>cppFunction()</code> 함수로 감싸서 나중에 R에서 함수호출로 처리하고 좀더 복잡한 <code>C++</code> 코드는 별도 <code>.cpp</code> 확장자를 갖는 <code>C++</code> 코드로 작성해서 활용한다.</p>
+<p><img src="data:image/png;base64,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" alt="evalCpp to sourceCpp" width="100%" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
+<span class="kw">sourceCpp</span>(<span class="st">&quot;code/bmi.cpp&quot;</span>)</code></pre></div>
+<pre><code>
+&gt; calc_bmi(70, 1.7)
+[1] 24.22145</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">calc_bmi</span>(<span class="dv">70</span>, <span class="fl">1.7</span>)</code></pre></div>
+<pre><code>[1] 24.22145</code></pre>
+<p>여기서 <code>code/bmi.cpp</code> 파일 구성은 다음과 같다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#include &lt;Rcpp.h&gt;</span>
+using namespace Rcpp;
+
+<span class="op">/</span><span class="er">/</span><span class="st"> </span>[[Rcpp<span class="op">::</span>export]]
+double <span class="kw">calc_bmi</span>(int weight, double height){
+  double bmi =<span class="st"> </span>weight <span class="op">/</span><span class="st"> </span>(height <span class="op">*</span><span class="st"> </span>height) ;
+  return bmi ;
+}
+
+<span class="op">/</span><span class="er">***</span><span class="st"> </span>R
+<span class="kw">calc_bmi</span>(<span class="dv">70</span>, <span class="fl">1.7</span>)
+<span class="op">*</span><span class="er">/</span></code></pre></div>
+<div id="rcpp-file" class="section level2">
+<h2><span class="header-section-number">2.1</span> <code>.cpp</code> 파일 내부구성</h2>
+<p><code>.cpp</code> 파일을 구성할 때 외부에 노출되는 함수와 그렇지 않는 내부 함수를 다음과 같이 나누어서 작성한다. 즉, <code>calc_bmi()</code> 함수는 BMI 값을 계산하고, 내부적으로 이 함수를 <code>print_bmi()</code> 함수에서 호출하여 비만값을 사람이 알기 쉬운 형태로 “저체중/정상/…/고도비만” 출력시킨다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
+<span class="kw">sourceCpp</span>(<span class="st">&quot;code/print_bmi.cpp&quot;</span>)</code></pre></div>
+<pre><code>
+&gt; print_bmi(70, 1.7)
+[1] &quot;obesity, 鍮덈쭔 1 \xeb떒怨\x84&quot;</code></pre>
+<p>여기서 <code>code/print_bmi.cpp</code> 파일 구성은 다음과 같다.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#include &lt;Rcpp.h&gt;</span>
+using namespace Rcpp;
+
+double <span class="kw">calc_bmi</span>(int weight, double height){
+  double bmi =<span class="st"> </span>weight <span class="op">/</span><span class="st"> </span>(height <span class="op">*</span><span class="st"> </span>height) ;
+  return bmi ;
+}
+
+<span class="op">/</span><span class="er">/</span><span class="st"> </span>[[Rcpp<span class="op">::</span>export]]
+std<span class="op">::</span>string <span class="kw">print_bmi</span>(int weight, double height){
+  
+  double bmi;
+  std<span class="op">::</span>string print_text; 
+  
+  bmi =<span class="st"> </span><span class="kw">calc_bmi</span>(weight, height);
+  
+  <span class="cf">if</span> (bmi <span class="op">&lt;</span><span class="st"> </span><span class="fl">18.5</span> ) {
+    print_text =<span class="st"> &quot;underweight, 저체중&quot;</span>;
+  } <span class="cf">else</span> <span class="cf">if</span>( (bmi <span class="op">&gt;=</span><span class="st"> </span><span class="fl">18.5</span>) <span class="op">&amp;</span><span class="st"> </span>(bmi <span class="op">&lt;</span><span class="st"> </span><span class="dv">23</span>) ) {
+    print_text =<span class="st">  &quot;normal, 정상&quot;</span>;
+  } <span class="cf">else</span> <span class="cf">if</span>( (bmi <span class="op">&gt;=</span><span class="st"> </span><span class="dv">23</span>) <span class="op">&amp;</span><span class="st"> </span>(bmi <span class="op">&lt;</span><span class="st"> </span><span class="dv">25</span>) ){
+    print_text =<span class="st"> &quot;obesity, 빈만 1 단계&quot;</span>;
+  } <span class="cf">else</span> <span class="cf">if</span>( (bmi <span class="op">&gt;=</span><span class="st"> </span><span class="dv">25</span>) <span class="op">&amp;</span><span class="st"> </span>(bmi <span class="op">&lt;</span><span class="st"> </span><span class="dv">30</span>) ){
+    print_text =<span class="st"> &quot;obesity, 빈만 2,3 단계&quot;</span>;
+  } <span class="cf">else</span> {
+    print_text =<span class="st"> &quot;obesity, 고도&quot;</span>;
+  } 
+  return print_text;
+}
+
+<span class="op">/</span><span class="er">***</span><span class="st"> </span>R
+<span class="kw">print_bmi</span>(<span class="dv">70</span>, <span class="fl">1.7</span>)
+<span class="op">*</span><span class="er">/</span></code></pre></div>
+</div>
 </div>
 <div class="footnotes">
 <hr />
