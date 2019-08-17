@@ -1,0 +1,151 @@
+---
+layout: page
+title: R 병렬 프로그래밍
+subtitle: "분할-적용-병합(Split-Apply-Combine) 전략"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+ 
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+
+# 분할-적용-병합 전략의 진화 [^split-apply-combine] {#split-apply-combine}
+
+[^split-apply-combine]: [cool but useless, "Split-Apply-Combine: My search for a replacement for 'group_by + do'"](https://coolbutuseless.bitbucket.io/2018/03/03/split-apply-combine-my-search-for-a-replacement-for-group_by---do/)
+
+데이터 분석에서 흔히 사용되는 방법 중 하나가 **분할-적용-병합(Split-Apply-Combine)** 전략이다. 즉, 큰 문제를 작은 문제로 쪼개고 각 문제에 대해서 적절한 연산(예를 들어 요약통계량)을 취하고 이를 결합하는 방법이 많이 사용되는 방법이다. 예를 들어 [재현가능한 과학적 분석을 위한 R - "분할-적용-병합 전략"](https://statkclee.github.io/r-novice-gapminder/12-plyr-kr.html)에 나온 것처럼 각 그룹별로 쪼갠 후에 각 그룹별로 평균을 내고 이를 조합한 사례가 전반적인 큰 그림을 그리는데 도움이 될 수 있다. 여기서 평균을 사용했는데 요약(summarize) 뿐만 아니라, 윈도우 함수, 이를 일반화한 `do()` 함수도 포함된다. 이론적인 사항은 Hadley Wickham의 2011년 Journal of Statistical Software 에 실린 ["The Split-Apply-Combine Strategy for Data
+Analysis"](https://www.jstatsoft.org/article/view/v040i01/v40i01.pdf)를 참조한다.
+
+<img src="fig/split-apply-combine.png" alt="split apply combine" width="57%" />
+
+- 선사시대 Split-Apply-Combine: split, lapply, do.call(rbind, …)
+- 석기시대(plyr) Split-Apply-Combine: plyr::ddply
+- 초기 tidyverse 시대 Split-Apply-Combine: group_by, do
+- 중기 tidyverse 시대 Split-Apply-Combine: group_by & by_slice
+- 현대 tidyverse 시대 Split-Apply-Combine: group_by, nest, mutate(map())
+- tidyverse/base 하이브리드 조합 Split-Apply-Combine: split, map_dfr
+
+## `gapminder` 데이터셋 {#gapminder-dataset}
+
+`gapminder` 데이터 팩키지의 각 대륙, 국가, 연도별 인구와 중요 두가지 정보인 평균수명과 일인당GDP 정보를 바탕으로 각 대륙별 평균 GDP를 추출해보자. 이를 위해서 먼저 인당GDP(`gdpPercap`)와 인구수(`pop`)를 바탕으로 GDP를 계산하고 이를 평균낸다. 특정 연도를 지칭하지 않는 것이 다소 문제의 소지가 있을 수 있지만,  분할-적용-병합 전략을 살펴보는데 큰 무리는 없어 보인다.
+
+```{r gapminder-dataset}
+library(tidyverse)
+library(gapminder)
+
+calc_GDP <- function(dat, year=NULL, country=NULL) {
+  if(!is.null(year)) {
+    dat <- dat[dat$year %in% year, ]
+  }
+  if (!is.null(country)) {
+    dat <- dat[dat$country %in% country,]
+  }
+  gdp <- dat$pop * dat$gdpPercap
+
+  new <- cbind(dat, gdp=gdp)
+  return(new)
+}
+
+gapminder %>% 
+  mutate(GDP = pop * gdpPercap) %>% 
+  DT::datatable()
+```
+
+## 선사시대 `split`, `lapply`, `do.call` {#ddplyr-prehistoric}
+
+선사시대에는 대륙별로 `split` 한 후에 `lapply()` 함수를 사용해서 앞서 정의한 `calc_GDP` 함수로 GDP를 계산한 후에 평균을 다시 계산한 뒤에 마지막으로 `do.call()` 함수로 병합(combine)하여 GDP 대륙별 평균을 구할 수 있다.
+
+```{r gapminder-prehistoric}
+continent_split_df  <- split(gapminder, gapminder$continent)
+GDP_list_df         <- lapply(continent_split_df, calc_GDP)
+GDP_list_df         <- lapply(GDP_list_df, function(x) mean(x$gdp))
+mean_GDP_df         <- do.call(rbind, GDP_list_df)
+
+mean_GDP_df
+```
+
+
+## `plyr::ddply` {#ddplyr-stone-age}
+
+석기시대 `plyr` 팩키지 `ddply` 함수를 사용해서 각 대륙별로 쪼갠 후에 각 대륙별 평균 GDP를 구할 수 있다.
+
+```{r gapminder-ddply}
+library(gapminder)
+
+plyr::ddply(
+ .data = calc_GDP(gapminder),
+ .variables = "continent",
+ .fun = function(x) mean(x$gdp)
+)
+```
+
+## 초기 tidyverse 시대: `group_by`, `do` {#ddplyr-early-tidyverse}
+
+`group_by()` + `do()`를 결합하여 임의 연산작업을 각 그룹별로 수행시킬 수 있다.
+
+```{r early-tidyverse}
+gapminder %>%
+  group_by(continent) %>%
+  do(calc_GDP(.)) %>%
+  do(out = mean(.$gdp)) %>% 
+  unnest
+```
+
+
+## 중기 tidyverse 시대: `group_by`, `by_slice` {#ddplyr-midage-tidyverse}
+
+`group_by()` + `by_slice()`를 결합하여 분할-적용-병합 전략을 적용시킬 수도 있으나 `by_slice()` 함수가 `dplyr::do()` 함수와 같은 작업을 수행했고, `purrrlyr`에 갔다가... 그후 행방이 묘연해졌다. 
+
+```{r midage-tidyverse}
+gapminder %>%
+  group_by(continent) %>%
+  purrrlyr::by_slice(~calc_GDP(.x), .collate = 'rows') %>% 
+  select(continent, gdp) %>% 
+  group_by(continent) %>%
+  purrrlyr::by_slice(~mean(.$gdp), .collate = 'rows')
+```
+
+## 현대 tidyverse 시대: `group_by`, `nest`, `mutate(map())` {#ddplyr-current-tidyverse}
+
+현대 분할-적용-병합 전략은 `group_by` + `nest()`로 그룹별 데이터프레임으로 만들고, `mutate(map())`을 사용해서 `calc_GDP()` 함수를 적용시켜 GDP를 계산하고, `summarize()` 함수를 적용시켜 각 대륙별 평균 GDP를 계산한다. 마지막으로 `unnest`를 적용시켜 원하는 산출물을 얻는다.
+
+```{r current-tidyverse}
+gapminder %>%
+  group_by(continent) %>%
+  nest() %>% 
+  mutate(data = purrr::map(data, calc_GDP)) %>% 
+  mutate(mean_GDP = purrr::map(data, ~ summarize(., mean_GDP = mean(gdp)))) %>% 
+  unnest(mean_GDP)
+```
+
+
+## tidyverse/base 하이브리드 조합: `split`, `map_dfr` {#base-current-tidyverse}
+
+마지막으로 base R `split()` 함수와 `map_dfr()` 함수를 조합해서 원하는 결과를 얻어낼 수도 있다.
+
+```{r hybrid-tidyverse}
+gapminder %>%
+  split(.$continent) %>%
+  purrr::map_dfr(calc_GDP) %>% 
+  split(.$continent) %>%
+  purrr::map_dfr(~mean(.$gdp)) %>% 
+  gather(continent, mean_GDP)
+```
