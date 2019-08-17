@@ -1,0 +1,114 @@
+---
+layout: page
+title: R 병렬 프로그래밍
+subtitle: "`purrr` &rarr; `furrr`"
+author:
+    name: xwMOOC
+    url: https://www.facebook.com/groups/tidyverse/
+    affiliation: Tidyverse Korea
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+ 
+``` {r, include=FALSE}
+# source("tools/chunk-options.R")
+
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+
+# `for` 루프에서 병렬처리 [^parallel-r-code] {#purrr-start}
+
+[^parallel-r-code]: [ZevRoss(February 12, 2019), "Dramatically speed up your R purrr functions with the furrr package"](http://zevross.com/blog/2019/02/12/dramatically-speed-up-your-r-purrr-functions-with-the-furrr-package/)
+
+먼저 제곱해서 $\{1,2,3\} \longrightarrow \{1,4,9\}$로 매핑시키는 `for` 루프를 작성해보자.
+
+```{r for-loop}
+library(tidyverse)
+
+for(i in 1:3) {
+  cat(i^2, "\n")
+}
+```
+
+그 다음으로 `for` 루프를 함수형 프로그래밍 팩키지 `purrr`을 사용해서 간결한 코드로 작성해보자.
+이를 위해서 람다 무명함수를 사용해도 되고, 함수명을 외부에 명시적으로 정의해서 이를 `map_dbl` 함수에 넣어 계산해도 된다.
+
+```{r for-loop-purrr}
+square_it <- function(x) {x^2}
+
+map_dbl(1:3, square_it)
+```
+
+`purrr` 팩키지 `map_dbl()` 함수를 사용한다고 해서 코드를 간결하게 했지만 진정한 병렬처리는 `furrr` 팩키지를 사용해서 구현이 가능하다. 
+
+## 시간 측정 {#purrr-start-tictoc}
+
+`tictoc` 팩키지를 사용하면 경과시간을 간단히 측정할 수 있다.
+
+```{r time-measure}
+library(tictoc)
+
+tic()
+
+for(i in 1:3) {
+  cat(i^2, "\n")
+  Sys.sleep(1)
+}
+
+toc()
+
+```
+
+
+# `furrr` 병렬처리 {#purrr-start-furrr}
+
+`furrr` 팩키지를 도입하게 되면 병렬처리 가능한 작업의 효율을 높일 수 있다. 즉, `purrr` 팩키지가 컴퓨터에 순차처리하던 작업을 `furrr` 팩키지를 통해서 순차처리가 가능하다.
+
+<div class = "row">
+  <div class = "col-md-6">
+**`purrr` 순차처리**
+
+```{r furrr-parallel-processing}
+tic()
+square_it_sleep <- function(x) {
+    Sys.sleep(1)
+    x^2
+}
+
+map_dbl(1:3, square_it_sleep)
+toc()
+```
+
+  </div>
+  <div class = "col-md-6">
+**`furrr` 병렬처리**
+
+```{r furrr-parallel-processing2}
+library(furrr)
+future::plan(multiprocess)
+
+tic()
+square_it_sleep <- function(x) {
+    Sys.sleep(1)
+    x^2
+}
+
+future_map_dbl(1:3, square_it_sleep)
+toc()
+```
+
+  </div>
+</div>
+
+
