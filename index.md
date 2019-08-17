@@ -64,7 +64,7 @@ title: R 병렬 프로그래밍
     	- [GoT 데이터 - 데이터 정제](r-parallel-got-wrangling.html)
     - [열이 아닌 행(row) 데이터 조작](r-rowwise-wrangling.html)
 1. [`purrr` &rarr; `furrr`](r-parallel-furrr.html)
-    - [](r-parallel-split-apply-combine.html)
+    - [분할-적용-병합(Split-Apply-Combine) 전략](r-parallel-split-apply-combine.html)
 1. [추천 시스템(Recommendation System)](recommendation-sys.html)
     - [영화진흥위원회 오픈API - 스크린수와 매출](kofic-movie-api.html)
     - [추천 시스템(Recommendation System) - 비개인화 추천(Nonpersonal Recommendation)](recommendation-nonpersonal.html)
