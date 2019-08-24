@@ -39,12 +39,6 @@ title: R 병렬 프로그래밍
     - [신용위험 확률(plumber) API](r-credit-score-api.html)    
     - [TV 시청시간 예측서비스 - 데이터는 openCPU, 구현은 plumber, 서비스는 AWS](r-gss-tvhours.html)
 1. **자동화(Automation)**
-    - **R코드 자동화**
-        - [유닉스 철학과 파이프라인](r-parallel-rscript-unix.html)
-        - [`.R` 스크립트 실행](r-parallel-rscript-exec.html)
-        - [`.R` 스크립트를 인자와 함께 실행](r-parallel-rscript-args.html)
-        - [`optparse` 파이썬 스타일](r-parallel-rscript-optparse.html)
-        - [분석결과 내보내기](r-parallel-local-export.html)
     - [R 자동화(Make) - `drake`](r-makefile.html)
         - [소프트웨어 카펜트리 자동화 Make(소프트웨어)](http://statkclee.github.io/make-novice/index-kr.html)
         - [R과 Make(소프트웨어+R) - TV 토론 효과](r-make-software.html)
