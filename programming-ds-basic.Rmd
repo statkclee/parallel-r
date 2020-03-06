@@ -1,0 +1,174 @@
+---
+layout: page
+title: R 병렬 프로그래밍
+subtitle: "데이터 과학 기본 프로그래밍"
+author:
+    name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE,
+                    comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+데이터프레임 자료구조를 갖추게 되면 기본적인 데이터 분석과 모형 구축을 위한 준비는 된 것으로 본다. 경우에 따라서 프로그래밍의 기본기인 반복작업을 수행하는 경우가 있어 이런 경우 `purrr` 팩키지 함수형 프로그래밍을 도입하게 되면 많은 도움을 받을 수 있다.
+
+# 반복: `for` 루프 [^purrr-iterate] {#for-iterate}
+
+[^purrr-iterate]: [Manasi Mahadik (Jan 6 2020), "Iterate Your R Code Efficiently! - A step-by-step guide to perform clean and efficient iterations in R.", Towards Data Science](https://towardsdatascience.com/iterate-your-r-code-efficiently-3c621998eaea)
+
+변수별로 평균을 구하는 문제를 생각해보자.
+
+## `iris` 데이터 {#iris-dataset}
+
+`iris` 데이터셋은 숫자형 변수가 4개, 범주형 변수가 1개로 구성되어 있고 관측점은 150개다.
+
+```{r for-loop}
+library(tidyverse)
+iris %>% 
+  as_tibble
+```
+
+## 수작업으로 반복 {#iris-dataset-manual}
+
+데이터프레임 각 변수를 `mean()` 함수에 넣어서 평균을 구하는 코드는 다음과 같다.
+함수가 4번 반복되고, `iris` 데이터프레임 명칭도 4번 반복되고 있는 문제가 있다.
+
+```{r for-loop-manual}
+mean(iris$Sepal.Length)
+mean(iris$Sepal.Width)
+mean(iris$Petal.Length)
+mean(iris$Petal.Width)
+```
+
+
+## `for`루프 반복 {#iris-dataset-for}
+
+`for` 루프로 반복시켜 문제를 앞서 지적된 문제를 고쳐보다.
+`iris` 데이터셋의 마지막 범주 변수는 제외하고 나머지 숫자형 변수에 대해서만 평균을 계산하는데 일반적인 패턴은 다음과 같다.
+
+1. 결과값을 담을 벡터나 리스트를 지정한다.
+1. `for` 루프 반복을 돌리면서 변수별 평균을 계산한 결과값을 1번에서 정의한 벡터나 리스트에 저장한다.
+1. 결과값을 담은 벡터나 리스트를 통해 작업 결과를 확인한다.
+
+```{r for-loop-iris}
+# iris_mean <- c()
+iris_mean <- vector("double", ncol(iris)-1)
+
+for(i in seq_along(iris[,-5])) {
+  iris_mean[i] <- mean(iris[, i])
+}
+
+iris_mean
+```
+
+
+## R 내장함수 {#iris-dataset-apply}
+
+R 내장함수로 `apply` 계열 함수를 사용하면 `for` 루프를 제거하고 단순하게 원한느 결과를 얻을 수 있다.
+
+1. `apply` 함수를 지정한다.
+1. 인자로 데이터프레임을 넣어준다; `iris[,-5]`
+1. 행방향, 열방향을 지정한다; `1` 행방향, `2` 열방향
+1. 벡터에 대해 적용할 함수명을 지정한다; `mean` 평균
+
+```{r apply-mean}
+apply(iris[,-5], 2, mean)
+# sapply(iris[,-5], mean)
+```
+
+
+## `purrr` {#iris-dataset-purrr}
+
+`purrr` 팩키지의 함수인 `map_*` 계열 함수를 사용해서 코드를 우아하게 작성해 보자.
+반환되는 값이 실수형이라 `map_dbl()`을 지정하고 반복을 돌리고자하는 데이터프레임을 넣어준다. 각 변수별로 적용시킬 함수를 `mean` 넣어주면 한줄로 결과를 얻을 수 있다.
+
+```{r purrr-for-loop}
+map_dbl(iris[,-5], mean)
+```
+
+
+# 평균과 중앙값 확장 {#mean-median-extension}
+
+## `for` 루프 {#mean-median-extension-for}
+
+평균과 중앙값 등 변수별 요약통계량을 담아야 하는 경우 리스트(`list`)에 벡터를 넣는 자료구조를 준비하고 각 변수별로 반복루프를 돌려 작업을 수행한다.
+
+```{r for-doubl-elements}
+iris_desc <- list()
+
+iris_mean <- vector("double", ncol(iris) -1)
+iris_median <- vector("double", ncol(iris) -1)
+
+for(i in seq_along(iris[,-5])) {
+  iris_mean[i]   <- mean(iris[,i])
+  iris_median[i] <- median(iris[,i])
+  
+  iris_desc[[i]] <- list("평균"  = iris_mean[i], 
+                         "중앙값"= iris_median[i])
+  names(iris_desc)[i] <- names(iris)[i]
+}
+
+listviewer::jsonedit(iris_desc)
+```
+
+## `purrr` 반복 {#mean-median-extension-purrr}
+
+`purrr` 팩키지의 `map`함수와 사용자 정의 함수(`calc_desc_stat`)를 조합시킬 경우 좀더 깔금하게 반복 코드를 정리할 수 있다.
+
+```{r for-doubl-elements-purrr-map}
+calc_desc_stat <- function(var_name) {
+  return(list("평균" = mean(var_name), "중앙값" = median(var_name)))
+}
+
+# calc_desc_stat(iris[,1])
+
+map(iris[,-5], ~calc_desc_stat(.x)) %>% 
+  enframe %>% 
+  mutate(평균   = map_dbl(value, "평균"),
+         중앙값 = map_dbl(value, "중앙값"))
+```
+
+
+## `apply` 반복 {#mean-median-extension-purrr}
+
+유사하게 `apply`계열 함수를 사용해서도 동일한 기능을 구현할 수 있다.
+
+```{r for-doubl-elements-purrr-apply}
+# apply(iris[,-5], 2, calc_desc_stat)
+
+sapply(iris[,-5], calc_desc_stat) %>% 
+  as.data.frame()
+```
+
+
+# `dplyr` 방식 {#mean-median-dplyr}
+
+`dplyr` 팩키지 기능을 사용해서 명수명을 골라내고 `summarise_all()` 함수를 계산하고 나서 이를 후속 분석을 위한 데이터프레임으로 만들어 놓는 작업을 다음과 같이 작성할 수도 있다.
+
+```{r}
+iris %>% 
+  select(contains(".")) %>% 
+  summarise_all(list("평균"   = mean, 
+                     "중위값" = median)) %>% 
+  gather(변수명, 값) %>% 
+  separate(변수명, into=c("변수명", "통계량"), sep="_") %>% 
+  spread(통계량, 값)
+
+```
+
+
+

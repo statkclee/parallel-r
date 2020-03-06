@@ -57,6 +57,7 @@ title: R 병렬 프로그래밍
     	- [GoT 데이터](r-parallel-got-data.html)
     	- [GoT 데이터 - 데이터 정제](r-parallel-got-wrangling.html)
     - [열이 아닌 행(row) 데이터 조작](r-rowwise-wrangling.html)
+    - [데이터 과학 기본 프로그래밍](programming-ds-basic.html)
 1. [`purrr` &rarr; `furrr`](r-parallel-furrr.html)
     - [분할-적용-병합(Split-Apply-Combine) 전략](r-parallel-split-apply-combine.html)
 1. [추천 시스템(Recommendation System)](recommendation-sys.html)
