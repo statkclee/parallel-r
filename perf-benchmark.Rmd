@@ -1,23 +1,40 @@
 ---
 layout: page
-title: R 병렬 프로그래밍
-subtitle: R 코드 성능 측정기준 - 벤치마킹
+title: "R 병렬 프로그래밍"
+subtitle: "R 코드 성능 측정기준 - 벤치마킹"
+author:
+- name: "이광춘"
+  affiliation: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
+date: "`r Sys.Date()`"
 output:
   html_document: 
+    include:
+      after_body: footer.html
+      before_body: header.html
+    theme: journal
     toc: yes
-    keep_md: yes
-  pdf_document:
-    latex_engine: xelatex
-mainfont: NanumGothic
+    toc_depth: 2
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+bibliography: bibliography_parallel.bib
+csl: biomed-central.csl
+urlcolor: blue
+linkcolor: blue
+editor_options: 
+  chunk_output_type: console
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
 
-> ## 학습 목표 {.objectives}
->
-> * R 스크립트, 함수 성능 측정기준 방법을 살펴본다.
-> * `tictoc`, `microbenchmark`, `rbenchmark` 팩키지를 실습한다.
 
-## 1. R 코드 기준성능 평가 팩키지 [^r-benchmark]
+
+# R 기준성능 평가 팩키지 [^r-benchmark] {#benchmark}
 
 [^r-benchmark]: [5 ways to measure running time of R code](http://www.alexejgossmann.com/benchmarking_r/)
 
@@ -26,18 +43,19 @@ mainfont: NanumGothic
 
 - `Sys.time` 
 - `tictoc`
+- `bench`
 - `system.time`
 - `rbenchmark`
--  `microbenchmark`
+- `microbenchmark`
 
-## 2. `Sys.time()`, `system.time()`
+# `Sys.time()`, `system.time()` {#benchmark-base}
 
 기본적인 사용법은 `Sys.time()`으로 현재 시간을 찍고 나서, 코드를 실행하고 나서, 종료시점에 다시 `Sys.time()`을 찍고 두 시간 차이를 구하는 방식이다.
 
 
-``` {r benchmark-sys-time, message=FALSE, warning=FALSE}
+``` {r benchmark-sys-time}
 start_time <- Sys.time()
-Sys.sleep(5) # 5초 동안 쿨쿨 ~~~
+Sys.sleep(3) # 3초 동안 쿨쿨 ~~~
 end_time <- Sys.time()
 
 end_time - start_time
@@ -45,8 +63,8 @@ end_time - start_time
 
 또다른 방식은 `system.time()`을 활용하는 것인데 앞선 `Sys.time()`을 사용하는 것과 비교하여 어느 지점에서 시간이 더 많이 사용되는지 개발자가 알 수 있게 추가적인 정보를 제공한다.
 
-``` {r benchmark-system-time, message=FALSE, warning=FALSE}
-system.time(Sys.sleep(5))
+``` {r benchmark-system-time}
+system.time(Sys.sleep(3))
 ```
 
 사용자, 시스템, elapsed로 전체 시간을 나누어서 실행시간에 대한 정보를 제공하고 있다. [^r-mailing-proc-time]
@@ -59,7 +77,7 @@ system.time(Sys.sleep(5))
 수행하는 작업이 포함된다. 따라서 운영체제가 다르면 수행시간도 차이가 나는 것도 명약관화하다.
 - `elapsed`: R작업과 운영체제 시스템 총 작업경과 시간. 
 
-## 3. `tictoc`, `microbenchmark`, `rbenchmark` 팩키지 비교 [^rcpp]
+# `tictoc`, `microbenchmark`, `rbenchmark` 팩키지 비교 [^rcpp] {#compare-pkg}
 
 `tictoc`, `microbenchmark`, `rbenchmark` 팩키지는 R코드 속도를 측정하고자하는 목적으로 개발된 것이다.
 목적은 동일하지만 다소 차이가 있다.
@@ -73,45 +91,46 @@ $$ f(n) = \begin{cases} n, & n < 2 \mbox{  일 때}\\ f(n-1) + f(n-2), & n \geq 
 
 피보나치 수열을 R코드로 구현한 후 `sapply` 함수로 0 에서 10까지 숫자를 피보나치 함수 `f`에 넣어 계산한다.
 
-``` {r benchmark-r-sample-code, message=FALSE, warning=FALSE}
+``` {r benchmark-r-sample-code}
+library(tidyverse)
 #-------------------------------------------------------------------------
 # 1. 순수한 R 코드
 #-------------------------------------------------------------------------
 
-f <- function(n) {
-  if (n<2) return(n)
-  return(f(n-1) + f(n-2))
+calc_fibo <- function(n) {
+  if ( n < 2 ) return(n)
+    return( calc_fibo(n-1) + calc_fibo(n-2) )
 }
 
-sapply(0:10, f)
+map_dbl(1:10, calc_fibo)
 ```
 
-### 3.1. `tictoc` 팩키지로 속도 측정
+## `tictoc` 속도 측정 {#measure-tictoc}
 
 `tic` 함수와 `tok` 함수를 통해 `tic`과 `toc` 사이 소요되는 시간을 측정한다.
 
-``` {r benchmark-tictoc-benchamrk, message=FALSE, warning=FALSE}
+``` {r benchmark-tictoc-benchamrk}
 # devtools::install_github("collectivemedia/tictoc")
 library(tictoc)
 
 tic("전체시간")
 
 tic("피보나치 10")
-f(10)
+calc_fibo(10)
 toc()
 
 tic("피보나치 15")
-f(15)
+calc_fibo(15)
 toc()
 
 tic("피보나치 20")
-f(20)
+calc_fibo(20)
 toc()
 
 toc()
 ```
 
-### 3.2. `rbenchmark` 팩키지로 속도 측정
+## `rbenchmark` 속도 측정 {#measure-rbenchmark}
 
 `rbenchmark` 팩키지는 펄(Perl) 벤치마크 모듈에 영감을 받아 제작되었다. `system.time`을 감싼 함수 하나로 구성된 팩키지다. 
 `system.time`과 비교하여 반복수와 명시적으로 `user.self`, `sys.self`로 명칭을 명확히 했고, `relative`를 통해 상대적인 시간도 명기했다.
@@ -120,28 +139,28 @@ toc()
 
 `rbenchmark` 팩키지를 사용해서 `10`, `15`, `20`일 경우를 기준성능을 상호비교한다.
 
-``` {r benchmark-rbenchamrk, message=FALSE, warning=FALSE}
+``` {r benchmark-rbenchamrk}
 # install.packages("rbenchmark")
 library(rbenchmark)
 
-benchmark(f(10), f(15), f(20), columns= c("test", "replications", "elapsed", "relative"))
+benchmark(calc_fibo(10), calc_fibo(15), calc_fibo(20), columns= c("test", "replications", "elapsed", "relative"))
 ```
 
 피보나치 순열 10일 때 보다 20일 때, 상대적으로 131배나 많은 시간이 소요된 것이 확인된다. 이제 C/C++ 즉, `Rcpp`로 구현한 성능을 살펴본다.
 
-### 3.3. `microbenchmark` 팩키지로 속도 측정
+## `microbenchmark` 속도 측정 {#measure-microbenchmark}
 
 `rbenchmark` 팩키지 `benchmark()` 함수와 유사하지만, `microbenchmark()`함수는 `ggplot`의 `autoplot`과 함께 사용하면 
 정말 편리하다.
 
-``` {r benchmark-microbenchamrk, message=FALSE, warning=FALSE}
+``` {r benchmark-microbenchamrk}
 #devtools::install_github("olafmersmann/microbenchmarkCore")
 #devtools::install_github("olafmersmann/microbenchmark")
 library(microbenchmark)
 
-mb_fibo <- microbenchmark("f10" = { f(10) },
-                      "f15" = { f(15) },
-                      "f20" = { f(20) }
+mb_fibo <- microbenchmark("f10" = { calc_fibo(10) },
+                      "f15" = { calc_fibo(15) },
+                      "f20" = { calc_fibo(20) }
 )
 
 mb_fibo
@@ -149,43 +168,84 @@ mb_fibo
 autoplot(mb_fibo)
 ```
 
-## 4. Rcpp 코드 구현
+## **`bench` 속도 측정** {#measure-bench}
+
+[`bench`: High Precision Timing of R Expressions](https://cran.r-project.org/web/packages/bench/index.html)가 R 표현식에 대한 정확한 시간 측정에 사용되는 새로운 벤치마킹 속도 측정 팩키지로 `ggplot`과 결합하여 후속 작업도 깔끔하다.
+
+
+```{r measure-bench}
+library(bench)
+
+fibo_10_bnch <- bench::mark(
+  fibo_10 = calc_fibo(10)
+)
+
+fibo_15_bnch <- bench::mark(
+  fibo_15 = calc_fibo(15)
+)
+
+fibo_20_bnch <- bench::mark(
+  fibo_20 = calc_fibo(20)
+)
+
+# fibo_df <- bind_rows(fibo_10_bnch, fibo_15_bnch) %>% 
+#   bind_rows(fibo_20_bnch)
+# 에러: Can't combine `expression` <bench_expr> and `expression` <bench_expr>.
+# x Some attributes are incompatible.
+# i The author of the class should implement vctrs methods.
+# i See <https://vctrs.r-lib.org/reference/faq-error-incompatible-attributes.html>.
+# Run `rlang::last_error()` to see where the error occurred.
+
+autoplot(fibo_20_bnch)
+```
+
+
+# Rcpp 코드 구현 {#benchmark-rcpp}
 
 피보나치 구현하는 코드를 C/C++로 구현한 후에 `Rcpp::cppFunction` 내부에 C/C++코드를 넣어주고 실행시키면 된다.
 전통적으로 재귀를 사용한 피보나치 순열 구현은 성능이 좋지 않은 것으로 유명한데, C/C++로 구현하여 `Rcpp` 팩키지로 실행한 것을 보면 450배 순수 R코드에 비해 성능이 월등한 것을 알 수 있다.
 
-``` {r benchmark-rcpp, message=FALSE, warning=FALSE}
+``` {r benchmark-rcpp, eval = FALSE}
 library(Rcpp)
 
 Rcpp::cppFunction(
-  "int g(int n) {
+  "int calc_fibo_c(int n) {
       if (n < 2) return(n);
-      return(g(n-1)+g(n-2));
+        return( calc_fibo_c(n-1) + calc_fibo_c(n-2) );
   }")
 
-Rcpp_fibo <- microbenchmark("Rcpp"  = { g(25) },
-                            "RCode" = { f(25) }
+Rcpp_fibo <- microbenchmark("Rcpp"  = { calc_fibo_c(25) },
+                            "RCode" = { calc_fibo(25) }
 )
 
 Rcpp_fibo
 autoplot(Rcpp_fibo)
 ```
 
-> ### 윈도우즈 Rcpp 설치 {.callout}
-> 
-> `Rcpp`를 윈도우즈에 설치할 경우 `Rtools`가 설치되어야 한다. 그리고 `Rtools`를 윈도우 사용자경로에 추가해야 한다.
-> 
-> `writeLines(strsplit(Sys.getenv("PATH"), ";")[[1L]])` 명령어를 실행하여 `R`과 `Rtools`가 경로명에서 
-> 확인되어야 한다.
-> 
-> ~~~ {.output}
-> C:\Program Files\R\R-3.2.3\bin
-> C:\Rtools\gcc-4.6.3\bin
-> C:\Rtools\bin
-> ~~~
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+**윈도우즈 Rcpp 설치**
+
+`Rcpp`를 윈도우즈에 설치할 경우 `Rtools`가 설치되어야 한다. 그리고 `Rtools`를 윈도우 사용자경로에 추가해야 한다.
+
+`Sys.getenv("PATH") %>% str_split(";") %>% .[[1]]` 명령어를 실행하여 `R`과 `Rtools`가 경로명에서 
+확인되어야 한다.
+
+```{r check-path-info}
+path_info <- Sys.getenv("PATH") %>% str_split(";") %>% .[[1]]
+
+path_info[str_detect(path_info, "rtools")]
+```
+
+</div>
 
 
-## 4. 기준정보 벤치마크 시각화
+
+# 기준정보 벤치마크 시각화 {#benchmark-visualize}
 
 `microbenchmark` 팩키지에 시각화하는 기능이 내장되어 있다. 
 `boxplot` 등 기본 그래픽 기능을 활용하여 상대적인 비교를 시각적으로 식별하는데 도움을 주고 있다.
