@@ -24,8 +24,8 @@ title: R 병렬 프로그래밍
             - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html)         
     - **[고성능 R코드 작성과 성능비교](perf-writing-efficient-code.html)**
         - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
-        - [정보수집 프로파일링(profiling) - profviz](performance-profiling.html)
-        - [정보수집 프로파일링을 통한 성능향상](performance-profviz.html)    
+        - [프로파일링(profiling) 팩킺 - `profviz`](performance-profiling.html)
+        - [프로파일링(Profiling)을 통한 성능향상](performance-profviz.html)    
 1. **[기계학습 R 서버 만들기](r-caret-parallel-server.html)**    
 1. **[배포(deployment) = 기계학습 모형 사용](r-restful-production.html)**
     - [RESTful API 개발환경 - `plumber`](r-restful-api-test.html)
