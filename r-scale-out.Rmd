@@ -1,46 +1,92 @@
 ---
 layout: page
 title: 데이터 과학
-subtitle: R 스케일-아웃 성능향상
+subtitle: "R 스케일-아웃 성능향상 - 병렬처리"
+author:
+- name: "이광춘"
+  affiliation: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    include:
+      after_body: footer.html
+      before_body: header.html
+    theme: default
+    toc: yes
+    toc_depth: 2
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+bibliography: bibliography_parallel.bib
+csl: biomed-central.csl
+urlcolor: blue
+linkcolor: blue
+mainfonts: NanumGothic
+editor_options: 
+  chunk_output_type: console
 ---
 
-> ## 학습 목표 {.objectives}
->
-> * R 스케일-아웃 전략을 통한 성능향상에 대해 살펴본다.
-> * 동일 모형내 최적모형 구축과 모형결합을 통한 병렬컴퓨팅을 이해한다.
-> * 병렬컴퓨팅 R 팩키지를 구분하고 이해한다.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+```
 
 
-## 1. 병렬 프로그래밍을 위한 하드웨어 환경
 
-<img src="fig/parallel-hw-arch.png" alt="병렬컴퓨팅 하드웨어 아키텍처" width="70%">
+# 병렬 프로그래밍을 위한 하드웨어 환경 [^nyc-meetup] {#nyc-meetup}
 
-> ### 병렬 프로그래밍 개념과 용어 정의 {.callout}
-> 
-> * **암시적 병렬성(Implicit Parallelism)** : 병렬 연산처리과정이 사용자로부터 숨겨서 보이지 않음. 
+[^nyc-meetup]: [Henrik Bengtsson (November 12, 2020), "NYC R Meetup: Slides on Future", New York R Meetup ](https://www.jottr.org/2020/11/12/future-nycmeetup-slides/)
+
+R 스케일-아웃 전략을 통한 성능향상에 대해 살펴보고, 
+동일 모형내 최적모형 구축과 모형결합을 통한 병렬컴퓨팅을 이해한다.
+
+<center>
+<img src="fig/parallel-hw-arch.png" alt="병렬컴퓨팅 하드웨어 아키텍처" width="77%">
+</center>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+## **병렬 프로그래밍 개념과 용어 정의** {-#parallel-programming}
+
+* **암시적 병렬성(Implicit Parallelism)** : 병렬 연산처리과정이 사용자로부터 숨겨서 보이지 않음. 
 예를 들어, 멀티스레드(Multi-thread BLAS)가 여기에 해당된다. 스레드란 한 메시지 처리를 완료한데 필요한 일련의 작업 혹은 프로그램 흐름을 지칭한다.
-> * **명시적 병렬성(Explicit Parallelism)** : 명시적으로 작업을 수행하기 때문에 작업조합이 필요하다. `parallel` 팩키지 `mclapply()`가 여기에 해당된다.
-> * **처치 곤란한 만큼 동시작업이 가능한 병렬(embarrassingly parallel) 혹은 느슨한 결합(Loosely Coupled:)** : 다소 반어법적으로 처치 곤란할 정도로 많다는 의미가 병렬처리 작업에 대입되어, 의존성이 거의 없어 임의 순서나 방법으로 처리가 가능한 작업이 여기에 해당된다.
-> * **밀착결합(Tightly Coupled:)** : 느슨한 결합의 반대의 경우로 컴퓨팅 계산작업에 많은 의존성을 갖는 경우가 해당된다.
+* **명시적 병렬성(Explicit Parallelism)** : 명시적으로 작업을 수행하기 때문에 작업조합이 필요하다. `parallel` 팩키지 `mclapply()`가 여기에 해당된다.
+* **처치 곤란한 만큼 동시작업이 가능한 병렬(embarrassingly parallel) 혹은 느슨한 결합(Loosely Coupled:)** : 다소 반어법적으로 처치 곤란할 정도로 많다는 의미가 병렬처리 작업에 대입되어, 의존성이 거의 없어 임의 순서나 방법으로 처리가 가능한 작업이 여기에 해당된다.
+* **밀착결합(Tightly Coupled:)** : 느슨한 결합의 반대의 경우로 컴퓨팅 계산작업에 많은 의존성을 갖는 경우가 해당된다.
+
+</div>
 
 
-> ### 벽걸이 시간과 속도향상과 암달의 법칙 {.callout}
-> 
-> 병렬 프로그래밍에서 **벽걸이 시간(wallclock time)** 이 중요한데 작업시작과 작업종류를 측정한다. [암달의 법칙(Amdahl's law)](https://ko.wikipedia.org/wiki/암달의_법칙)은 암달의 저주로도 불리며, 프로그램을 100% 병렬처리가 가능하도록 만들고 프로세서를 늘리면 성능이 무한대로 가능하지만, 현실적으로 100% 병렬 프로그램을 작성할 수는 없다. 예를 들어, 95% 병렬처리가 가능하다고 가정하면, 무한대 프로세서를 사용해도 최대 20배로 **속도향상(speedup)** 이 제한된다.
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 10px;}
+</style>
+<div class = "blue">
+
+## **벽걸이 시간과 속도향상과 암달의 법칙** {-#amdahl-law}
+
+병렬 프로그래밍에서 **벽걸이 시간(wallclock time)** 이 중요한데 작업시작과 작업종류를 측정한다. 즉, 개별 CPU 코어 성능이 얼마냐가 중요하긴 하지만, 결국 모든 계산이 끝났을 때 최종적으로 측정한 시간만이 의미가 있다는 뜻이다.  [암달의 법칙(Amdahl's law)](https://ko.wikipedia.org/wiki/암달의_법칙)은 암달의 저주로도 불리며, 프로그램을 100% 병렬처리가 가능하도록 만들고 프로세서를 늘리면 성능이 무한대로 가능하지만, 현실적으로 100% 병렬 프로그램을 작성할 수는 없다. 예를 들어, 95% 병렬처리가 가능하다고 가정하면, 무한대 프로세서를 사용해도 최대 20배로 **속도향상(speedup)** 이 제한된다.
+
+</div>
 
 
-## 2. 병렬 프로그래밍을 R 팩키지 툴체인
+# 병렬 프로그래밍을 R 툴체인 {#r-toolchain}
 
 [CRAN Task View - High-Performance and Parallel Computing with R](http://cran.r-project.org/web/views/HighPerformanceComputing.html) 사이트에 가면 R에서 바라본 다양한 고성능 슈퍼컴퓨팅 관련 작업이 일목요연하게 정리되어 있다.
 
 
-### 2.1. 공유 메모리 모형을 활용한 R 병렬 컴퓨팅
+## 공유 메모리 모형을 활용한 R 병렬 컴퓨팅 {#r-shared-memory}
 
 `parallel`은 독립적으로 서로 다른 사람들이 개발한 `snow` 와 `multicore`를 합친 것이다.
 `multicore`는 **포크(fork)** 를 사용하는 반면에 `snow`는 소켓(socket)을 사용한다.
 윈도우에서는 지원이 제한되는 경우가 있기 때문에, 가능하면 리눅스 계열을 운영체제를 사용한다.
 
-#### 2.1.1. `parallel` 계열
+### `parallel` 계열 {#parallel-r}
 
 ~~~ {.r}
 #-------------------------------------------------------------------------
@@ -70,7 +116,7 @@ stopCluster(cl)
 |    `multicore`   | `mclapply()`, `mcmapply()`, `mcparallel()`, `mccollect()` |
 |      `snow`      | `makeCluster()`, `stopCluster()`, `parLapply()`, `parSapply()` |
 
-#### 2.1.2. `foreach` 계열
+### `foreach` 계열 {#foreach-r-pkg}
 
 지금은 마이크로소프트에 인수된 Revolution Analytics에서 개발된 `foreach` 팩키지로 일종의 통합 인터페이스로 백엔드에 `doMC`, `doMPI`, `doParallel`, `doRedis`, `doRNG`, `doSNOW`를 두고 통합된 인터페이스를 제공하려고 한다.
 
@@ -88,7 +134,7 @@ x <- foreach(i=1:reps) %do% {
 }
 ~~~
 
-#### 2.2. 공유메모리 분산컴퓨팅 사례 -- 제곱근
+## 공유메모리 분산컴퓨팅 사례 -- 제곱근 {#shared-memory-example}
 
 윈도우에서 `mclapply()`는 코어를 하나만 제공하기 때문에 리눅스나 맥에서 수행하다.
 `mclapply`, `parSapply`, `foreach`를 사용해서 1에서 100,00까지 제곱근을 계산을 수행하고 기준정보 벤치마킹 작업을 수행한다.
@@ -135,7 +181,7 @@ stopCluster(cl)
 ~~~
 
  
-#### 2.3. 공유메모리 분산컴퓨팅 사례 -- 몬티홀 퀴즈쇼
+## 공유메모리 분산컴퓨팅 사례 -- 몬티홀 퀴즈쇼 {#shared-memory-monty-hall}
 
 [몬티 홀 문제](https://ko.wikipedia.org/wiki/몬티_홀_문제)는 미국의 TV 게임쇼(Let's make a deal)에서 유래한 퍼즐이다. 세 개의 문 중에 하나를 선택하여 문 뒤에 있는 선물을 가질 수 있는 게임쇼에 참가했다. 한 문 뒤에는 자동차가 있고, 나머지 두 문 뒤에는 염소가 있다. 이때 어떤 사람이 예를 들어 1번 문을 선택했을 때, 게임쇼 진행자는 3번 문을 열어 문뒤에 염소가 있음을 보여주면서 1번 대신 2번을 선택하겠냐고 물었다. 참가자가 자동차를 가지려할 때 원래 선택했던 번호를 바꾸는 것이 유리할까? 이때 진행자는 자동차와 염소가 어떤 문에 있는지 알고 있기 때문에, 진행자가 자동차가 있는 문을 여는 일은 절대 발생하지 않는다.
 
@@ -170,7 +216,7 @@ system.time({
 # 11.510   1.579   3.066 
 ~~~
 
-### 3. 메시지 전달을 통한 분산 R 병렬 컴퓨팅
+# 메시지 전달을 통한 분산 R 병렬 컴퓨팅 {#rmpi-eval}
 
 분산 R 병렬 컴퓨팅을 수행해야 되는 이유는 각 범용 컴퓨터 메모리가 한정되어 있기 때문이다.
 만약 데이터가 메모리보다 더 커다란 경우 메시지 전달을 통한 분산 처리를 통한 방법이 남는다.
@@ -190,7 +236,7 @@ stopCluster(cl)
 mpi.quit()
 ~~~
 
-### 4. R 병렬처리 두가지 접근방법 [^UC-Berkeley-AMPLAB]
+# R 병렬처리 두가지 접근방법 [^UC-Berkeley-AMPLAB] {#two-examples}
 
 [^UC-Berkeley-AMPLAB]: [SparkR The Past, the Present and the Future](https://www.youtube.com/watch?v=I9K3K2eVw0E)
 
