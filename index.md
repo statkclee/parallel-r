@@ -21,7 +21,8 @@ title: R 병렬 프로그래밍
         - [R 스케일-업 성능향상](r-scale-up.html)
         - [Rcpp - 코드 최적화](r-perf-rcpp.html)
         - [R 스케일-아웃 성능향상 - 병렬처리](r-scale-out.html)     
-            - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html)         
+            - [뉴욕타임즈 기사 병렬처리 사례](r-scale-out-nytimes.html)
+            - [진행상태 표시 막대 - `progressr`](parallel-progressr.html)         
     - **[고성능 R코드 작성과 성능비교](perf-writing-efficient-code.html)**
         - [R 코드 성능 측정기준 - 벤치마킹](perf-benchmark.html)
         - [프로파일링(profiling) 팩킺 - `profviz`](performance-profiling.html)

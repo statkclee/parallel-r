@@ -1,0 +1,172 @@
+---
+layout: page
+title: 데이터 과학
+subtitle: "진행상태 표시 막대 - `progressr`"
+author:
+- name: "이광춘"
+  affiliation: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    include:
+      after_body: footer.html
+      before_body: header.html
+    theme: default
+    toc: yes
+    toc_depth: 2
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+bibliography: bibliography_parallel.bib
+csl: biomed-central.csl
+urlcolor: blue
+linkcolor: blue
+mainfonts: NanumGothic
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+```
+
+
+
+# 상태표시 [^progressr-eRum-2020] [^progress-bar] {#progressr-eRum}
+
+[^progress-bar]: ["R" you ready? (16-Mar-09), "R: Monitoring the function progress with a progress bar" ](https://ryouready.wordpress.com/2009/03/16/r-monitor-function-progress-with-a-progress-bar/)
+
+[^progressr-eRum-2020]: [Henrik Bengtsson (July 4, 2020), "`progressr`: An Inclusive, Unifying API for Progress Updates", e-Rum 2020](https://www.jottr.org/2020/07/04/progressr-erum2020-slides/)
+
+`work()` 함수를 만들어서 무슨 작업인지는 모르지만 X초 동안 작업을 하게 만드는 도움 함수(helper function)를 만든다.
+
+```{r progress-example}
+library(tidyverse)
+library(progressr)
+
+## 잠자기 함수 실행 도움 함수
+
+work <- function(second = 0) {
+  Sys.sleep(second)
+  cat(second, "초 작업완료!\n")
+}
+
+work(1) # 1초 동안 쉼
+```
+
+각 작업의 단위는 1초로 1초에 해당되는 작업을 3번 작업 시킨다. 반환값이 없기 때문에 `walk()` 함수를 사용한다.
+
+```{r do-work}
+num_jobs <- rep(1,3)
+walk(num_jobs, work)
+```
+
+
+작업이 진행되는 것을 보여주는 함수로 내장된 `utils` 팩키지 `txtProgressBar()` 함수가 있다.
+앞의 함수를 조금 바꿔 입력받은 숫자를 제곱하는 결과를 반환하는 함수를 제작하나다.
+`work_square()` 함수는 1초 쉬고(작업하고) 제곱결과를 반환시킨다.
+이를 `txtProgressBar()` 함수로 구현할 경우, `setTxtProgressBar()`, `getTxtProgressBar()` 함수를 사용해서 기능을 구현한다.
+
+```{r utils-txtProgressBar}
+work_square <- function(x) {
+  Sys.sleep(1)
+  return(x*x)
+}
+
+input_val <- 1:5
+pb <- txtProgressBar(max = length(input_val))
+
+walk(input_val, function(x) {
+  setTxtProgressBar(pb, getTxtProgressBar(pb)+1)
+  work_square(x)
+})
+close(pb)
+```
+
+1부터 10까지 작업을 출력시키는 작업을 두가지 방식을 통해 비교해보자.
+화면에 단순 출력하는 방식이 있는 반면에, `txtProgressBar()` 함수를 기본으로 다양하게 보기 좋게 출력하는 방식이 존재한다.
+
+<div class = "row">
+  <div class = "col-md-6">
+**화면에 단순 출력**
+
+```{r total-progressbar-example}
+walk(1:10, function(i) {
+  Sys.sleep(0.1)
+  print(i)
+})
+```
+
+  </div>
+  <div class = "col-md-6">
+**상태표시 막대**
+
+```{r total-progressbar-example-two}
+pb <- txtProgressBar(title = "progress bar", min = 0, max = 10, style = 3, width = 50)
+
+walk(1:10, function(i) {
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, i, label = paste( round(i/total*100, 0), "% done"))
+})
+close(pb)
+```
+
+  </div>
+</div>
+
+# `progressr` 팩키지 [^different-use-cases] {#progressr-function}
+
+[^different-use-cases]: [`progressr`: An Introduction](https://cran.r-project.org/web/packages/progressr/vignettes/progressr-intro.html)
+
+`progressr` 팩키지 `progress_bar`를 사용하면 진행사항을 시각적으로 확인할 수 있다.
+
+```{r progressr-snail}
+library(beepr)
+
+handlers("beepr")
+
+snail <- function(x, progress = FALSE) {
+  
+  if (progress) pb <- progress::progress_bar$new(total=length(x))
+  
+  walk(x, function(z) {
+    if (progress) pb$tick()
+    message(z, " 작업중 !!!") 
+    work_square(z)
+  })
+}
+
+x <- 1:10
+# y <- snail(x)
+y <- snail(x, progress=TRUE)
+```
+
+
+# 병렬 상태표시 막대 [^furrr-vignette] {#parallel-furrr}
+
+[^furrr-vignette]: [`furrr`: Progress notifications with progressr](https://davisvaughan.github.io/furrr/articles/articles/progress.html)
+
+`furrr` 팩키지를 사용하고 무명함수를 밖으로 빼서 명시적으로 `future_map()` 을 통해 동시 진행사항에 대한 파악도 가능하다.
+
+```{r furrr-progress}
+library(furrr)
+
+plan(multisession, workers = 2)
+
+fn <- function(x, p) {
+  p()
+  Sys.sleep(.2)
+  sum(x)
+}
+
+with_progress({
+  p <- progressor(steps = length(x))
+  result <- future_map(x, fn, p = p)
+})
+```
+
+
