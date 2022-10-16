@@ -1,6 +1,17 @@
-# xwMOOC 데이터 과학
-xwMOOC  
-`r Sys.Date()`  
+---
+layout: page
+title: xwMOOC 데이터 과학
+subtitle: 멀티코어 병렬 프로그래밍 - doParallel
+date: "2022-10-16"
+author: xwMOOC
+output:
+  html_document: 
+    keep_md: yes
+    toc: yes
+  pdf_document:
+    latex_engine: xelatex
+mainfont: NanumGothic
+---
  
 
 
@@ -108,7 +119,7 @@ elapsed_for_v
 
 
 ~~~{.output}
-[1] 0.00 0.00 0.21 7.22
+[1] 0.00 0.02 0.16 4.42
 
 ~~~
 
@@ -140,11 +151,11 @@ elapsed
 
 [[3]]
 elapsed 
-   0.25 
+   0.17 
 
 [[4]]
 elapsed 
-   6.81 
+   4.58 
 
 ~~~
 
@@ -157,7 +168,7 @@ elapsed_foreach_v
 
 
 ~~~{.output}
-[1] 0.00 0.00 0.25 6.81
+[1] 0.00 0.00 0.17 4.58
 
 ~~~
 
@@ -192,7 +203,7 @@ elapsed_parallel_v
 
 ~~~{.output}
 elapsed 
-  35.65 
+     33 
 
 ~~~
 
@@ -205,6 +216,7 @@ elapsed
  
 
 ~~~{.r}
+
 # 3. 분석결과 정리 -----
 
 data.frame("for루프" = elapsed_for_v, "foreach"=elapsed_foreach_v) %>% 
@@ -214,6 +226,13 @@ data.frame("for루프" = elapsed_for_v, "foreach"=elapsed_foreach_v) %>%
   DT::datatable()
 ~~~
 
-<!--html_preserve--><div id="htmlwidget-30f8c034befd2c2608fc" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-30f8c034befd2c2608fc">{"x":{"filter":"none","data":[["1","2","3","4"],[10,100,1000,10000],[0,0,0.210000000000001,7.22],[0,0,0.25,6.81],[35.65,35.65,35.65,35.65]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>자리수<\/th>\n      <th>for루프<\/th>\n      <th>foreach<\/th>\n      <th>병렬<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
+
+~~~{.error}
+Error: <text>:5:10: unexpected '<'
+4: data.frame("for<U+B8E8><U+D504>" = elapsed_for_v, "foreach"=elapsed_foreach_v) %>% 
+5:   mutate(<
+            ^
+
+~~~
 

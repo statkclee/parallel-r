@@ -15,7 +15,7 @@ DST_HTML = $(patsubst %.md,%.html,$(SRC_MD))
 DST_ALL = $(DST_HTML)
 
 # Pandoc filters.
-FILTERS = $(wildcard tools/filters/*.py)
+# FILTERS = $(wildcard tools/filters/*.py)
 
 # Inclusions.
 INCLUDES = \
@@ -45,12 +45,19 @@ clean :
 preview : $(DST_ALL)
 
 # Pattern to build a generic page.
+#%.html : %.md _layouts/page.html $(FILTERS)
+#	${PANDOC} -s -t html \
+#	    --mathjax \
+#	    --template=_layouts/page \
+#	    --filter=tools/filters/blockquote2div.py \
+#	    --filter=tools/filters/id4glossary.py \
+#	    $(INCLUDES) \
+#	    -o $@ $<
+
 %.html : %.md _layouts/page.html $(FILTERS)
 	${PANDOC} -s -t html \
 	    --mathjax \
 	    --template=_layouts/page \
-	    --filter=tools/filters/blockquote2div.py \
-	    --filter=tools/filters/id4glossary.py \
 	    $(INCLUDES) \
 	    -o $@ $<
 

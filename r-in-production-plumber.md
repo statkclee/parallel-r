@@ -1,7 +1,7 @@
 ---
 layout: page
 title: R 병렬 프로그래밍
-date: "2018-08-02"
+date: "2022-10-16"
 subtitle: R 양산환경(`plumber`) - 타이타닉
 output:
   html_document: 

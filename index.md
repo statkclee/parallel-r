@@ -68,12 +68,8 @@ title: R 병렬 프로그래밍
     - [추천 시스템(Recommendation System) - 사용자기반 협업 필터링(User-based Collaborative Filtering)](recommendation-user-based-filtering.html)
     - [추천 시스템(Recommendation System) - 탐색적분석과 모형선정](recommendation-implementation.html)
     - [`sparklyr` 추천시스템 - MovieLens](recommendation-sparklyr.html)
-
-> ### xwMOOC는 수학을 사랑합니다. {.prereq}
-> 
-> 2차 방정식 $a x^2 + b x + c = 0$ 에 대한 해답은 ...
->
-> $$x = \frac{-b \pm \sqrt{b^2 - 4 a c}}{2 a}$$ 
+1. 프로그래밍 언어
+    - [객체지향 프로그래밍](oop.html)
 
 
 

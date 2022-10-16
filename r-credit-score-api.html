@@ -3,230 +3,66 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>Software Carpentry: R 병렬 프로그래밍</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
-    <link rel="stylesheet" type="text/css" href="css/swc.css" />
-    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
-    <meta charset="UTF-8" />
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-    
-      ga('create', 'UA-59802572-19', 'auto');
-      ga('send', 'pageview');
-    
+    <title>Software Carpentry: R &lt;U+BCD1&gt;&lt;U+B82C&gt; &lt;U+D504&gt;&lt;U+B85C&gt;&lt;U+ADF8&gt;&lt;U+B798&gt;&lt;U+BC0D&gt;</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-59802572-19', 'auto');
+      ga('send', 'pageview');
+    
     </script>
   </head>
   <body class="lesson">
     <div class="container card">
-      <div class="banner">
-        <a href="http://software-carpentry.org" title="Software Carpentry">
-          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
-        </a>
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
       </div>
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">R 병렬 프로그래밍</h1></a>
-          <h2 class="subtitle">신용위험 확률(plumber) API</h2>
-          <h2 id="credit-risk-api">1. 신용위험 API <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></h2>
-<p>훌륭한 신용위험 모형을 개발하는 것도 중요하지만, 다소 성능이 떨어지더라도 실용적으로 활용될 수 있도록 RESTful API로 예측모형 결과를 배포하는 것도 필요하다. 이런 목적으로 다양한 R 팩키지가 개발되어 지원되고 있다.</p>
-<p>그중 <a href="https://github.com/trestletech/plumber">배관공(Plumber)</a>를 활용하여 신용위험을 알려주는 API를 개발해보자.</p>
-<p><img src="fig/predictive-model-api.png" alt="예측모형 배관공(plumber) 공동작업" width="57%" /></p>
-<h2 id="develop-predictive-model">2. 신용평가 모형 개발</h2>
-<p>가장 먼저 신용평가모형 개발에 오래전부터 예제 데이터로 사용된 <a href="https://archive.ics.uci.edu/ml/support/Statlog+(German+Credit+Data)">독일신용데이터</a>를 신용평가모형 데이터를 활용한다.</p>
-<p>3단계로 걸쳐 신용평가 예측모형 서비스를 준비한다.</p>
-<ol style="list-style-type: decimal">
-<li>신용평가 예측모형 개발: <code>01-credit-model.R</code></li>
-<li>개발된 신용평가 예측모형 배포: <code>02-deploy_ml_credit_model.R</code></li>
-<li>신용평가 예측 서비스 제공: <code>03-run-restful-api-credit-model.R</code></li>
-</ol>
-<p><img src="fig/credit-model-api-script.png" alt="예측모형 API 스크립트" width="97%" /></p>
-<p>신용부도 이력을 갖는 데이터(<code>german credit</code>)를 가지고 신용평가모형을 개발한다. <code>randomForest</code> 팩키지 확률숲(Random Forest) 모형을 기본으로 중요성이 있는 변수 5개를 뽑아내서 예측모형 아케텍쳐로 의사결정나무(<code>rpart</code>) 모형을 활용하는 신용평가 예측모형을 개발한다. 개발과정에서 준비된 신용평가모형이 정상적으로 동작하는지를 <code>predict</code> 함수에 신용위험을 평가할 고객 한명 데이터를 준비해서 테스트한다.</p>
-<ul>
-<li>Status.of.existing.checking.account=‘A11’</li>
-<li>Duration.in.month=20</li>
-<li>Credit.history=‘A32’</li>
-<li>Credit.amount = 2969</li>
-<li>Savings.accountbonds=‘A65’</li>
-</ul>
-<p>개발된 신용평가 예측모형을 RESTful API 함수 형태로 개발하여 배포하는 형태로 변형시키고 배포한다.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 0. 환경설정 ----------------</span>
-<span class="co"># library(tidyverse)</span>
-<span class="co"># library(rpart)</span>
-<span class="co"># library(randomForest)</span>
-<span class="co"># library(rpart.plot)</span>
-<span class="co"># library(rpart)</span>
-<span class="co"># library(party)</span>
-<span class="co"># library(partykit)</span>
-
-<span class="co"># 1. 데이터 가져오기 ----------------</span>
-
-url &lt;-<span class="st"> &quot;https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data&quot;</span>
-
-col_names &lt;-<span class="st"> </span><span class="kw">c</span>(
-    <span class="st">&#39;Status.of.existing.checking.account&#39;</span>,<span class="st">&#39;Duration.in.month&#39;</span>,<span class="st">&#39;Credit.history&#39;</span>
-    ,<span class="st">&#39;Purpose&#39;</span>,<span class="st">&#39;Credit.amount&#39;</span>,<span class="st">&#39;Savings.accountbonds&#39;</span>
-    ,<span class="st">&#39;Employment.years&#39;</span>,<span class="st">&#39;Installment.rate.in.percentage.of.disposable.income&#39;</span>
-    ,<span class="st">&#39;Personal.status.and.sex&#39;</span>,<span class="st">&#39;Other.debtorsguarantors&#39;</span>,<span class="st">&#39;Present.residence.since&#39;</span>
-    ,<span class="st">&#39;Property&#39;</span>,<span class="st">&#39;Age.in.years&#39;</span>,<span class="st">&#39;Other.installment.plans&#39;</span>,<span class="st">&#39;Housing&#39;</span>,<span class="st">&#39;Number.of.existing.credits.at.this.bank&#39;</span>
-    ,<span class="st">&#39;Job&#39;</span>,<span class="st">&#39;Number.of.people.being.liable.to.provide.maintenance.for&#39;</span>,<span class="st">&#39;Telephone&#39;</span>,<span class="st">&#39;Foreign.worker&#39;</span>,<span class="st">&#39;Status&#39;</span>
-)
-german_df &lt;-<span class="st"> </span><span class="kw">read_delim</span>(url, <span class="dt">col_names =</span> <span class="ot">FALSE</span>, <span class="dt">delim=</span><span class="st">&#39; &#39;</span>)
-<span class="kw">names</span>(german_df) &lt;-<span class="st"> </span>col_names
-
-german_df &lt;-<span class="st"> </span>german_df %&gt;%<span class="st"> </span><span class="kw">mutate_if</span>(is.character, as.factor) %&gt;%<span class="st"> </span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Status =</span> <span class="kw">factor</span>(Status)) <span class="co"># randomForest 자료형 맞춰주는 작업</span>
-
-<span class="co"># 2. 예측모형 ----------------</span>
-## 2.1. 예측모형
-german_formula &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste</span>(<span class="st">&quot;Status&quot;</span>, <span class="kw">paste</span>(<span class="kw">setdiff</span>(<span class="kw">names</span>(german_df), <span class="st">&quot;Status&quot;</span>), <span class="dt">collapse=</span><span class="st">&quot;+&quot;</span>), <span class="dt">sep=</span><span class="st">&quot;~&quot;</span>))
-
-german_rf &lt;-<span class="st"> </span><span class="kw">randomForest</span>(german_formula, <span class="dt">data=</span>german_df, <span class="dt">importance=</span><span class="ot">TRUE</span>)
-
-## 2.2. 예측모형 성능
-german_rf</code></pre></div>
-<pre class="output"><code>
-Call:
- randomForest(formula = german_formula, data = german_df, importance = TRUE) 
-               Type of random forest: classification
-                     Number of trees: 500
-No. of variables tried at each split: 4
-
-        OOB estimate of  error rate: 24%
-Confusion matrix:
-    1   2 class.error
-1 639  61  0.08714286
-2 179 121  0.59666667
-</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 2.3. 중요변수 추출
-german_imp &lt;-<span class="st"> </span><span class="kw">importance</span>(german_rf)
-
-german_imp_rowname &lt;-<span class="st"> </span><span class="kw">rownames</span>(german_imp) %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>()
-
-german_imp_df &lt;-<span class="st"> </span><span class="kw">as_data_frame</span>(german_imp) %&gt;%<span class="st"> </span>
-<span class="st">    </span><span class="kw">bind_cols</span>(german_imp_rowname) %&gt;%<span class="st"> </span>
-<span class="st">    </span><span class="kw">select</span>(<span class="dt">names =</span> value, <span class="kw">everything</span>())
-
-
-<span class="co"># 3. 양산 예측모형 ----------------</span>
-## 3.1. 양산 예측모형 변수 추출 ------
-
-german_var &lt;-<span class="st"> </span>german_imp_df %&gt;%<span class="st"> </span><span class="kw">top_n</span>(MeanDecreaseAccuracy, <span class="dt">n=</span><span class="dv">5</span>) %&gt;%<span class="st"> </span>
-<span class="st">    </span><span class="kw">pull</span>(names)
-
-german_prod_formula &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste</span>(<span class="st">&quot;Status&quot;</span>, <span class="kw">paste</span>(german_var, <span class="dt">collapse=</span><span class="st">&quot;+&quot;</span>), <span class="dt">sep=</span><span class="st">&quot;~&quot;</span>))
-
-## 3.2. 양산 예측모형 적합 ------
-
-german_dt &lt;-<span class="st"> </span><span class="kw">rpart</span>(german_prod_formula, <span class="dt">method=</span><span class="st">&quot;class&quot;</span>, <span class="dt">data=</span>german_df)
-
-## 3.3. 양산 예측모형 시각화 ------
-
-<span class="kw">plot</span>(<span class="kw">as.party</span>(german_dt), <span class="dt">tnex =</span> <span class="dv">2</span>,  
-     <span class="dt">ep_args =</span> <span class="kw">list</span>(<span class="dt">justmin =</span> <span class="dv">1</span>, <span class="dt">just =</span> <span class="st">&quot;decreasing&quot;</span>), 
-     <span class="dt">main=</span><span class="st">&quot;신용평가모형 의사결정예측모형&quot;</span>)</code></pre></div>
-<p><img src="fig/german-credit-model-1.png" title="plot of chunk german-credit-model" alt="plot of chunk german-credit-model" style="display: block; margin: auto;" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 4. 양산 예측모형 테스트 ------</span>
-
-test_data &lt;-<span class="st"> </span><span class="kw">list</span>(
-    <span class="dt">Status.of.existing.checking.account=</span><span class="st">&#39;A11&#39;</span>,
-    <span class="dt">Duration.in.month=</span><span class="dv">20</span>,
-    <span class="dt">Credit.history=</span><span class="st">&#39;A32&#39;</span>,
-    <span class="dt">Credit.amount =</span> <span class="dv">2969</span>,
-    <span class="dt">Savings.accountbonds=</span><span class="st">&#39;A65&#39;</span>)
-
-<span class="kw">predict</span>(german_dt, test_data)</code></pre></div>
-<pre class="output"><code>          1         2
-1 0.7084871 0.2915129
-</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">save</span>(german_dt, <span class="dt">file=</span><span class="st">&#39;predictive_model/decision_Tree_for_german_credit_data.RData&#39;</span>)</code></pre></div>
-<pre class="error"><code>Error in gzfile(file, &quot;wb&quot;): 커넥션을 열 수 없습니다
-</code></pre>
-<h2 id="deploy-credit-risk-model">3. 신용위험 서버 API</h2>
-<p>클라이언드 특정 고객에 대한 신용평가모형 결과를 서버쪽에서 제공하기 위한 API 코드는 다음과 같다.</p>
-<p>즉, 예측모형 개발과 동일한 환경을 <code>.Rdata</code>에 담아 불러오고 나서, <code>predict_default_rate</code> 함수를 <code>@post</code> <code>/default_predict</code> 서비스로 노출시킨다.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(jsonlite)
-
-<span class="kw">load</span>(<span class="st">&quot;predictive_model/decision_Tree_for_german_credit_data.RData&quot;</span>)
-
-<span class="co">#* @post /default_predict</span>
-predict_default_rate &lt;-<span class="st"> </span>function(
-    Status.of.existing.checking.account
-    , Duration.in.month
-    , Credit.history
-    , Credit.amount
-    , Savings.accountbonds
-) {
-    data &lt;-<span class="st"> </span><span class="kw">list</span>(
-        <span class="dt">Status.of.existing.checking.account =</span> Status.of.existing.checking.account
-        , <span class="dt">Duration.in.month =</span> Duration.in.month
-        , <span class="dt">Credit.history =</span> Credit.history
-        , <span class="dt">Credit.amount =</span> Credit.amount
-        , <span class="dt">Savings.accountbonds =</span> Savings.accountbonds
-    )
-    prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(german_dt, data)
-    <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">default.probability=</span><span class="kw">unbox</span>(prediction[<span class="dv">1</span>, <span class="dv">2</span>])))
-}</code></pre></div>
-<h2 id="service-restful-api">4. 신용위험 서비스 제공</h2>
-<p>서버에 환경을 구축하고 나서 <code>r$run(port=8000)</code>를 실행하게 되면 신용위험평가 결과를 제공하는 서비스에 대한 준비가 완료된다.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(plumber)
-r &lt;-<span class="st"> </span><span class="kw">plumb</span>(<span class="st">&quot;code/02-deploy_ml_credit_model.R&quot;</span>)
-r$<span class="kw">run</span>(<span class="dt">port=</span><span class="dv">8000</span>)
-
-Starting server to listen on port <span class="dv">8000</span>
-Running the swagger UI at http:<span class="er">//</span><span class="fl">127.0.0.1</span>:<span class="dv">8000</span>/__swagger__/</code></pre></div>
-<p><img src="fig/german-credit-api.png" alt="신용평가서비스 API" width="77%" /></p>
-<h2 id="curl-test">5. 신용위험 알리미 서비스</h2>
-<p>신용위험을 예측하는 서비스가 준비되어서 서비스로 제공되고 있다. 이에, 직접 서비스를 호출하여 결과를 받아보자. JSON 형태 데이터를 전달하면 <code>/default_predict</code> 인터페이스를 통해 신용위험 예측 서비스를 제공하는 서버가 이를 받아들어 개발된 예측모형에서 미리 산출된 로직을 통해 신용위험을 평가하여 확률값을 계산하여 이를 전달한다. <code>curl</code>을 활용하여 신용위험 알리미 서비스를 활용할 수도 있다.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">$<span class="st"> </span>curl -X POST \
-       -d <span class="st">&#39;{&quot;Status.of.existing.checking.account&quot;: &quot;A11&quot;, &quot;Duration.in.month&quot;: 24, &quot;</span>
-<span class="st">             &quot;Credit.amount&quot; = 2969, &quot;Credit.history&quot;: &quot;A32&quot;, &quot;Savings.account.bonds&quot;: &quot;A63&quot;}&#39;</span> \
-       -H <span class="st">&#39;Content-Type: application/json&#39;</span> \
-       localhost:<span class="dv">8000</span>/default_predict
-{<span class="st">&quot;default_probability&quot;</span>:<span class="fl">0.6224</span>}</code></pre></div>
-<p>터미널을 통해 일일이 타이핑하는 것이 불편해 하시는 많은 분들을 위해서 다양한 RESTful API 테스트 제품 및 서비스가 존재한다. <a href="https://www.getpostman.com/">POSTMAN</a>을 설치하여 좀더 신속하고 편리하게 예측모형 RESTful API 제공되는 서비스를 검정할 수도 있다.</p>
-<p><img src="fig/api-test-postman.png" alt="RESTful API 검정" width="77%" /></p>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p><a href="https://www.knowru.com/blog/how-create-restful-api-for-machine-learning-credit-model-in-r/">How to create a RESTful API for a machine learning credit model in R</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p><a href="https://www.knowru.com/blog/how-create-restful-api-for-machine-learning-credit-model-in-r/">knowru - How to create a RESTful API for a machine learning credit model in R</a><a href="#fnref2">↩</a></p></li>
-</ol>
-</div>
+                    <a href="index.html"><h1 class="title">R &lt;U+BCD1&gt;&lt;U+B82C&gt; &lt;U+D504&gt;&lt;U+B85C&gt;&lt;U+ADF8&gt;&lt;U+B798&gt;&lt;U+BC0D&gt;</h1></a>
+          <h2 class="subtitle">&lt;U+C2E0&gt;&lt;U+C6A9&gt;&lt;U+C704&gt;&lt;U+D5D8&gt; &lt;U+D655&gt;&lt;U+B960&gt;(plumber) API</h2>
+          
         </div>
       </div>
       </article>
-      <div class="footer">
-        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
-        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
-        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
-        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
       </div>
     </div>
-    <!-- Javascript placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
-    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-    
-      ga('create', 'UA-37305346-2', 'auto');
-      ga('send', 'pageview');
-    
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-37305346-2', 'auto');
+      ga('send', 'pageview');
+    
     </script>
   </body>
 </html>
